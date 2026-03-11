@@ -1,0 +1,39 @@
+.animated-list-container {
+  position: relative;
+  width: 100%;
+  max-height: 400px; /* Altura máxima antes de activar el scroll */
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Ocultar la barra de scroll para que se vea más limpio */
+.animated-list-container.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Estilo de la barra de scroll (si decidís mostrarla) */
+.animated-list-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.animated-list-container::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+
+/* Gradientes para indicar que hay más contenido arriba/abajo */
+.list-gradient-top {
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 40px;
+  background: linear-gradient(to bottom, var(--bg), transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.list-gradient-bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 40px;
+  background: linear-gradient(to top, var(--bg), transparent);
+  pointer-events: none;
+  z-index: 2;
+}

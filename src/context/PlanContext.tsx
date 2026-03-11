@@ -120,30 +120,48 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     return newState;
   };
 
-  const cambiarEstadoMateria = (id: any, nuevoEstado: string) => {
+  const cambiarEstadoMateria = (id: any, accion: string) => {
     setMaterias((prev: any) => {
       let stateActualizado = { ...prev };
       const subject: any = getSubjectById(id);
+      const estadoActual = stateActualizado[id];
 
+      // --- LÓGICA DEL SEMINARIO INTEGRADOR ---
       if (subject?.isSeminario) {
-        if (nuevoEstado === 'aprobada') {
-          // Si hace click izquierdo, verificamos si tiene permisos para aprobarla
+        if (accion === 'aprobada') { // Click Izquierdo
           if (isAnalistaReady(stateActualizado)) {
-            stateActualizado[id] = stateActualizado[id] === 'aprobada' ? 'available' : 'aprobada';
+            stateActualizado[id] = estadoActual === 'aprobada' ? 'available' : 'aprobada';
           } else {
-            // Si no cumple, el click izquierdo funciona como "cursada" de forma silenciosa
-            stateActualizado[id] = stateActualizado[id] === 'cursada' ? 'available' : 'cursada';
+            // Comportamiento silencioso: si no cumple, lo cicla entre cursando/cursada pero nunca verde
+            if (estadoActual === 'cursada' || estadoActual === 'cursando') stateActualizado[id] = 'available';
+            else stateActualizado[id] = 'cursando';
           }
-        } else {
-          // Si hace click derecho (cursada)
-          stateActualizado[id] = stateActualizado[id] === nuevoEstado ? 'available' : nuevoEstado;
+        } else { // Click Derecho (Ciclo)
+          if (estadoActual === 'available' || estadoActual === 'disabled') stateActualizado[id] = 'cursando';
+          else if (estadoActual === 'cursando') stateActualizado[id] = 'cursada';
+          else if (estadoActual === 'cursada') stateActualizado[id] = 'available';
+          else if (estadoActual === 'aprobada') stateActualizado[id] = 'cursando';
         }
-      } else {
-        // Comportamiento normal para el resto de materias
-        if (stateActualizado[id] === nuevoEstado) {
-          stateActualizado[id] = 'available'; 
-        } else {
-          stateActualizado[id] = nuevoEstado;
+      } 
+      // --- LÓGICA DEL RESTO DE MATERIAS ---
+      else {
+        if (accion === 'aprobada') { // Click Izquierdo (Aprobar / Desaprobar)
+          if (estadoActual === 'aprobada') {
+            stateActualizado[id] = 'available';
+          } else {
+            // ALERTA DE DESTRUCCIÓN DE EVENTOS
+            if (estadoActual === 'cursando') {
+              const confirm = window.confirm("Estás por marcar esta materia como Aprobada. Se eliminarán todos los eventos (parciales/entregas) asignados. ¿Continuar?");
+              if (!confirm) return prev; // Si cancela, abortamos la actualización
+              // TODO: En la Fase 3, acá limpiaremos el JSON paralelo de Supabase
+            }
+            stateActualizado[id] = 'aprobada';
+          }
+        } else { // Click Derecho (Ciclo de cursada)
+          if (estadoActual === 'available' || estadoActual === 'disabled') stateActualizado[id] = 'cursando';
+          else if (estadoActual === 'cursando') stateActualizado[id] = 'cursada';
+          else if (estadoActual === 'cursada') stateActualizado[id] = 'available';
+          else if (estadoActual === 'aprobada') stateActualizado[id] = 'cursando';
         }
       }
 

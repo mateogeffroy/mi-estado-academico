@@ -16,6 +16,7 @@
   --cursada: #fbbf24;
   --cursada-border: #d97706;
   --cursada-text: #1a1000;
+  --cursando: #3b82f6;
   --aprobada: #22c55e;
   --aprobada-border: #16a34a;
   --aprobada-text: #001a08;
@@ -47,9 +48,12 @@ body {
 }
 
 header {
-  position: sticky;
+  position: fixed; /* Cambiado de sticky a fixed */
   top: 0;
-  z-index: 100;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
   background: rgba(13, 15, 20, 0.95);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
@@ -153,8 +157,9 @@ header {
 }
 
 main {
-  padding: 32px 20px 80px;
-  max-width: 1600px;
+  padding-top: 100px !important; 
+  padding-bottom: 80px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -249,6 +254,21 @@ main {
 .subject-card.aprobada:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
+}
+
+.subject-card.cursando {
+  background-color: var(--cursando);
+  border-color: var(--cursando);
+  color: #111;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); /* Le da un brillo sutil azulado */
+}
+
+/* Forzamos que todo el texto de adentro sea oscuro para que contraste bien */
+.subject-card.cursando .subject-num,
+.subject-card.cursando .subject-name,
+.subject-card.cursando .subject-hours {
+  color: #111;
+  opacity: 1;
 }
 
 .subject-num {
@@ -852,4 +872,80 @@ button {
 .mark-all-btn:hover {
   opacity: 1;
   color: var(--text);
+}
+
+.dash-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.dash-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.dashboard-nav {
+  display: flex;
+  gap: 20px;
+}
+
+.dashboard-nav a {
+  text-decoration: none;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  padding: 5px 12px;
+  border-radius: 6px;
+}
+
+.dashboard-nav a.active {
+  color: white;
+  background: rgba(59, 130, 246, 0.2);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 16px;
+  gap: 15px;
+  transition: background 0.2s ease;
+}
+
+.list-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.row-level {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  background: rgba(0,0,0,0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.row-name {
+  flex-grow: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.row-note, .row-status {
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  opacity: 0.8;
+  flex-shrink: 0;
 }

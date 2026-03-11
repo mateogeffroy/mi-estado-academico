@@ -121,6 +121,7 @@ export default function PlanDeEstudios() {
       <div className="subject-status-icon">
         {materias[subject.id] === 'aprobada' ? '✅' : 
          materias[subject.id] === 'cursada' ? '📖' : 
+         materias[subject.id] === 'cursando' ? '✍️' :
          materias[subject.id] === 'available' ? '' : '🔒'}
       </div>
     </div>
