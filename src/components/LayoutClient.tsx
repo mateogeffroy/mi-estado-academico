@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation'; // <-- Agregamos useRouter
+import { usePathname, useRouter } from 'next/navigation';
 import WelcomeModal from './WelcomeModal';
 import { supabase } from '../lib/supabase';
 
@@ -12,16 +12,15 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
   const [activeSection, setActiveSection] = useState('');
   
   const pathname = usePathname();
-  const router = useRouter(); // <-- Inicializamos el router
+  const router = useRouter(); 
 
-  // Lógica para resaltar la sección activa en el Dashboard
+  // --- Lógica para resaltar la sección activa en el Dashboard ---
   useEffect(() => {
     if (pathname !== '/') return;
 
     const handleScroll = () => {
-      // Incluimos 'agenda' como la primera sección detectable
       const sections = ['agenda', 'cursando', 'progreso'];
-      const scrollPosition = window.scrollY + 150; // Offset para el header fijo
+      const scrollPosition = window.scrollY + 150; 
 
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -39,13 +38,40 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     return () => window.removeEventListener('scroll', handleScroll);
   }, [pathname]);
 
+  // --- PATOVICA (ROUTE GUARD) ---
+  useEffect(() => {
+    // Verificamos si hay sesión activa al cargar la página
+    const verificarSesion = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Si no hay sesión y no estamos en la página de login, lo pateamos al login
+      if (!session && pathname !== '/login') {
+        router.push('/login');
+      }
+    };
+
+    verificarSesion();
+
+    // Nos suscribimos a cambios (ej: si se le vence la sesión o cierra desde otra pestaña)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session && pathname !== '/login') {
+        router.push('/login');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [pathname, router]);
+  // ------------------------------
+
   if (pathname === '/login') return <>{children}</>;
 
-  // Función de logout actualizada con redirección
+  // Función de logout con redirección
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/login'); // Redirige al login
-    router.refresh(); // Limpia la caché de Next.js por seguridad
+    router.push('/login'); 
+    router.refresh(); 
   };
 
   return (
@@ -66,7 +92,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           <div className="header-center desktop-only">
             {pathname === '/' && (
               <nav className="dashboard-nav">
-                {/* Navegación dinámica para el Home */}
                 <a href="#agenda" className={activeSection === 'agenda' ? 'active' : ''}>Eventos</a>
                 <a href="#cursando" className={activeSection === 'cursando' ? 'active' : ''}>Cursando</a>
                 <a href="#progreso" className={activeSection === 'progreso' ? 'active' : ''}>Progreso</a>
@@ -84,12 +109,10 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           </div>
 
           <div className="header-actions desktop-only">
-            {/* El botón de ayuda ahora solo es visible en la vista del Plan */}
             {pathname === '/plan' && (
               <button className="help-btn" onClick={() => setIsModalOpen(true)}>?</button>
             )}
             <a href="https://cafecito.app/mateogeffroy" target="_blank" rel="noopener noreferrer" className="cafecito-btn header-cafecito">Cafecito</a>
-            {/* Botón de logout ahora funciona perfecto */}
             <button className="btn-danger header-cafecito" onClick={handleLogout}>Cerrar sesión</button>
           </div>
 
