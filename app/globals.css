@@ -1030,3 +1030,43 @@ html {
     transform: translate(-50%, 0);
   }
 }
+
+/* --- ESTILOS MODERNOS PARA EL DASHBOARD --- */
+
+html {
+  scroll-behavior: smooth; /* Hace que al tocar la barra de nav baje suavecito */
+}
+
+/* Tarjeta de Evento (Agenda) */
+.event-card-modern {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 18px 24px;
+  borderRadius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.event-card-modern:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--cursando);
+  transform: translateX(8px); /* Se desliza un poquito a la derecha */
+}
+
+/* Tarjeta Premium (Materias Cursando) */
+.premium-card {
+  background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 30px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efecto rebote */
+  backdrop-filter: blur(10px);
+}
+
+.premium-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--cursando);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(var(--cursando-rgb), 0.2);
+}

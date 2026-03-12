@@ -109,9 +109,20 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           </div>
 
           <div className="header-actions desktop-only">
+            {/* Si estamos en el Home, mostramos el botón al Plan */}
+            {pathname === '/' && (
+              <Link href="/plan" style={{ textDecoration: 'none' }}>
+                <button className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem', marginRight: '10px' }}>
+                  Plan de estudios 🚀
+                </button>
+              </Link>
+            )}
+
+            {/* Si estamos en el Plan, mostramos la ayuda */}
             {pathname === '/plan' && (
               <button className="help-btn" onClick={() => setIsModalOpen(true)}>?</button>
             )}
+            
             <a href="https://cafecito.app/mateogeffroy" target="_blank" rel="noopener noreferrer" className="cafecito-btn header-cafecito">Cafecito</a>
             <button className="btn-danger header-cafecito" onClick={handleLogout}>Cerrar sesión</button>
           </div>
@@ -122,7 +133,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         </div>
       </header>
 
-      <WelcomeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+    <WelcomeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       {children}
     </>
   );
