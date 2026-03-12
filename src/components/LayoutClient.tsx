@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation'; // <-- Agregamos useRouter
 import WelcomeModal from './WelcomeModal';
 import { supabase } from '../lib/supabase';
 
@@ -10,7 +10,9 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  
   const pathname = usePathname();
+  const router = useRouter(); // <-- Inicializamos el router
 
   // Lógica para resaltar la sección activa en el Dashboard
   useEffect(() => {
@@ -39,8 +41,11 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
   if (pathname === '/login') return <>{children}</>;
 
+  // Función de logout actualizada con redirección
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    router.push('/login'); // Redirige al login
+    router.refresh(); // Limpia la caché de Next.js por seguridad
   };
 
   return (
@@ -84,6 +89,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               <button className="help-btn" onClick={() => setIsModalOpen(true)}>?</button>
             )}
             <a href="https://cafecito.app/mateogeffroy" target="_blank" rel="noopener noreferrer" className="cafecito-btn header-cafecito">Cafecito</a>
+            {/* Botón de logout ahora funciona perfecto */}
             <button className="btn-danger header-cafecito" onClick={handleLogout}>Cerrar sesión</button>
           </div>
 
