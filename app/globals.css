@@ -949,3 +949,84 @@ html {
   opacity: 0.8;
   flex-shrink: 0;
 }
+/* ── ESTILOS PARA EL TOOLTIP PERSONALIZADO DEL CALENDARIO ── */
+
+.calendar-tooltip-card {
+  position: absolute;
+  /* Lo ubicamos justo arriba de la celda del día */
+  bottom: calc(100% + 10px); 
+  left: 50%;
+  transform: translateX(-50%); 
+  
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  z-index: 1100;
+  pointer-events: none; 
+  
+  width: max-content;
+  max-width: 260px;
+  text-align: left;
+  
+  animation: calendarTooltipFadeIn 0.2s ease-out;
+}
+
+/* Triangulito que apunta al día */
+.calendar-tooltip-card::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--border) transparent transparent transparent;
+}
+
+.tooltip-title {
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.tooltip-event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tooltip-event-item {
+  border-left: 3px solid var(--cursando);
+  padding-left: 10px;
+}
+
+.tooltip-materia-name {
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: normal;
+  line-height: 1.2;
+}
+
+.tooltip-event-type {
+  color: var(--muted);
+  font-size: 0.7rem;
+  margin-top: 3px;
+}
+
+/* Animación arreglada para el nuevo transform */
+@keyframes calendarTooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
