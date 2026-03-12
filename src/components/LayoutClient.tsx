@@ -9,7 +9,7 @@ import { supabase } from '../lib/supabase';
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('');
+  const [activeSection, setActiveSection] = useState('agenda');
   
   const pathname = usePathname();
   const router = useRouter(); 
@@ -33,6 +33,8 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         }
       }
     };
+
+    handleScroll();
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);

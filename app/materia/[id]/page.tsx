@@ -13,11 +13,11 @@ export default function MateriaPage() {
   const hoy = new Date().toISOString().split('T')[0];
 
   // Estados para el formulario de nuevo evento
-    const [nuevoEvento, setNuevoEvento] = useState({
-        nombre: '',
-        tipo: 'Parcial',
-        fecha: hoy // Ahora el calendario nativo arranca parado en hoy
-    });
+  const [nuevoEvento, setNuevoEvento] = useState({
+    nombre: '',
+    tipo: 'Parcial',
+    fecha: hoy // Arranca parado en hoy
+  });
 
   // Buscamos la materia en la base de datos local
   const materia = getSubjectById(id);
@@ -27,9 +27,9 @@ export default function MateriaPage() {
 
   if (!materia) {
     return (
-      <div style={{ textAlign: 'center', padding: '100px 20px', color: 'white' }}>
+      <div style={{ textAlign: 'center', paddingTop: '150px', paddingBottom: '100px', color: 'white' }}>
         <h2>Materia no encontrada</h2>
-        <button className="btn-primary" onClick={() => router.push('/')} style={{ marginTop: '20px' }}>
+        <button className="btn-primary" onClick={() => router.push('/')} style={{ marginTop: '20px', padding: '10px 20px', borderRadius: '6px' }}>
           Volver al Inicio
         </button>
       </div>
@@ -42,7 +42,7 @@ export default function MateriaPage() {
     if (!nuevoEvento.nombre || !nuevoEvento.fecha) return;
 
     const eventoParaGuardar = {
-      id: crypto.randomUUID(), // Generamos un ID único rápido
+      id: crypto.randomUUID(), 
       ...nuevoEvento
     };
 
@@ -52,7 +52,7 @@ export default function MateriaPage() {
     actualizarDetalleMateria(id as string, { ...detalles[id as string], eventos: nuevosEventos });
     
     // Limpiamos el formulario
-    setNuevoEvento({ nombre: '', tipo: 'Parcial', fecha: '' });
+    setNuevoEvento({ nombre: '', tipo: 'Parcial', fecha: hoy });
   };
 
   // Manejador para borrar un evento
@@ -62,44 +62,45 @@ export default function MateriaPage() {
   };
 
   return (
-    <main style={{ padding: '40px 20px', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px', minHeight: '100vh' }}>
+    <main style={{ paddingTop: '120px', paddingBottom: '40px', paddingLeft: '20px', paddingRight: '20px', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '40px', minHeight: '100vh' }}>
       
-      {/* Botón de regreso */}
+      {/* Botón de regreso centrado en la usabilidad */}
       <div>
         <button 
-          onClick={() => router.push('/')} 
-          style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '1rem' }}
+          onClick={() => router.push('/#cursando')} 
+          className="btn-primary"
+          style={{ padding: '10px 20px', borderRadius: '6px', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem' }}
         >
-          ← Volver al Dashboard
+          ← Volver al inicio
         </button>
       </div>
 
-      {/* Cabecera de la Materia */}
-      <header style={{ borderBottom: '1px solid var(--border)', paddingBottom: '20px' }}>
-        <h1 style={{ color: 'white', fontSize: '2.5rem', marginBottom: '10px' }}>{materia.name}</h1>
-        <div style={{ display: 'flex', gap: '15px', color: 'var(--muted)', fontFamily: 'Space Mono', fontSize: '0.9rem' }}>
+      {/* Título de la Materia (Cambiado a <div> para evitar el conflicto CSS) */}
+      <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '20px' }}>
+        <h1 style={{ color: 'white', fontSize: '3rem', marginBottom: '10px', fontWeight: 800 }}>{materia.name}</h1>
+        <div style={{ display: 'flex', gap: '15px', color: 'var(--muted)', fontFamily: 'Space Mono', fontSize: '1rem' }}>
           <span>Nivel: {materia.level || 'Electiva'}</span>
           <span>•</span>
           <span>Carga horaria: {materia.hours}</span>
         </div>
-      </header>
+      </div>
 
       {/* LAYOUT PRINCIPAL: Grid para contenido + Anuncios */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '40px', alignItems: 'start' }}>
         
         {/* COLUMNA IZQUIERDA: Funcionalidad principal */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
           
-          {/* Formulario de Eventos */}
-          <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '12px', padding: '25px' }}>
-            <h2 style={{ color: 'white', fontSize: '1.2rem', marginBottom: '20px' }}>+ Agendar Nuevo Evento</h2>
-            <form onSubmit={handleAgregarEvento} style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+          {/* Contenedor de Formulario Centrado */}
+          <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '12px', padding: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <h2 style={{ color: 'white', fontSize: '1.4rem', marginBottom: '25px', fontWeight: 'bold' }}>+ Agendar Nuevo Evento</h2>
+            <form onSubmit={handleAgregarEvento} style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
               <input 
                 type="text" 
-                placeholder="Ej: 1er Parcial, TP Integrador..." 
+                placeholder="Ej: 1er Parcial..." 
                 value={nuevoEvento.nombre}
                 onChange={(e) => setNuevoEvento({...nuevoEvento, nombre: e.target.value})}
-                style={{ flex: 1, minWidth: '200px', padding: '12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white' }}
+                style={{ flex: 1, minWidth: '200px', maxWidth: '300px', padding: '12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white' }}
                 required
               />
               <select 
@@ -109,13 +110,14 @@ export default function MateriaPage() {
               >
                 <option value="Parcial">Parcial</option>
                 <option value="TP">Trabajo Práctico</option>
+                <option value="Final">Examen Final</option>
+                <option value="Otro">Otro</option>
               </select>
               <input 
                 type="date" 
                 value={nuevoEvento.fecha}
                 onChange={(e) => setNuevoEvento({...nuevoEvento, fecha: e.target.value})}
                 onClick={(e) => {
-                    // Al hacer clic en cualquier lado del input, forzamos a que se abra el calendario
                     if ('showPicker' in HTMLInputElement.prototype) {
                     e.currentTarget.showPicker();
                     }
@@ -123,7 +125,7 @@ export default function MateriaPage() {
                 style={{ padding: '12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white', cursor: 'pointer' }}
                 required
               />
-              <button type="submit" className="btn-primary" style={{ padding: '12px 24px', borderRadius: '6px', fontWeight: 'bold' }}>
+              <button type="submit" className="btn-primary" style={{ padding: '12px 28px', borderRadius: '6px', fontWeight: 'bold' }}>
                 Guardar
               </button>
             </form>
@@ -131,13 +133,15 @@ export default function MateriaPage() {
 
           {/* Lista de Eventos Guardados */}
           <div>
-            <h3 style={{ color: 'var(--cursando)', marginBottom: '15px', fontSize: '1.1rem' }}>📅 Agenda de la materia</h3>
+            <h3 style={{ color: 'var(--cursando)', marginBottom: '15px', fontSize: '1.2rem', fontWeight: 'bold' }}>📅 Agenda de la materia</h3>
             {eventosGuardados.length === 0 ? (
-              <p style={{ color: 'var(--muted)', fontStyle: 'italic' }}>No hay eventos agendados todavía.</p>
+              <p style={{ color: 'var(--muted)', fontStyle: 'italic', background: 'rgba(255, 255, 255, 0.02)', padding: '20px', borderRadius: '8px', border: '1px dashed var(--border)', textAlign: 'center' }}>
+                No hay eventos agendados todavía.
+              </p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {eventosGuardados.map((ev: any) => (
-                  <div key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border)', padding: '15px 20px', borderRadius: '8px' }}>
+                  <div key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border)', padding: '15px 20px', borderRadius: '8px', transition: 'background 0.2s' }}>
                     <div>
                       <div style={{ fontWeight: 'bold', color: 'white', fontSize: '1.1rem' }}>{ev.nombre}</div>
                       <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: '4px' }}>{ev.tipo}</div>
@@ -146,7 +150,7 @@ export default function MateriaPage() {
                       <span style={{ fontFamily: 'Space Mono', color: 'var(--cursando)' }}>{ev.fecha}</span>
                       <button 
                         onClick={() => handleBorrarEvento(ev.id)}
-                        style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '1.2rem' }}
+                        style={{ background: 'rgba(255,0,0,0.1)', border: '1px solid rgba(255,0,0,0.2)', color: '#ff4d4d', cursor: 'pointer', fontSize: '1.2rem', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px' }}
                         title="Borrar evento"
                       >
                         ×
@@ -162,7 +166,6 @@ export default function MateriaPage() {
         {/* COLUMNA DERECHA: Zona de Monetización (AdSense) */}
         <aside style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
-          {/* Bloque Cuadrado (Ideal para Display Ads) */}
           <div style={{ 
             width: '100%', 
             height: '250px', 
@@ -182,7 +185,6 @@ export default function MateriaPage() {
             <span style={{ fontSize: '0.8rem', marginTop: '5px' }}>300 x 250 (AdSense)</span>
           </div>
 
-          {/* Bloque Vertical (Ideal para Skyscraper Ads) */}
           <div style={{ 
             width: '100%', 
             height: '600px', 
