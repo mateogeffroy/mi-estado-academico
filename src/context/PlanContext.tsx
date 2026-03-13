@@ -29,7 +29,6 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     promedio: 0
   });
 
-  // 1. Carga inicial de datos desde Supabase (estado y detalles por separado)
   useEffect(() => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -52,8 +51,10 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     };
     getSession();
-  }, []);
 
+    // Borramos el authListener que estaba acá abajo también
+  }, []);
+  
   const calcularEstadisticas = (currentMaterias: any, currentDetalles: any) => {
     const aprobadasReales = ALL.filter(s => 
       currentMaterias[s.id] === 'aprobada' && 

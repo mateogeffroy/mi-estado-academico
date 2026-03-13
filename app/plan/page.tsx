@@ -199,7 +199,7 @@ export default function PlanDeEstudios() {
         </div>
       )}
 
-      {/* --- BARRA DE ESTADÍSTICAS INFERIOR (Sticky Fix) --- */}
+      {/* --- BARRA DE ESTADÍSTICAS INFERIOR --- */}
       <div className="stats-bar" style={{ position: 'sticky', bottom: 0, zIndex: 900, background: 'var(--bg)' }}>
         <div className="stat">
           <span className="stat-val" style={{ color: 'var(--aprobada)' }}>{stats.aprobadas}</span>
@@ -210,11 +210,11 @@ export default function PlanDeEstudios() {
           <span className="stat-label">cursadas</span>
         </div>
         <div className="stat">
-          <span className="stat-val" style={{ color: 'var(--cursando)' }}>{cursandoCount}</span>
+          <span className="stat-val" style={{ color: 'var(--cursando)' }}>{stats.cursando}</span>
           <span className="stat-label">cursando</span>
         </div>
         <div className="stat">
-          <span className="stat-val" style={{ color: 'var(--muted)' }}>{totalMaterias}</span>
+          <span className="stat-val" style={{ color: 'var(--muted)' }}>{36 + (ALL.filter((s: any) => materias[s.id] === 'aprobada' && s.level && ELECTIVAS[s.level as keyof typeof ELECTIVAS]?.some((e:any) => e.id === s.id)).length)}</span>
           <span className="stat-label">total materias</span>
         </div>
         <div className="progress-bar">

@@ -8,11 +8,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [carrera, setCarrera] = useState('sistemas');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // El login con Google que ya tenías
   const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -20,48 +18,43 @@ export default function LoginPage() {
     });
   };
 
-  // Manejador del formulario de Email/Contraseña
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     if (isRegistering) {
-      // 1. Validamos que las contraseñas coincidan
       if (password !== confirmPassword) {
         setError('Las contraseñas no coinciden');
         setLoading(false);
         return;
       }
       
-      // 2. QUERY DE SUPABASE PARA REGISTRO
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            carrera: carrera // Guardamos la carrera en los metadatos del usuario
-          }
-        }
       });
 
       if (signUpError) {
-        setError(signUpError.message); // Mostramos el error si el mail ya existe o la pass es débil
+        setError(signUpError.message);
       } else {
-        // Supabase por defecto pide confirmar el mail. Si la sesión es null, significa que mandó el correo.
         if (data.session) {
-          window.location.href = '/'; // Si no pide confirmación, lo mandamos adentro
+          // Si no pide confirmación de mail, chequeamos el nombre
+          if (!data.user?.user_metadata?.full_name) {
+            window.location.href = '/onboarding';
+          } else {
+            window.location.href = '/';
+          }
         } else {
           alert('¡Cuenta creada con éxito! Revisá tu casilla de correo para verificar tu cuenta e iniciar sesión.');
-          setIsRegistering(false); // Lo devolvemos a la vista de login
+          setIsRegistering(false);
           setPassword('');
           setConfirmPassword('');
         }
       }
       
     } else {
-      // 3. QUERY DE SUPABASE PARA INICIAR SESIÓN
-      const { error: signInError } = await supabase.auth.signInWithPassword({ 
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ 
         email, 
         password 
       });
@@ -69,12 +62,18 @@ export default function LoginPage() {
       if (signInError) {
         setError('Credenciales incorrectas o cuenta no verificada');
       } else {
-        window.location.href = '/'; // Login exitoso, lo mandamos al Dashboard
+        // Redirección inteligente al iniciar sesión manualmente
+        if (!data.user?.user_metadata?.full_name) {
+          window.location.href = '/onboarding';
+        } else {
+          window.location.href = '/'; 
+        }
       }
     }
     
     setLoading(false);
   };
+
   return (
     <main style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', width: '100%', padding: '20px' }}>
       
@@ -124,21 +123,6 @@ export default function LoginPage() {
                 style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '1rem', outline: 'none' }}
                 required
               />
-              
-              <div style={{ marginTop: '5px' }}>
-                <label style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '8px', display: 'block', marginLeft: '5px' }}>¿Qué carrera estudiás?</label>
-                <select 
-                  value={carrera}
-                  onChange={(e) => setCarrera(e.target.value)}
-                  style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'var(--panel)', color: 'white', fontSize: '1rem', outline: 'none', cursor: 'pointer' }}
-                >
-                  <option value="sistemas">Ingeniería en Sistemas</option>
-                  <option value="civil">Ingeniería Civil</option>
-                  <option value="electrica">Ingeniería Eléctrica</option>
-                  <option value="mecanica">Ingeniería Mecánica</option>
-                  <option value="quimica">Ingeniería Química</option>
-                </select>
-              </div>
             </>
           )}
 
@@ -178,7 +162,6 @@ export default function LoginPage() {
           Google
         </button>
         
-        {/* Toggle Registrarse / Login */}
         <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginTop: '30px', textAlign: 'center' }}>
           {isRegistering ? '¿Ya tenés una cuenta? ' : '¿No tenés una cuenta? '}
           <button 

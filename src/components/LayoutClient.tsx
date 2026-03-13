@@ -10,23 +10,44 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
+  // LA CORTINA: Empezamos asumiendo que estamos chequeando
+  const [isChecking, setIsChecking] = useState(true); 
+  
   const pathname = usePathname();
   const router = useRouter(); 
 
-  // --- PATOVICA (ROUTE GUARD) ---
+  // --- PATOVICA (ROUTE GUARD UNIFICADO) ---
   useEffect(() => {
-    const verificarSesion = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session && pathname !== '/login') {
-        router.push('/login');
+    const checkAccess = (session: any) => {
+      if (!session) {
+        if (pathname !== '/login' && pathname !== '/onboarding') {
+          router.push('/login');
+        } else {
+          setIsChecking(false); // Liberamos la cortina si ya está en login
+        }
+      } else {
+        const hasName = session.user?.user_metadata?.full_name;
+        
+        if (!hasName && pathname !== '/onboarding') {
+          router.push('/onboarding');
+        } else if (hasName && (pathname === '/login' || pathname === '/onboarding')) {
+          router.push('/');
+        } else {
+          setIsChecking(false); // Todo en orden, liberamos la cortina
+        }
       }
     };
 
+    const verificarSesion = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      checkAccess(session);
+    };
     verificarSesion();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session && pathname !== '/login') {
-        router.push('/login');
+      // Si el evento es INITIAL_SESSION no hacemos nada porque ya lo maneja getSession
+      if (event !== 'INITIAL_SESSION') {
+        checkAccess(session);
       }
     });
 
@@ -35,7 +56,21 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     };
   }, [pathname, router]);
 
-  if (pathname === '/login') return <>{children}</>;
+  // Si la cortina está baja, mostramos una pantalla de carga sutil
+  if (isChecking) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--cursando)', fontWeight: 'bold', fontSize: '1.2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+          <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid rgba(0, 229, 255, 0.2)', borderTopColor: 'var(--cursando)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          Verificando sesión...
+          <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+        </div>
+      </div>
+    );
+  }
+
+  // Ocultamos el Layout completo para Login y Onboarding
+  if (pathname === '/login' || pathname === '/onboarding') return <>{children}</>;
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -105,35 +140,33 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         {children}
       </div>
 
-      {pathname !== '/login' && (
-        <footer style={{ background: 'var(--panel)', borderTop: '1px solid var(--border)', padding: '40px 20px', marginTop: 'auto' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'white' }}>
-                Mi Estado <span style={{ color: 'var(--cursando)' }}>Académico</span>
-              </div>
-              <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-                Proyecto independiente para estudiantes de la UTN FRLP. No oficial.
-              </div>
+      <footer style={{ background: 'var(--panel)', borderTop: '1px solid var(--border)', padding: '40px 20px', marginTop: 'auto', position: 'relative', zIndex: 100 }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'white' }}>
+              Mi Estado <span style={{ color: 'var(--cursando)' }}>Académico</span>
             </div>
-
-            <div style={{ display: 'flex', gap: '20px', fontSize: '0.9rem' }}>
-              <Link href="/privacidad" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>
-                Política de Privacidad
-              </Link>
-              <Link href="/terminos" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>
-                Términos y Condiciones
-              </Link>
-            </div>
-
             <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-              © {new Date().getFullYear()} Mateo Geffroy. Todos los derechos reservados.
+              Proyecto independiente para estudiantes de la UTN FRLP. No oficial.
             </div>
-
           </div>
-        </footer>
-      )}
+
+          <div style={{ display: 'flex', gap: '20px', fontSize: '0.9rem' }}>
+            <Link href="/privacidad" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>
+              Política de Privacidad
+            </Link>
+            <Link href="/terminos" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>
+              Términos y Condiciones
+            </Link>
+          </div>
+
+          <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
+            © {new Date().getFullYear()} Mateo Geffroy. Todos los derechos reservados.
+          </div>
+
+        </div>
+      </footer>
     </>
   );
 }
