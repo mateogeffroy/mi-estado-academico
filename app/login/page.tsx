@@ -1,34 +1,171 @@
 'use client';
 
+import { useState } from 'react';
 import { supabase } from '../../src/lib/supabase';
 
-export default function Login() {
-  const handleLogin = async () => {
+export default function LoginPage() {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [carrera, setCarrera] = useState('sistemas');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // El login con Google que ya tenías
+  const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
+      options: { redirectTo: `${window.location.origin}/` },
     });
   };
 
+  // Manejador del formulario de Email/Contraseña
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    if (isRegistering) {
+      // 1. Validamos que las contraseñas coincidan
+      if (password !== confirmPassword) {
+        setError('Las contraseñas no coinciden');
+        setLoading(false);
+        return;
+      }
+      
+      // 2. QUERY DE SUPABASE PARA REGISTRO
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            carrera: carrera // Guardamos la carrera en los metadatos del usuario
+          }
+        }
+      });
+
+      if (signUpError) {
+        setError(signUpError.message); // Mostramos el error si el mail ya existe o la pass es débil
+      } else {
+        // Supabase por defecto pide confirmar el mail. Si la sesión es null, significa que mandó el correo.
+        if (data.session) {
+          window.location.href = '/'; // Si no pide confirmación, lo mandamos adentro
+        } else {
+          alert('¡Cuenta creada con éxito! Revisá tu casilla de correo para verificar tu cuenta e iniciar sesión.');
+          setIsRegistering(false); // Lo devolvemos a la vista de login
+          setPassword('');
+          setConfirmPassword('');
+        }
+      }
+      
+    } else {
+      // 3. QUERY DE SUPABASE PARA INICIAR SESIÓN
+      const { error: signInError } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
+      
+      if (signInError) {
+        setError('Credenciales incorrectas o cuenta no verificada');
+      } else {
+        window.location.href = '/'; // Login exitoso, lo mandamos al Dashboard
+      }
+    }
+    
+    setLoading(false);
+  };
   return (
-    // Centrado absoluto perfecto con Grid
     <main style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', width: '100%', padding: '20px' }}>
       
-      <div className="modal-box" style={{ textAlign: 'center', width: '100%', maxWidth: '420px', padding: '40px', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <div className="logo" style={{ marginBottom: '15px', fontSize: '1.5rem' }}>
-          Plan de estudios <span>dinámico</span>
-        </div>
-        <h3 style={{ color: 'white', marginBottom: '8px', fontSize: '1.5rem' }}>¡Hola de nuevo!</h3>
-        <p style={{ color: 'var(--muted)', marginBottom: '30px', fontSize: '0.95rem', lineHeight: 1.5 }}>
-          Iniciá sesión para guardar tu progreso en la nube y acceder desde cualquier dispositivo.
-        </p>
+      <div className="modal-box" style={{ width: '100%', maxWidth: '420px', padding: '40px', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
         
+        <div className="logo" style={{ marginBottom: '10px', fontSize: '1.5rem', textAlign: 'center' }}>
+          Mi Estado <span>Académico</span>
+        </div>
+        
+        <h3 style={{ color: 'white', marginBottom: '8px', fontSize: '1.5rem', textAlign: 'center' }}>
+          {isRegistering ? 'Creá tu cuenta' : '¡Hola de nuevo!'}
+        </h3>
+        <p style={{ color: 'var(--muted)', marginBottom: '30px', fontSize: '0.95rem', lineHeight: 1.5, textAlign: 'center' }}>
+          {isRegistering 
+            ? 'Registrate para guardar tu progreso en la nube.' 
+            : 'Iniciá sesión para continuar con tu carrera.'}
+        </p>
+
+        {/* --- FORMULARIO DE EMAIL / CONTRASEÑA --- */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '20px' }}>
+          
+          <input 
+            type="email" 
+            placeholder="Tu correo electrónico" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '1rem', outline: 'none' }}
+            required
+          />
+
+          <input 
+            type="password" 
+            placeholder="Contraseña" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '1rem', outline: 'none' }}
+            required
+          />
+
+          {isRegistering && (
+            <>
+              <input 
+                type="password" 
+                placeholder="Confirmar contraseña" 
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '1rem', outline: 'none' }}
+                required
+              />
+              
+              <div style={{ marginTop: '5px' }}>
+                <label style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '8px', display: 'block', marginLeft: '5px' }}>¿Qué carrera estudiás?</label>
+                <select 
+                  value={carrera}
+                  onChange={(e) => setCarrera(e.target.value)}
+                  style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'var(--panel)', color: 'white', fontSize: '1rem', outline: 'none', cursor: 'pointer' }}
+                >
+                  <option value="sistemas">Ingeniería en Sistemas</option>
+                  <option value="civil">Ingeniería Civil</option>
+                  <option value="electrica">Ingeniería Eléctrica</option>
+                  <option value="mecanica">Ingeniería Mecánica</option>
+                  <option value="quimica">Ingeniería Química</option>
+                </select>
+              </div>
+            </>
+          )}
+
+          {error && <div style={{ color: '#ef4444', fontSize: '0.85rem', textAlign: 'center', background: 'rgba(239, 68, 68, 0.1)', padding: '10px', borderRadius: '8px' }}>{error}</div>}
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="btn-primary" 
+            style={{ width: '100%', padding: '14px', fontSize: '1.05rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', marginTop: '10px', opacity: loading ? 0.7 : 1 }}
+          >
+            {loading ? 'Cargando...' : (isRegistering ? 'Registrarme' : 'Ingresar')}
+          </button>
+        </form>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '20px 0', color: 'var(--muted)', fontSize: '0.9rem' }}>
+          <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+          <span>o continuá con</span>
+          <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+        </div>
+
+        {/* --- BOTÓN DE GOOGLE --- */}
         <button 
-          className="btn-primary" 
-          onClick={handleLogin} 
-          style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '14px', fontSize: '1.05rem', marginBottom: '20px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', transition: 'transform 0.2s' }}
+          onClick={handleGoogleLogin} 
+          style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '14px', fontSize: '1.05rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', transition: 'background 0.2s' }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
         >
           <div style={{ background: 'white', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="18" height="18" viewBox="0 0 24 24">
@@ -38,16 +175,20 @@ export default function Login() {
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 12-4.53z" fill="#EA4335"/>
             </svg>
           </div>
-          Continuar con Google
+          Google
         </button>
         
-        <div style={{ fontSize: '0.8rem', color: 'var(--muted)', padding: '15px 0', lineHeight: 1.5 }}>
-          Si no dispones de una cuenta de Google, podés enviarme un mail a 
-          <b style={{ color: 'var(--text)' }}> mateogeffroy.dev@gmail.com</b>.
+        {/* Toggle Registrarse / Login */}
+        <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginTop: '30px', textAlign: 'center' }}>
+          {isRegistering ? '¿Ya tenés una cuenta? ' : '¿No tenés una cuenta? '}
+          <button 
+            onClick={() => { setIsRegistering(!isRegistering); setError(''); }}
+            style={{ background: 'transparent', border: 'none', color: 'var(--cursando)', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}
+          >
+            {isRegistering ? 'Iniciá sesión acá' : 'Registrate gratis'}
+          </button>
         </div>
-        <div style={{ fontSize: '0.8rem', color: 'var(--muted)', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '15px', marginTop: '5px', lineHeight: 1.5 }}>
-          Para apoyar el mantenimiento de este proyecto gratuito, considerá invitarme a un cafecito.
-        </div>
+
       </div>
     </main>
   );

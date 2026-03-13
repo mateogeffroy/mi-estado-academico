@@ -9,44 +9,14 @@ import { supabase } from '../lib/supabase';
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('agenda');
   
   const pathname = usePathname();
   const router = useRouter(); 
 
-  // --- Lógica para resaltar la sección activa en el Dashboard ---
-  useEffect(() => {
-    if (pathname !== '/') return;
-
-    const handleScroll = () => {
-      const sections = ['agenda', 'cursando', 'progreso'];
-      const scrollPosition = window.scrollY + 150; 
-
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const { offsetTop, offsetHeight } = element;
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setActiveSection(section);
-            break;
-          }
-        }
-      }
-    };
-
-    handleScroll();
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [pathname]);
-
   // --- PATOVICA (ROUTE GUARD) ---
   useEffect(() => {
-    // Verificamos si hay sesión activa al cargar la página
     const verificarSesion = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
-      // Si no hay sesión y no estamos en la página de login, lo pateamos al login
       if (!session && pathname !== '/login') {
         router.push('/login');
       }
@@ -54,7 +24,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
     verificarSesion();
 
-    // Nos suscribimos a cambios (ej: si se le vence la sesión o cierra desde otra pestaña)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session && pathname !== '/login') {
         router.push('/login');
@@ -65,15 +34,12 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       subscription.unsubscribe();
     };
   }, [pathname, router]);
-  // ------------------------------
 
   if (pathname === '/login') return <>{children}</>;
 
-  // Función de logout con redirección
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/login'); 
-    router.refresh(); 
+    window.location.href = '/login'; 
   };
 
   return (
@@ -92,13 +58,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           </div>
 
           <div className="header-center desktop-only">
-            {pathname === '/' && (
-              <nav className="dashboard-nav">
-                <a href="#agenda" className={activeSection === 'agenda' ? 'active' : ''}>Eventos</a>
-                <a href="#cursando" className={activeSection === 'cursando' ? 'active' : ''}>Cursando</a>
-                <a href="#progreso" className={activeSection === 'progreso' ? 'active' : ''}>Progreso</a>
-              </nav>
-            )}
             {pathname === '/plan' && (
               <div className="legend">
                 <div className="legend-item"><div className="legend-dot ld-disabled"></div>Bloqueada</div>
@@ -111,21 +70,26 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           </div>
 
           <div className="header-actions desktop-only">
-            {/* Si estamos en el Home, mostramos el botón al Plan */}
-            {pathname === '/' && (
+            {pathname !== '/plan' && (
               <Link href="/plan" style={{ textDecoration: 'none' }}>
-                <button className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem', marginRight: '10px' }}>
-                  Plan de estudios 🚀
+                <button className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem', marginRight: '5px' }}>
+                  🚀 Plan
                 </button>
               </Link>
             )}
 
-            {/* Si estamos en el Plan, mostramos la ayuda */}
+            {pathname !== '/cursada' && (
+              <Link href="/cursada" style={{ textDecoration: 'none' }}>
+                <button style={{ padding: '7px 15px', fontSize: '0.9rem', marginRight: '15px', borderRadius: '6px', background: 'transparent', border: '1px solid var(--border)', color: 'white', cursor: 'pointer' }} onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--cursando)'} onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--border)'}>
+                  🎒 Cursada
+                </button>
+              </Link>
+            )}
+
             {pathname === '/plan' && (
-              <button className="help-btn" onClick={() => setIsModalOpen(true)}>?</button>
+              <button className="help-btn" onClick={() => setIsModalOpen(true)} style={{ marginRight: '15px' }}>?</button>
             )}
             
-            <a href="https://cafecito.app/mateogeffroy" target="_blank" rel="noopener noreferrer" className="cafecito-btn header-cafecito">Cafecito</a>
             <button className="btn-danger header-cafecito" onClick={handleLogout}>Cerrar sesión</button>
           </div>
 
@@ -135,8 +99,41 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         </div>
       </header>
 
-    <WelcomeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      {children}
+      <WelcomeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      
+      <div style={{ minHeight: '80vh' }}>
+        {children}
+      </div>
+
+      {pathname !== '/login' && (
+        <footer style={{ background: 'var(--panel)', borderTop: '1px solid var(--border)', padding: '40px 20px', marginTop: 'auto' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'white' }}>
+                Mi Estado <span style={{ color: 'var(--cursando)' }}>Académico</span>
+              </div>
+              <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
+                Proyecto independiente para estudiantes de la UTN FRLP. No oficial.
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '20px', fontSize: '0.9rem' }}>
+              <Link href="/privacidad" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>
+                Política de Privacidad
+              </Link>
+              <Link href="/terminos" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>
+                Términos y Condiciones
+              </Link>
+            </div>
+
+            <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
+              © {new Date().getFullYear()} Mateo Geffroy. Todos los derechos reservados.
+            </div>
+
+          </div>
+        </footer>
+      )}
     </>
   );
 }

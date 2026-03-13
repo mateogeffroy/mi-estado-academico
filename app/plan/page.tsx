@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
-import { SUBJECTS, ELECTIVAS, getSubjectById } from '../../src/lib/data';
+import { SUBJECTS, ELECTIVAS, getSubjectById, ALL } from '../../src/lib/data';
 
 export default function PlanDeEstudios() {
   const { materias, cambiarEstadoMateria, stats } = usePlan();
@@ -84,7 +84,6 @@ export default function PlanDeEstudios() {
     let x = e.clientX + 12;
     let y = e.clientY + 12;
 
-    // Evitar que el tooltip se salga de la pantalla por la derecha o abajo
     if (x + 220 > window.innerWidth) x = e.clientX - 230;
     if (y + 150 > window.innerHeight) y = e.clientY - 160;
     if (x < 12) x = 12;
@@ -102,7 +101,6 @@ export default function PlanDeEstudios() {
     setTooltip(prev => ({ ...prev, visible: false }));
   };
 
-  // --- RENDERIZADO DE MATERIAS ---
   const renderCard = (subject: any) => (
     <div
       key={subject.id}
@@ -127,46 +125,61 @@ export default function PlanDeEstudios() {
     </div>
   );
 
+  // --- CÁLCULOS DINÁMICOS PARA LA BARRA INFERIOR ---
+  const cursandoCount = ALL.filter((s: any) => materias[s.id] === 'cursando').length;
+  
+  const electivasAprobadas = ALL.filter((s: any) => 
+    materias[s.id] === 'aprobada' && 
+    s.level && 
+    ELECTIVAS[s.level as keyof typeof ELECTIVAS]?.some((e:any) => e.id === s.id)
+  ).length;
+  
+  const totalMaterias = 36 + electivasAprobadas;
+
   return (
-    <main id="main-content">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <div className="header-titles">
-          <h1 className="logo">Plan de estudios <span>dinámico</span></h1>
-        </div>
-        <Link href="/">
-          <button className="btn-secondary">← Volver al Dashboard</button>
-        </Link>
-      </div>
-
-      {levels.map(lvl => {
-        const materiasObligatorias = SUBJECTS.filter((s: any) => s.level === lvl && !s.isElective && !s.isElectivePlaceholder);
-        const electivas = ELECTIVAS[lvl as keyof typeof ELECTIVAS] || [];
-        const placeholders = SUBJECTS.filter((s: any) => s.level === lvl && s.isElectivePlaceholder);
-
-        return (
-          <div key={lvl} className="level-section">
-            <div className="level-header" style={{ color: `var(--n${lvl})` }}>
-              <div className="level-badge" style={{ borderColor: `var(--n${lvl})` }}>Nivel {lvl}</div>
-              <button className="mark-all-btn" onClick={() => marcarNivel(lvl)}>Marcar todas</button>
-              <div className="level-line" style={{ backgroundColor: `var(--n${lvl})` }}></div>
-            </div>
-            
-            <div className="subject-grid">
-              {materiasObligatorias.map(renderCard)}
-              {placeholders.map(renderCard)}
-            </div>
-
-            {electivas.length > 0 && (
-              <>
-                <div className="electivas-level-label" style={{ marginTop: '24px' }}>Electivas</div>
-                <div className="subject-grid">
-                  {electivas.map(renderCard)}
-                </div>
-              </>
-            )}
+    <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      
+      {/* Contenedor principal del plan (ocupa todo el espacio disponible) */}
+      <div style={{ flex: 1, paddingBottom: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+          <div className="header-titles">
+            <h1 className="logo">Plan de estudios <span>dinámico</span></h1>
           </div>
-        );
-      })}
+          <Link href="/">
+            <button className="btn-secondary">← Volver al Dashboard</button>
+          </Link>
+        </div>
+
+        {levels.map(lvl => {
+          const materiasObligatorias = SUBJECTS.filter((s: any) => s.level === lvl && !s.isElective && !s.isElectivePlaceholder);
+          const electivas = ELECTIVAS[lvl as keyof typeof ELECTIVAS] || [];
+          const placeholders = SUBJECTS.filter((s: any) => s.level === lvl && s.isElectivePlaceholder);
+
+          return (
+            <div key={lvl} className="level-section">
+              <div className="level-header" style={{ color: `var(--n${lvl})` }}>
+                <div className="level-badge" style={{ borderColor: `var(--n${lvl})` }}>Nivel {lvl}</div>
+                <button className="mark-all-btn" onClick={() => marcarNivel(lvl)}>Marcar todas</button>
+                <div className="level-line" style={{ backgroundColor: `var(--n${lvl})` }}></div>
+              </div>
+              
+              <div className="subject-grid">
+                {materiasObligatorias.map(renderCard)}
+                {placeholders.map(renderCard)}
+              </div>
+
+              {electivas.length > 0 && (
+                <>
+                  <div className="electivas-level-label" style={{ marginTop: '24px' }}>Electivas</div>
+                  <div className="subject-grid">
+                    {electivas.map(renderCard)}
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
       <button 
         id="btn-scroll-top" 
@@ -177,7 +190,6 @@ export default function PlanDeEstudios() {
         ↑
       </button>
 
-      {/* Tooltip renderizado condicionalmente */}
       {tooltip.visible && (
         <div 
           className="tooltip show" 
@@ -186,8 +198,9 @@ export default function PlanDeEstudios() {
           {tooltip.content}
         </div>
       )}
-      {/* Barra de Estadísticas Inferior */}
-      <div className="stats-bar">
+
+      {/* --- BARRA DE ESTADÍSTICAS INFERIOR (Sticky Fix) --- */}
+      <div className="stats-bar" style={{ position: 'sticky', bottom: 0, zIndex: 900, background: 'var(--bg)' }}>
         <div className="stat">
           <span className="stat-val" style={{ color: 'var(--aprobada)' }}>{stats.aprobadas}</span>
           <span className="stat-label">aprobadas</span>
@@ -197,7 +210,11 @@ export default function PlanDeEstudios() {
           <span className="stat-label">cursadas</span>
         </div>
         <div className="stat">
-          <span className="stat-val" style={{ color: 'var(--muted)' }}>{stats.total}</span>
+          <span className="stat-val" style={{ color: 'var(--cursando)' }}>{cursandoCount}</span>
+          <span className="stat-label">cursando</span>
+        </div>
+        <div className="stat">
+          <span className="stat-val" style={{ color: 'var(--muted)' }}>{totalMaterias}</span>
           <span className="stat-label">total materias</span>
         </div>
         <div className="progress-bar">
@@ -210,7 +227,6 @@ export default function PlanDeEstudios() {
           style={{ display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 12px', marginLeft: 'auto', flex: '0 1 auto' }} 
           onClick={() => {
             if(confirm('¿Estás seguro de que querés borrar todo tu progreso?')) {
-              // Por ahora, recargar la página limpia el estado de React en memoria
               window.location.reload(); 
             }
           }}

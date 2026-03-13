@@ -12,18 +12,19 @@ export default function MateriaPage() {
   const { detalles, actualizarDetalleMateria } = usePlan();
   const hoy = new Date().toISOString().split('T')[0];
 
+  // Buscamos la materia en la base de datos local
+  const materia = getSubjectById(id);
+  
+  // Obtenemos los eventos guardados y LA COMISIÓN en Supabase/Local
+  const eventosGuardados = detalles[id as string]?.eventos || [];
+  const comisionGuardada = detalles[id as string]?.comision || ''; // Estado de la comisión elegida
+
   // Estados para el formulario de nuevo evento
   const [nuevoEvento, setNuevoEvento] = useState({
     nombre: '',
     tipo: 'Parcial',
     fecha: hoy // Arranca parado en hoy
   });
-
-  // Buscamos la materia en la base de datos local
-  const materia = getSubjectById(id);
-  
-  // Obtenemos los eventos guardados en Supabase o inicializamos un array vacío
-  const eventosGuardados = detalles[id as string]?.eventos || [];
 
   if (!materia) {
     return (
@@ -35,6 +36,14 @@ export default function MateriaPage() {
       </div>
     );
   }
+
+  // --- NUEVO: Manejador para guardar la comisión seleccionada ---
+  const handleSeleccionarComision = (comisionId: string) => {
+    actualizarDetalleMateria(id as string, { 
+      ...detalles[id as string], 
+      comision: comisionId 
+    });
+  };
 
   // Manejador para guardar un evento nuevo
   const handleAgregarEvento = (e: React.FormEvent) => {
@@ -75,7 +84,7 @@ export default function MateriaPage() {
         </button>
       </div>
 
-      {/* Título de la Materia (Cambiado a <div> para evitar el conflicto CSS) */}
+      {/* Título de la Materia */}
       <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '20px' }}>
         <h1 style={{ color: 'white', fontSize: '3rem', marginBottom: '10px', fontWeight: 800 }}>{materia.name}</h1>
         <div style={{ display: 'flex', gap: '15px', color: 'var(--muted)', fontFamily: 'Space Mono', fontSize: '1rem' }}>
@@ -91,6 +100,49 @@ export default function MateriaPage() {
         {/* COLUMNA IZQUIERDA: Funcionalidad principal */}
         <section style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
           
+          {/* --- NUEVA SECCIÓN: Selección de Comisión de Cursada --- */}
+          {materia.comisiones && materia.comisiones.length > 0 && (
+            <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '12px', padding: '30px' }}>
+              <h2 style={{ color: 'white', fontSize: '1.4rem', marginBottom: '20px', fontWeight: 'bold' }}>🕒 Horarios de Cursada</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <label style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>Seleccioná tu comisión para organizar tus horarios:</label>
+                
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
+                  {materia.comisiones.map((comision: any) => (
+                    <button
+                      key={comision.id}
+                      onClick={() => handleSeleccionarComision(comision.id)}
+                      style={{
+                        flex: '1 1 200px', // Se adapta al espacio disponible
+                        padding: '16px',
+                        borderRadius: '10px',
+                        border: comisionGuardada === comision.id ? '2px solid var(--cursando)' : '1px solid var(--border)',
+                        background: comisionGuardada === comision.id ? 'rgba(59, 130, 246, 0.1)' : 'var(--bg)',
+                        color: 'white',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <span style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '10px', color: comisionGuardada === comision.id ? 'var(--cursando)' : 'white' }}>
+                        Comisión {comision.id}
+                      </span>
+                      {comision.dias.map((dia: any, index: number) => (
+                        <div key={index} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '6px' }}>
+                          <span style={{ color: 'white' }}>{dia.nombre}</span>
+                          <span>{dia.inicio} - {dia.fin}</span>
+                        </div>
+                      ))}
+                    </button>
+                  ))}
+                </div>
+
+              </div>
+            </div>
+          )}
+
           {/* Contenedor de Formulario Centrado */}
           <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '12px', padding: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <h2 style={{ color: 'white', fontSize: '1.4rem', marginBottom: '25px', fontWeight: 'bold' }}>+ Agendar Nuevo Evento</h2>
