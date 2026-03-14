@@ -230,7 +230,7 @@ const SUBJECTS = [
     ]
   },
   { 
-    id:25, num:'25', name:'Ingeniería y Calidad de Software', hours:'3 hs/sem', level:4, correlCursada:[19,20,23], correlAprobada:[13,14],
+    id:25, num:'25', name:'Ingeniería y Calidad de Software (1°Cuatr.)', hours:'3 hs/sem', level:4, correlCursada:[19,20,23], correlAprobada:[13,14],
     comisiones: [
       { id: 'S41', dias: [{ nombre: 'Lunes', inicio: '18:00', fin: '22:30' }] },
       { id: 'S42', dias: [{ nombre: 'Lunes', inicio: '08:00', fin: '12:30' }] }

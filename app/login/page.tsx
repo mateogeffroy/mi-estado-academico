@@ -122,7 +122,7 @@ export default function AuthPage() {
           }}>
             
             <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-              <h1 className="logo" style={{ fontSize: '2.5rem', marginBottom: '10px', lineHeight: '1.1' }}>
+              <h1 className="logo" style={{ fontSize: '1.75rem', marginBottom: '10px', lineHeight: '1.1' }}>
                 <span style={{ color: 'white' }}>Mi Estado</span><br />
                 <span style={{ color: 'var(--cursando)' }}>Académico</span>
               </h1>
