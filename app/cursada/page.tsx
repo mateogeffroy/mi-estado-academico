@@ -161,7 +161,6 @@ export default function CursadaPage() {
   return (
     <>
       <style>{`
-        /* 🔥 ESTILO CORREGIDO PARA LAS FLECHAS DEL CALENDARIO */
         .calendar-nav-btn {
           background: transparent;
           border: none;
@@ -276,7 +275,8 @@ export default function CursadaPage() {
         </div>
 
         {/* --- AGENDA Y CALENDARIO --- */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '40px', alignItems: 'flex-start' }}>
+        {/* 🔥 SOLUCIÓN #2: minmax ajustado a 320px máximo para que no desborde en iPhone 11 Pro */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '40px', alignItems: 'flex-start' }}>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', fontWeight: 'bold' }}>📅 Próximos Parciales</h3>
@@ -303,10 +303,10 @@ export default function CursadaPage() {
             </div>
           </div>
 
-          <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '24px', padding: '30px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+          {/* 🔥 SOLUCIÓN #2: Padding dinámico con clamp() */}
+          <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '24px', padding: 'clamp(15px, 5vw, 30px)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-              {/* FLECHA IZQUIERDA */}
               <button onClick={handlePrevMonth} className="calendar-nav-btn" title="Mes anterior">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
               </button>
@@ -315,17 +315,17 @@ export default function CursadaPage() {
                 {nombreMesActual}
               </h2>
               
-              {/* FLECHA DERECHA */}
               <button onClick={handleNextMonth} className="calendar-nav-btn" title="Mes siguiente">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '15px', fontWeight: 'bold' }}>
+            {/* 🔥 SOLUCIÓN #2: Gaps y tamaños de fuente dinámicos */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 'clamp(4px, 1.5vw, 10px)', textAlign: 'center', fontSize: 'clamp(0.65rem, 2vw, 0.8rem)', color: 'var(--muted)', marginBottom: '15px', fontWeight: 'bold' }}>
               <span>DOM</span><span>LUN</span><span>MAR</span><span>MIE</span><span>JUE</span><span>VIE</span><span>SAB</span>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px', textAlign: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 'clamp(4px, 1.5vw, 10px)', textAlign: 'center' }}>
               {Array.from({ length: primerDiaDelMes }).map((_, i) => <div key={`empty-${i}`} />)}
               {Array.from({ length: diasDelMes }, (_, i) => {
                 const dia = i + 1;
@@ -352,7 +352,7 @@ export default function CursadaPage() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '1rem', 
+                      fontSize: 'clamp(0.85rem, 3vw, 1rem)', /* 🔥 SOLUCIÓN #2 */
                       borderRadius: '12px',
                       background: esHoy ? 'var(--cursando)' : (tieneEvento ? 'rgba(255,255,255,0.03)' : 'transparent'), 
                       color: esHoy ? 'black' : 'var(--text)',
