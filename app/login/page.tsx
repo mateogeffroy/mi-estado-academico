@@ -78,7 +78,6 @@ export default function AuthPage() {
     }
   };
 
-  // Función para scrollear a la info
   const scrollToInfo = () => {
     document.getElementById('info-section')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -94,40 +93,112 @@ export default function AuthPage() {
         .scroll-arrow {
           animation: bounce 2s infinite;
         }
+
+        /* --- ESTILOS BASE COMPARTIDOS --- */
+        .login-section {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          position: relative;
+          box-sizing: border-box;
+        }
+        .login-box {
+          background: var(--panel);
+          border: 1px solid var(--border);
+          border-radius: 24px;
+          width: 100%;
+          max-width: 550px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          z-index: 10;
+          box-sizing: border-box;
+        }
+        .input-field {
+          width: 100%;
+          box-sizing: border-box;
+          padding: 15px;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          background: var(--bg);
+          color: white;
+          font-size: 1rem;
+          outline: none;
+        }
+        .arrow-container {
+          cursor: pointer;
+          color: var(--muted);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+        }
+        .responsive-title {
+          margin-bottom: 10px;
+          line-height: 1.1;
+        }
+
+        /* --- ESTILOS PARA PC --- */
+        @media (min-width: 769px) {
+          .login-section {
+            justify-content: center;
+            padding: 20px;
+          }
+          .login-box {
+            padding: 40px;
+            margin-top: auto;
+            margin-bottom: auto;
+          }
+          .responsive-title {
+            font-size: 2.5rem;
+          }
+          .arrow-container {
+            margin-top: auto;
+            padding-bottom: 80px;
+          }
+        }
+
+        /* --- ESTILOS PARA CELULAR --- */
+        @media (max-width: 768px) {
+          .login-section {
+            justify-content: flex-start; /* Empieza desde arriba */
+            padding: 30px 15px 15px 15px; /* Menos espacio arriba para que entre bien */
+          }
+          .login-box {
+            padding: 25px 15px;
+            margin-top: 0;
+            margin-bottom: 40px;
+          }
+          .responsive-title {
+            font-size: 1.8rem; /* Tamaño ajustado para iPhone */
+          }
+          .arrow-container {
+            margin-top: auto;
+            padding-bottom: 30px;
+          }
+          .input-field {
+            padding: 12px; /* Inputs un poquito más finos en celular */
+          }
+        }
       `}</style>
 
       <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         
         {/* ========================================================= */}
-        {/* SECCIÓN 1: EL LOGIN (Pantalla completa)                     */}
+        {/* SECCIÓN 1: EL LOGIN                                       */}
         {/* ========================================================= */}
-        <section style={{ 
-          minHeight: '100vh', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center', // Centrado perfecto con Flexbox
-          padding: '15px', 
-          boxSizing: 'border-box',
-          position: 'relative'
-        }}>
+        <section className="login-section">
           
-          <div style={{
-            background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '24px',
-            padding: 'clamp(20px, 5vw, 40px)', 
-            maxWidth: '550px', width: '100%',
-            boxSizing: 'border-box',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-            display: 'flex', flexDirection: 'column', gap: '20px', zIndex: 10
-            // Eliminamos marginTop y marginBottom 'auto' para que justifyContent se encargue del centrado
-          }}>
+          <div className="login-box">
             
             <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-              <h1 className="logo" style={{ fontSize: 'clamp(1.8rem, 6vw, 2.5rem)', marginBottom: '10px', lineHeight: '1.1' }}>
+              <h1 className="logo responsive-title">
                 <span style={{ color: 'white' }}>Mi Estado</span><br />
                 <span style={{ color: 'var(--cursando)' }}>Académico</span>
               </h1>
-              <p style={{ color: 'var(--muted)', fontSize: 'clamp(0.9rem, 3vw, 1.1rem)', margin: 0 }}>
+              <p style={{ color: 'var(--muted)', fontSize: '1rem', margin: 0 }}>
                 {isLogin ? 'Bienvenido de vuelta, futuro colega.' : 'Creá tu cuenta para empezar a trackear.'}
               </p>
             </div>
@@ -142,7 +213,7 @@ export default function AuthPage() {
                 <input 
                   type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                   placeholder="alumno@frlp.utn.edu.ar"
-                  style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white', fontSize: '1rem', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                  className="input-field"
                   required
                 />
               </div>
@@ -153,7 +224,8 @@ export default function AuthPage() {
                   <input 
                     type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    style={{ width: '100%', boxSizing: 'border-box', padding: '15px', paddingRight: '50px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white', fontSize: '1rem', outline: 'none' }}
+                    className="input-field"
+                    style={{ paddingRight: '50px' }}
                     required
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
@@ -169,7 +241,8 @@ export default function AuthPage() {
                     <input 
                       type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      style={{ width: '100%', boxSizing: 'border-box', padding: '15px', paddingRight: '50px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white', fontSize: '1rem', outline: 'none' }}
+                      className="input-field"
+                      style={{ paddingRight: '50px' }}
                       required
                     />
                     <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
@@ -186,7 +259,7 @@ export default function AuthPage() {
                     const isMet = req.test(password, confirmPassword);
                     return (
                       <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: isMet ? 'white' : 'var(--muted)' }}>
-                        <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: isMet ? '#10b981' : 'transparent', border: `1px solid ${isMet ? '#10b981' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: isMet ? '#10b981' : 'transparent', border: `1px solid ${isMet ? '#10b981' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           {isMet && <span style={{ color: 'black', fontSize: '10px' }}>✓</span>}
                         </div>
                         {req.label}
@@ -231,23 +304,7 @@ export default function AuthPage() {
             </div>
           </div>
 
-          {/* 🔥 SOLUCIÓN: Posición absoluta para que no empuje el formulario hacia arriba */}
-          <div 
-            onClick={scrollToInfo}
-            className="scroll-arrow"
-            style={{ 
-              position: 'absolute',
-              bottom: '20px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              cursor: 'pointer', 
-              color: 'var(--muted)', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: '5px' 
-            }}
-          >
+          <div onClick={scrollToInfo} className="scroll-arrow arrow-container">
             <span style={{ fontSize: '0.9rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Descubrí más</span>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </div>
@@ -255,7 +312,7 @@ export default function AuthPage() {
         </section>
 
         {/* ========================================================= */}
-        {/* SECCIÓN 2: INFORMACIÓN (Landing Page)                       */}
+        {/* SECCIÓN 2: INFORMACIÓN (Landing Page)                     */}
         {/* ========================================================= */}
         <div style={{marginBottom: '120px', width: '100%', boxSizing: 'border-box'}}> 
           <section id="info-section" style={{ padding: '30px 15px', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}>
@@ -263,7 +320,7 @@ export default function AuthPage() {
           <div style={{ textAlign: 'center', maxWidth: '600px' }}>
             <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', color: 'white', marginBottom: '15px' }}>¿Qué podés hacer acá?</h2>
             <p style={{ color: 'var(--muted)', fontSize: 'clamp(1rem, 3vw, 1.2rem)', lineHeight: '1.6' }}>
-              Mi Estado Académico es la herramienta definitiva para que los estudiantes organizen su carrera sin volverse locos con excels o PDFs desactualizados.
+              Mi Estado Académico es la herramienta definitiva para que los estudiantes organicen su carrera sin volverse locos con excels o PDFs desactualizados.
             </p>
           </div>
 
@@ -292,7 +349,6 @@ export default function AuthPage() {
                 Podés seleccionar las comisiones de cursada por cada materia que se encuentre en el estado "cursando" y se plasman los horarios en la página de cursada. A su vez, se pueden agendar eventos que se ven en un calendario.
               </p>
             </div>
-
           </div>
         </section>
         </div>
