@@ -106,25 +106,23 @@ export default function AuthPage() {
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'center', 
-          justifyContent: 'center', 
-          padding: '15px', /* Padding ajustado para dar respiro en móviles */
+          justifyContent: 'center', // Centrado perfecto con Flexbox
+          padding: '15px', 
           boxSizing: 'border-box',
           position: 'relative'
         }}>
           
           <div style={{
             background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '24px',
-            padding: 'clamp(20px, 5vw, 40px)', /* Padding fluido */
+            padding: 'clamp(20px, 5vw, 40px)', 
             maxWidth: '550px', width: '100%',
             boxSizing: 'border-box',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-            display: 'flex', flexDirection: 'column', gap: '20px', zIndex: 10,
-            marginTop: 'auto', 
-            marginBottom: 'auto'
+            display: 'flex', flexDirection: 'column', gap: '20px', zIndex: 10
+            // Eliminamos marginTop y marginBottom 'auto' para que justifyContent se encargue del centrado
           }}>
             
             <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-              {/* 🔥 TÍTULO DINÁMICO: Achica en celular, agranda en PC */}
               <h1 className="logo" style={{ fontSize: 'clamp(1.8rem, 6vw, 2.5rem)', marginBottom: '10px', lineHeight: '1.1' }}>
                 <span style={{ color: 'white' }}>Mi Estado</span><br />
                 <span style={{ color: 'var(--cursando)' }}>Académico</span>
@@ -233,12 +231,15 @@ export default function AuthPage() {
             </div>
           </div>
 
+          {/* 🔥 SOLUCIÓN: Posición absoluta para que no empuje el formulario hacia arriba */}
           <div 
             onClick={scrollToInfo}
             className="scroll-arrow"
             style={{ 
-              marginTop: 'auto', 
-              paddingBottom: '20px', // Reducido el paddingBottom para que la flecha no empuje el formulario hacia arriba
+              position: 'absolute',
+              bottom: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
               cursor: 'pointer', 
               color: 'var(--muted)', 
               display: 'flex', 
@@ -262,7 +263,7 @@ export default function AuthPage() {
           <div style={{ textAlign: 'center', maxWidth: '600px' }}>
             <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', color: 'white', marginBottom: '15px' }}>¿Qué podés hacer acá?</h2>
             <p style={{ color: 'var(--muted)', fontSize: 'clamp(1rem, 3vw, 1.2rem)', lineHeight: '1.6' }}>
-              Mi Estado Académico es la herramienta definitiva para que los estudiantes organicen su carrera sin volverse locos con excels o PDFs desactualizados.
+              Mi Estado Académico es la herramienta definitiva para que los estudiantes organizen su carrera sin volverse locos con excels o PDFs desactualizados.
             </p>
           </div>
 
