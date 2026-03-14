@@ -85,7 +85,6 @@ export default function AuthPage() {
 
   return (
     <>
-      {/* Estilos inyectados para la animación de la flecha */}
       <style>{`
         @keyframes bounce {
           0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
@@ -103,30 +102,34 @@ export default function AuthPage() {
         {/* SECCIÓN 1: EL LOGIN (Pantalla completa)                     */}
         {/* ========================================================= */}
         <section style={{ 
-          minHeight: '100vh', // Volvemos a 100vh para que ocupe todo el alto
+          minHeight: '100vh', 
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'center', 
-          justifyContent: 'center', // Centramos el modal
-          padding: '11px',
+          justifyContent: 'center', 
+          padding: '15px', /* Padding ajustado para dar respiro en móviles */
+          boxSizing: 'border-box',
           position: 'relative'
         }}>
           
           <div style={{
             background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '24px',
-            padding: '40px', maxWidth: '550px', width: '100%',
+            padding: 'clamp(20px, 5vw, 40px)', /* Padding fluido */
+            maxWidth: '550px', width: '100%',
+            boxSizing: 'border-box',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
             display: 'flex', flexDirection: 'column', gap: '20px', zIndex: 10,
-            marginTop: 'auto', // Esto ayuda a empujarlo un poco al centro si la flecha empuja desde abajo
+            marginTop: 'auto', 
             marginBottom: 'auto'
           }}>
             
             <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-              <h1 className="logo" style={{ fontSize: '1.75rem', marginBottom: '10px', lineHeight: '1.1' }}>
+              {/* 🔥 TÍTULO DINÁMICO: Achica en celular, agranda en PC */}
+              <h1 className="logo" style={{ fontSize: 'clamp(1.8rem, 6vw, 2.5rem)', marginBottom: '10px', lineHeight: '1.1' }}>
                 <span style={{ color: 'white' }}>Mi Estado</span><br />
                 <span style={{ color: 'var(--cursando)' }}>Académico</span>
               </h1>
-              <p style={{ color: 'var(--muted)', fontSize: '1.1rem', margin: 0 }}>
+              <p style={{ color: 'var(--muted)', fontSize: 'clamp(0.9rem, 3vw, 1.1rem)', margin: 0 }}>
                 {isLogin ? 'Bienvenido de vuelta, futuro colega.' : 'Creá tu cuenta para empezar a trackear.'}
               </p>
             </div>
@@ -141,7 +144,7 @@ export default function AuthPage() {
                 <input 
                   type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                   placeholder="alumno@frlp.utn.edu.ar"
-                  style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white', fontSize: '1rem', outline: 'none' }}
+                  style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white', fontSize: '1rem', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                   required
                 />
               </div>
@@ -152,7 +155,7 @@ export default function AuthPage() {
                   <input 
                     type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    style={{ width: '100%', padding: '15px', paddingRight: '50px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white', fontSize: '1rem', outline: 'none' }}
+                    style={{ width: '100%', boxSizing: 'border-box', padding: '15px', paddingRight: '50px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white', fontSize: '1rem', outline: 'none' }}
                     required
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
@@ -168,7 +171,7 @@ export default function AuthPage() {
                     <input 
                       type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      style={{ width: '100%', padding: '15px', paddingRight: '50px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white', fontSize: '1rem', outline: 'none' }}
+                      style={{ width: '100%', boxSizing: 'border-box', padding: '15px', paddingRight: '50px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'white', fontSize: '1rem', outline: 'none' }}
                       required
                     />
                     <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
@@ -195,7 +198,7 @@ export default function AuthPage() {
                 </div>
               )}
 
-              <button type="submit" className="btn-primary" disabled={loading || (!isLogin && !isPasswordValid)} style={{ padding: '16px', fontSize: '1.1rem', borderRadius: '12px', fontWeight: 'bold', opacity: (loading || (!isLogin && !isPasswordValid)) ? 0.5 : 1, cursor: (loading || (!isLogin && !isPasswordValid)) ? 'not-allowed' : 'pointer' }}>
+              <button type="submit" className="btn-primary" disabled={loading || (!isLogin && !isPasswordValid)} style={{ padding: '16px', fontSize: '1.1rem', borderRadius: '12px', fontWeight: 'bold', opacity: (loading || (!isLogin && !isPasswordValid)) ? 0.5 : 1, cursor: (loading || (!isLogin && !isPasswordValid)) ? 'not-allowed' : 'pointer', width: '100%', boxSizing: 'border-box' }}>
                 {loading ? 'Cargando...' : (isLogin ? 'Iniciar Sesión' : 'Crear Cuenta')}
               </button>
             </form>
@@ -209,7 +212,7 @@ export default function AuthPage() {
             <button 
               onClick={handleGoogleLogin} 
               type="button"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '14px', borderRadius: '12px', background: 'white', color: 'black', fontWeight: 'bold', fontSize: '1rem', border: 'none', cursor: 'pointer', transition: 'transform 0.2s' }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '14px', borderRadius: '12px', background: 'white', color: 'black', fontWeight: 'bold', fontSize: '1rem', border: 'none', cursor: 'pointer', transition: 'transform 0.2s', width: '100%', boxSizing: 'border-box' }}
               onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
               onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
@@ -230,13 +233,12 @@ export default function AuthPage() {
             </div>
           </div>
 
-          {/* LA FLECHITA REBOTADORA - Corrección de posicionamiento */}
           <div 
             onClick={scrollToInfo}
             className="scroll-arrow"
             style={{ 
-              marginTop: 'auto', // Empuja la flecha hacia el fondo del contenedor principal
-              paddingBottom: '150px', // Un respiro con el borde de la pantalla
+              marginTop: 'auto', 
+              paddingBottom: '20px', // Reducido el paddingBottom para que la flecha no empuje el formulario hacia arriba
               cursor: 'pointer', 
               color: 'var(--muted)', 
               display: 'flex', 
@@ -254,20 +256,19 @@ export default function AuthPage() {
         {/* ========================================================= */}
         {/* SECCIÓN 2: INFORMACIÓN (Landing Page)                       */}
         {/* ========================================================= */}
-        <div style={{marginBottom: '120px', width: '100%'}}> 
-            <section id="info-section" style={{ padding: '30px', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}>
+        <div style={{marginBottom: '120px', width: '100%', boxSizing: 'border-box'}}> 
+          <section id="info-section" style={{ padding: '30px 15px', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}>
           
           <div style={{ textAlign: 'center', maxWidth: '600px' }}>
-            <h2 style={{ fontSize: '2.5rem', color: 'white', marginBottom: '15px' }}>¿Qué podés hacer acá?</h2>
-            <p style={{ color: 'var(--muted)', fontSize: '1.2rem', lineHeight: '1.6' }}>
+            <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', color: 'white', marginBottom: '15px' }}>¿Qué podés hacer acá?</h2>
+            <p style={{ color: 'var(--muted)', fontSize: 'clamp(1rem, 3vw, 1.2rem)', lineHeight: '1.6' }}>
               Mi Estado Académico es la herramienta definitiva para que los estudiantes organicen su carrera sin volverse locos con excels o PDFs desactualizados.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', maxWidth: '1100px', width: '100%' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px', maxWidth: '1100px', width: '100%', boxSizing: 'border-box' }}>
             
-            {/* Tarjeta 1 */}
-            <div style={{ background: 'var(--panel)', padding: '40px', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+            <div style={{ background: 'var(--panel)', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
               <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🗺️</div>
               <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '15px' }}>Plan de Estudios Dinámico</h3>
               <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: '1.6' }}>
@@ -275,8 +276,7 @@ export default function AuthPage() {
               </p>
             </div>
 
-            {/* Tarjeta 2 */}
-            <div style={{ background: 'var(--panel)', padding: '40px', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+            <div style={{ background: 'var(--panel)', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
               <div style={{ fontSize: '3rem', marginBottom: '20px' }}>📈</div>
               <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '15px' }}>Seguimiento de Promedio y Progreso</h3>
               <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: '1.6' }}>
@@ -284,8 +284,7 @@ export default function AuthPage() {
               </p>
             </div>
 
-            {/* Tarjeta 3 */}
-            <div style={{ background: 'var(--panel)', padding: '40px', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+            <div style={{ background: 'var(--panel)', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
               <div style={{ fontSize: '3rem', marginBottom: '20px' }}>📅</div>
               <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '15px' }}>Cursada</h3>
               <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: '1.6' }}>
