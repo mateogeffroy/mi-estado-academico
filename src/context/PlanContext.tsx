@@ -1,17 +1,20 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+// Ajustá estas rutas dependiendo de dónde esté exactamente tu archivo
 import { supabase } from '../lib/supabase';
 import { ALL } from '../lib/data';
 
 interface PlanContextType {
   materias: any;
-  detalles: any; // Notas y eventos
+  detalles: any; // Notas, eventos, comisiones
   stats: any;
   user: any;
   loading: boolean;
   cambiarEstadoMateria: (id: string, accion: string) => void;
   actualizarDetalleMateria: (id: string, info: any) => void;
+  reiniciarProgreso: () => Promise<void>;
+  marcarMultiplesAprobadas: (ids: string[]) => Promise<void>;
 }
 
 const PlanContext = createContext<PlanContextType | undefined>(undefined);
@@ -29,6 +32,60 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     promedio: 0
   });
 
+  // =========================================================================
+  // 🔥 EL MOTOR DE CORRELATIVAS (EFECTO DOMINÓ)
+  // =========================================================================
+  const evaluarCorrelativas = (estadosActuales: any) => {
+    let estados = { ...estadosActuales };
+    let huboCambios = true;
+
+    while (huboCambios) {
+      huboCambios = false;
+
+      ALL.forEach((m: any) => {
+        // CORRECCIÓN: Ahora SOLO ignoramos los placeholders de las electivas.
+        // El Seminario y la PPS sí entran al bucle para que se les quite el candado.
+        if (m.isElectivePlaceholder) return;
+
+        const idStr = m.id.toString();
+        let cumple = true;
+
+        if (m.level === 1 && (!m.correlCursada || m.correlCursada.length === 0) && (!m.correlAprobada || m.correlAprobada.length === 0)) {
+          cumple = true;
+        } else {
+          const reqCursadaOK = m.correlCursada?.every((reqId: number) => {
+            const est = estados[reqId.toString()];
+            return est === 'cursada' || est === 'aprobada';
+          }) ?? true;
+
+          const reqAprobadaOK = m.correlAprobada?.every((reqId: number) => {
+            const est = estados[reqId.toString()];
+            return est === 'aprobada';
+          }) ?? true;
+
+          cumple = reqCursadaOK && reqAprobadaOK;
+        }
+
+        const estadoActual = estados[idStr];
+
+        // EL CASTIGO: Si no cumple, se bloquea
+        if (!cumple && estadoActual !== 'disabled') {
+          estados[idStr] = 'disabled';
+          huboCambios = true; 
+        } 
+        // EL PREMIO: Si cumple y estaba bloqueada, se habilita
+        else if (cumple && (estadoActual === 'disabled' || !estadoActual)) {
+          estados[idStr] = 'available';
+          huboCambios = true;
+        }
+      });
+    }
+    return estados;
+  };
+
+  // =========================================================================
+  // CARGA INICIAL
+  // =========================================================================
   useEffect(() => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -41,20 +98,20 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
           .single();
 
         if (data) {
-          const m = data.estado_materias || {};
+          // Sanación automática al cargar
+          const materiasAutocorregidas = evaluarCorrelativas(data.estado_materias || {});
           const d = data.detalles_materias || {};
-          setMaterias(m);
+          
+          setMaterias(materiasAutocorregidas);
           setDetalles(d);
-          calcularEstadisticas(m, d);
+          calcularEstadisticas(materiasAutocorregidas, d);
         }
       }
       setLoading(false);
     };
     getSession();
-
-    // Borramos el authListener que estaba acá abajo también
   }, []);
-  
+
   const calcularEstadisticas = (currentMaterias: any, currentDetalles: any) => {
     const aprobadasReales = ALL.filter(s => 
       currentMaterias[s.id] === 'aprobada' && 
@@ -64,15 +121,11 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     );
 
     const aprobadasTotales = aprobadasReales.length;
-    
-    // 2. Electivas Aprobadas: Identificamos cuáles de las aprobadas reales NO tienen 'level' (son de las listas E)
     const electivasAprobadas = aprobadasReales.filter(s => !s.level).length;
 
-    // 3. Cursadas y Cursando (también filtrando placeholders por prolijidad)
     const cursadas = ALL.filter(s => currentMaterias[s.id] === 'cursada' && !s.isElectivePlaceholder).length;
     const cursando = ALL.filter(s => currentMaterias[s.id] === 'cursando' && !s.isElectivePlaceholder).length;
     
-    // 4. Promedio: Solo sobre aprobadas reales que tengan notaFinal cargada
     const notas = aprobadasReales
       .filter(s => currentDetalles[s.id]?.notaFinal)
       .map(s => currentDetalles[s.id].notaFinal);
@@ -85,20 +138,21 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       aprobadas: aprobadasTotales,
       cursadas,
       cursando,
-      // FÓRMULA UTN: Aprobadas Reales / (36 obligatorias base + electivas que elegiste cursar)
       porcentaje: Math.round((aprobadasTotales / (36 + electivasAprobadas)) * 100),
       promedio: Number(promedio)
     });
   };
 
-  // 3. Gestión del Plan de Estudios (Sin interrupciones de prompts)
+  // =========================================================================
+  // GESTIÓN DE MATERIAS Y DETALLES
+  // =========================================================================
   const cambiarEstadoMateria = async (id: string, accion: string) => {
     let nuevoEstadoMateria = { ...materias };
     const estadoActual = materias[id] || 'available';
 
-    if (accion === 'aprobada') { // Click Izquierdo: Toggle Aprobada/Disponible
+    if (accion === 'aprobada') { 
       nuevoEstadoMateria[id] = (estadoActual === 'aprobada') ? 'available' : 'aprobada';
-    } else { // Click Derecho: Ciclo Cursando -> Cursada -> Disponible
+    } else { 
       if (estadoActual === 'available' || estadoActual === 'disabled' || estadoActual === 'aprobada') {
         nuevoEstadoMateria[id] = 'cursando';
       } else if (estadoActual === 'cursando') {
@@ -107,6 +161,9 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         nuevoEstadoMateria[id] = 'available';
       }
     }
+
+    // Pasamos el plan por el validador en cascada
+    nuevoEstadoMateria = evaluarCorrelativas(nuevoEstadoMateria);
 
     setMaterias(nuevoEstadoMateria);
     calcularEstadisticas(nuevoEstadoMateria, detalles);
@@ -119,9 +176,40 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // 4. Gestión desde el Dashboard (Carga de notas y eventos)
+  // =========================================================================
+  // GESTIÓN MÚLTIPLE (MARCAR TODO EL NIVEL)
+  // =========================================================================
+  const marcarMultiplesAprobadas = async (ids: string[]) => {
+    let nuevoEstadoMateria = { ...materias };
+    let huboCambios = false;
+
+    // Aprobamos todas juntas en la copia de memoria
+    ids.forEach(id => {
+      const estadoActual = nuevoEstadoMateria[id] || 'available';
+      if (estadoActual !== 'disabled' && estadoActual !== 'aprobada') {
+        nuevoEstadoMateria[id] = 'aprobada';
+        huboCambios = true;
+      }
+    });
+
+    if (!huboCambios) return; // Si ya estaba todo aprobado, no hacemos nada
+
+    // Pasamos el plan completo por el motor de correlativas
+    nuevoEstadoMateria = evaluarCorrelativas(nuevoEstadoMateria);
+
+    setMaterias(nuevoEstadoMateria);
+    calcularEstadisticas(nuevoEstadoMateria, detalles);
+
+    // Guardamos todo de un saque en Supabase
+    if (user) {
+      await supabase
+        .from('progreso_usuarios')
+        .update({ estado_materias: nuevoEstadoMateria })
+        .eq('id_usuario', user.id);
+    }
+  };
+
   const actualizarDetalleMateria = async (id: string, info: any) => {
-    // Si la materia se marca con nota, nos aseguramos de no perder eventos previos si existen
     const nuevosDetalles = { ...detalles, [id]: info };
     setDetalles(nuevosDetalles);
     calcularEstadisticas(materias, nuevosDetalles);
@@ -134,10 +222,26 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // =========================================================================
+  // BOTÓN DE PÁNICO: REINICIAR TODO
+  // =========================================================================
+  const reiniciarProgreso = async () => {
+    setMaterias({});
+    setDetalles({});
+    calcularEstadisticas({}, {});
+
+    if (user) {
+      await supabase
+        .from('progreso_usuarios')
+        .update({ estado_materias: {}, detalles_materias: {} })
+        .eq('id_usuario', user.id);
+    }
+  };
+
   return (
     <PlanContext.Provider value={{ 
       materias, detalles, stats, user, loading, 
-      cambiarEstadoMateria, actualizarDetalleMateria 
+      cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas
     }}>
       {children}
     </PlanContext.Provider>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import WelcomeModal from './WelcomeModal';
 import { supabase } from '../lib/supabase';
+import AnnouncementModal from './AnnouncementModal';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -135,7 +136,8 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       </header>
 
       <WelcomeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      
+      <AnnouncementModal />
+
       <div style={{ minHeight: '80vh' }}>
         {children}
       </div>

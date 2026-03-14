@@ -254,7 +254,7 @@ export default function CursadaPage() {
       </div>
 
       {/* --- MATERIAS EN CURSO --- */}
-      <div>
+      <div id="gestionar-materias" style={{ scrollMarginTop: '120px' }}>
         <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', marginBottom: '20px', fontWeight: 'bold' }}>🎓 Gestionar Materias</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px', alignItems: 'stretch' }}>
           {cursando.length === 0 ? (

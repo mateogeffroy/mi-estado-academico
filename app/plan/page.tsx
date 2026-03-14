@@ -2,15 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+// Ajustá estas rutas dependiendo de cómo tengas tus carpetas
 import { usePlan } from '../../src/context/PlanContext';
 import { SUBJECTS, ELECTIVAS, getSubjectById, ALL } from '../../src/lib/data';
+import ConfirmModal from '../../src/components/ConfirmModal';
 
 export default function PlanDeEstudios() {
-  const { materias, cambiarEstadoMateria, stats } = usePlan();
+  const { materias, detalles, cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas, stats } = usePlan();
   const levels = [1, 2, 3, 4, 5];
 
   const [showScroll, setShowScroll] = useState(false);
   const [tooltip, setTooltip] = useState({ visible: false, content: null as React.ReactNode, x: 0, y: 0 });
+
+  // --- ESTADO PARA NUESTRO MODAL UNIVERSAL ---
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '' as React.ReactNode,
+    confirmText: 'Confirmar',
+    isDanger: false,
+    onConfirm: () => {}
+  });
+
+  const closeModal = () => setModalConfig(prev => ({ ...prev, isOpen: false }));
 
   useEffect(() => {
     const handleScroll = () => setShowScroll(window.scrollY > 200);
@@ -24,8 +38,63 @@ export default function PlanDeEstudios() {
     const obligatorias = SUBJECTS.filter((s: any) =>
       s.level === lvl && !s.isElective && !s.isElectivePlaceholder && !s.isSeminario && s.id !== 'PPS'
     );
-    obligatorias.forEach((m: any) => {
-      if (materias[m.id] !== 'aprobada') cambiarEstadoMateria(m.id, 'aprobada');
+    
+    // Filtramos solo los IDs de las materias que están listas para ser aprobadas
+    const idsParaAprobar = obligatorias
+      .filter((m: any) => {
+        const estadoActual = materias[m.id] || (m.level === 1 ? 'available' : 'disabled');
+        return estadoActual !== 'disabled' && estadoActual !== 'aprobada';
+      })
+      .map((m: any) => m.id.toString()); // Extraemos solo el ID
+
+    // Si hay materias para aprobar, llamamos a la función masiva
+    if (idsParaAprobar.length > 0) {
+      marcarMultiplesAprobadas(idsParaAprobar);
+    }
+  };
+
+  // --- LÓGICA DE INTERCEPCIÓN AL HACER CLIC EN UNA MATERIA ---
+  const handleMateriaClick = (subjectId: string, estadoActual: string) => {
+    if (estadoActual === 'disabled') return;
+
+    // Chequeamos si la materia tiene eventos guardados
+    const tieneEventos = detalles[subjectId]?.eventos?.length > 0;
+
+    if (estadoActual === 'cursando' && tieneEventos) {
+      setModalConfig({
+        isOpen: true,
+        title: 'Materia con eventos activos',
+        message: 'Al marcar esta materia como Aprobada, se eliminarán todos los parciales y eventos que tenías agendados para su cursada. ¿Querés continuar?',
+        confirmText: 'Sí, aprobar y limpiar',
+        isDanger: false,
+        onConfirm: () => {
+          // Limpiamos los eventos y la comisión antes de aprobar
+          const infoLimpia = { ...detalles[subjectId] };
+          delete infoLimpia.eventos;
+          delete infoLimpia.comision;
+          actualizarDetalleMateria(subjectId, infoLimpia);
+
+          cambiarEstadoMateria(subjectId, 'aprobada');
+          closeModal();
+        }
+      });
+    } else {
+      cambiarEstadoMateria(subjectId, 'aprobada');
+    }
+  };
+
+  // --- LÓGICA DE INTERCEPCIÓN PARA EL BOTÓN REINICIAR ---
+  const handleReiniciarClick = () => {
+    setModalConfig({
+      isOpen: true,
+      title: '¿Reiniciar progreso?',
+      message: 'Estás a punto de borrar TODO tu progreso (materias, notas, eventos y configuraciones) de la base de datos de forma permanente. Esta acción no se puede deshacer.',
+      confirmText: 'Sí, borrar todo',
+      isDanger: true, // Botón rojo
+      onConfirm: async () => {
+        await reiniciarProgreso();
+        window.location.reload(); 
+      }
     });
   };
 
@@ -101,31 +170,38 @@ export default function PlanDeEstudios() {
     setTooltip(prev => ({ ...prev, visible: false }));
   };
 
-  const renderCard = (subject: any) => (
-    <div
-      key={subject.id}
-      className={`subject-card ${materias[subject.id] || 'disabled'}`}
-      onClick={() => cambiarEstadoMateria(subject.id, 'aprobada')}
-      onContextMenu={(e) => { 
-        e.preventDefault(); 
-        cambiarEstadoMateria(subject.id, 'cursada'); 
-      }}
-      onMouseMove={(e) => handleMouseMove(e, subject)}
-      onMouseLeave={handleMouseLeave}
-    >
-      <div className="subject-num">{subject.num}</div>
-      <div className="subject-name">{subject.name}</div>
-      <div className="subject-hours">{subject.hours}</div>
-      <div className="subject-status-icon">
-        {materias[subject.id] === 'aprobada' ? '✅' : 
-         materias[subject.id] === 'cursada' ? '📖' : 
-         materias[subject.id] === 'cursando' ? '✍️' :
-         materias[subject.id] === 'available' ? '' : '🔒'}
-      </div>
-    </div>
-  );
+  const renderCard = (subject: any) => {
+    const estadoActual = materias[subject.id] || (subject.level === 1 ? 'available' : 'disabled');
 
-  // --- CÁLCULOS DINÁMICOS PARA LA BARRA INFERIOR ---
+    return (
+      <div
+        key={subject.id}
+        className={`subject-card ${estadoActual}`}
+        // Usamos nuestro interceptor acá
+        onClick={() => handleMateriaClick(subject.id, estadoActual)}
+        onContextMenu={(e) => { 
+          e.preventDefault(); 
+          if (estadoActual !== 'disabled') {
+            cambiarEstadoMateria(subject.id, 'cursada'); 
+          }
+        }}
+        onMouseMove={(e) => handleMouseMove(e, subject)}
+        onMouseLeave={handleMouseLeave}
+        style={{ cursor: estadoActual === 'disabled' ? 'not-allowed' : 'pointer' }}
+      >
+        <div className="subject-num">{subject.num}</div>
+        <div className="subject-name">{subject.name}</div>
+        <div className="subject-hours">{subject.hours}</div>
+        <div className="subject-status-icon">
+          {estadoActual === 'aprobada' ? '✅' : 
+           estadoActual === 'cursada' ? '📖' : 
+           estadoActual === 'cursando' ? '✍️' :
+           estadoActual === 'available' ? '' : '🔒'}
+        </div>
+      </div>
+    );
+  };
+
   const cursandoCount = ALL.filter((s: any) => materias[s.id] === 'cursando').length;
   
   const electivasAprobadas = ALL.filter((s: any) => 
@@ -139,7 +215,6 @@ export default function PlanDeEstudios() {
   return (
     <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       
-      {/* Contenedor principal del plan (ocupa todo el espacio disponible) */}
       <div style={{ flex: 1, paddingBottom: '40px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
           <div className="header-titles">
@@ -222,14 +297,11 @@ export default function PlanDeEstudios() {
         </div>
         <span style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>{stats.porcentaje}%</span>
         
+        {/* Botón de reiniciar conectado a nuestro ConfirmModal */}
         <button 
           className="btn-secondary" 
           style={{ display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 12px', marginLeft: 'auto', flex: '0 1 auto' }} 
-          onClick={() => {
-            if(confirm('¿Estás seguro de que querés borrar todo tu progreso?')) {
-              window.location.reload(); 
-            }
-          }}
+          onClick={handleReiniciarClick}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="1 4 1 10 7 10"></polyline>
@@ -238,6 +310,18 @@ export default function PlanDeEstudios() {
           Reiniciar
         </button>
       </div>
+
+      {/* --- EL MODAL INYECTADO AL FINAL --- */}
+      <ConfirmModal 
+        isOpen={modalConfig.isOpen}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        isDanger={modalConfig.isDanger}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={closeModal}
+      />
+
     </main>
   );
 }

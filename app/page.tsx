@@ -1,13 +1,21 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../src/context/PlanContext';
 import { ALL } from '../src/lib/data';
 import AnimatedList from '../src/components/AnimatedList';
 import CountUp from '../src/components/CountUp';
+import GradeModal from '../src/components/GradeModal';
 
 export default function Dashboard() {
-  const { materias, stats, detalles, actualizarDetalleMateria } = usePlan();
+  // 1. Extraemos el 'user' del contexto
+  const { materias, stats, detalles, actualizarDetalleMateria, user } = usePlan();
+  const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
+  const [selectedMateria, setSelectedMateria] = useState<{id: string, name: string} | null>(null);
+
+  // 2. Agarramos el primer nombre para el saludo
+  const primerNombre = user?.user_metadata?.full_name?.split(' ')[0] || 'Estudiante';
 
   // Filtrado para Historial: solo obligatorias y electivas reales
   const aprobadasOrdenadas = ALL.filter((s: any) => 
@@ -33,6 +41,11 @@ export default function Dashboard() {
         <div style={{ maxWidth: '900px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '40px', padding: '0 20px' }}>
           
           <div style={{ textAlign: 'center' }}>
+            {/* EL SALUDO PERSONALIZADO */}
+            <h2 style={{ fontSize: '2.2rem', color: 'white', margin: '0 0 15px 0', fontWeight: 600, animation: 'fadeIn 0.5s ease-out' }}>
+              ¡Hola, <span style={{ color: 'var(--cursando)' }}>{primerNombre}</span>! 👋
+            </h2>
+            
             <h1 style={{ color: 'white', fontSize: '4rem', fontWeight: 900, marginBottom: '10px', lineHeight: 1.1 }}>
               MI ESTADO <span style={{ color: 'var(--cursando)' }}>ACADÉMICO</span>
             </h1>
@@ -58,12 +71,10 @@ export default function Dashboard() {
               </div>
               <div>
                 <div style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '4px' }}>Materias Cursadas</div>
-                {/* Leemos de stats directamente */}
                 <div style={{ color: 'var(--cursada, #eab308)', fontSize: '2.2rem', fontWeight: 900 }}>{stats.cursadas}</div>
               </div>
               <div>
                 <div style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '4px' }}>Materias en Curso</div>
-                {/* Corregido el color a azul y leemos de stats */}
                 <div style={{ color: 'var(--cursando)', fontSize: '2.2rem', fontWeight: 900 }}>{stats.cursando}</div>
               </div>
             </div>
@@ -123,10 +134,9 @@ export default function Dashboard() {
                   className="list-row" 
                   style={{ cursor: 'pointer', padding: '15px', borderRadius: '8px', transition: 'background 0.2s', borderBottom: '1px solid rgba(255,255,255,0.02)' }} 
                   onClick={() => {
-                    const nota = window.prompt(`Cargar nota para ${m.name}:`);
-                    if (nota && !isNaN(Number(nota))) {
-                      actualizarDetalleMateria(m.id, { ...detalles[m.id], notaFinal: parseInt(nota) });
-                    }
+                    // Chau window.prompt, hola Modal custom!
+                    setSelectedMateria({ id: m.id, name: m.name });
+                    setIsGradeModalOpen(true);
                   }}
                 >
                   <span className="row-name" style={{ width: '100%', fontSize: '1.1rem' }}>{m.name}</span>
@@ -151,6 +161,20 @@ export default function Dashboard() {
 
         </div>
       </section>
+
+      <GradeModal 
+        isOpen={isGradeModalOpen}
+        onClose={() => setIsGradeModalOpen(false)}
+        materiaName={selectedMateria?.name || ''}
+        onSubmit={(nota) => {
+          if (selectedMateria) {
+            actualizarDetalleMateria(selectedMateria.id, { 
+              ...detalles[selectedMateria.id], 
+              notaFinal: nota 
+            });
+          }
+        }}
+      />
     </main>
   );
 }
