@@ -8,33 +8,28 @@ import { supabase } from '../lib/supabase';
 import AnnouncementModal from './AnnouncementModal';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // LA CORTINA: Empezamos asumiendo que estamos chequeando
   const [isChecking, setIsChecking] = useState(true); 
   
   const pathname = usePathname();
   const router = useRouter(); 
 
-  // --- PATOVICA (ROUTE GUARD UNIFICADO) ---
   useEffect(() => {
     const checkAccess = (session: any) => {
       if (!session) {
         if (pathname !== '/login' && pathname !== '/onboarding') {
           router.push('/login');
         } else {
-          setIsChecking(false); // Liberamos la cortina si ya está en login
+          setIsChecking(false);
         }
       } else {
         const hasName = session.user?.user_metadata?.full_name;
-        
         if (!hasName && pathname !== '/onboarding') {
           router.push('/onboarding');
         } else if (hasName && (pathname === '/login' || pathname === '/onboarding')) {
           router.push('/');
         } else {
-          setIsChecking(false); // Todo en orden, liberamos la cortina
+          setIsChecking(false);
         }
       }
     };
@@ -46,18 +41,14 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     verificarSesion();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Si el evento es INITIAL_SESSION no hacemos nada porque ya lo maneja getSession
       if (event !== 'INITIAL_SESSION') {
         checkAccess(session);
       }
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [pathname, router]);
 
-  // Si la cortina está baja, mostramos una pantalla de carga sutil
   if (isChecking) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--cursando)', fontWeight: 'bold', fontSize: '1.2rem' }}>
@@ -70,7 +61,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     );
   }
 
-  // Ocultamos el Layout completo para Login y Onboarding
   if (pathname === '/login' || pathname === '/onboarding') return <>{children}</>;
 
   const handleLogout = async () => {
@@ -78,11 +68,31 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     window.location.href = '/login'; 
   };
 
+  const navBtnBase = {
+    padding: '8px 18px',
+    fontSize: '0.95rem',
+    fontWeight: 'bold',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    border: '1px solid transparent',
+    whiteSpace: 'nowrap' as const
+  };
+
   return (
     <>
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, width: '100%', zIndex: 1000, background: 'rgba(13, 15, 20, 0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)' }}>
-        <div className="header-content">
-          <div className="header-left">
+      <header style={{ 
+        position: 'fixed', top: 0, left: 0, right: 0, width: '100%', zIndex: 1000, 
+        background: 'rgba(13, 15, 20, 0.98)', backdropFilter: 'blur(15px)', 
+        borderBottom: '1px solid var(--border)', height: '70px', display: 'flex'
+      }}>
+        <div style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '0 40px' }}>
+          
+          {/* 1. IZQUIERDA: Tu estilo original de Logo */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
             <Link href="/" style={{ textDecoration: 'none' }}>
               <div className="header-titles">
                 <div className="logo">
@@ -93,80 +103,85 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             </Link>
           </div>
 
-          <div className="header-center desktop-only">
+          {/* 2. CENTRO: Referencias (Solo en /plan) */}
+          <div style={{ flex: 2, display: 'flex', justifyContent: 'center' }}>
             {pathname === '/plan' && (
-              <div className="legend">
-                <div className="legend-item"><div className="legend-dot ld-disabled"></div>Bloqueada</div>
-                <div className="legend-item"><div className="legend-dot ld-available"></div>Disponible</div>
-                <div className="legend-item"><div className="legend-dot" style={{ backgroundColor: 'var(--cursando)' }}></div>Cursando</div>
-                <div className="legend-item"><div className="legend-dot ld-cursada"></div>Cursada</div>
-                <div className="legend-item"><div className="legend-dot ld-aprobada"></div>Aprobada</div>
+              <div style={{ display: 'flex', gap: '20px', fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot ld-disabled" style={{ width: '8px', height: '8px' }}></div>Bloqueada</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot ld-available" style={{ width: '8px', height: '8px' }}></div>Disponible</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot" style={{ backgroundColor: 'var(--cursando)', width: '8px', height: '8px' }}></div>Cursando</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot ld-cursada" style={{ width: '8px', height: '8px' }}></div>Cursada</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot ld-aprobada" style={{ width: '8px', height: '8px' }}></div>Aprobada</div>
               </div>
             )}
           </div>
 
-          <div className="header-actions desktop-only">
-            {pathname !== '/plan' && (
-              <Link href="/plan" style={{ textDecoration: 'none' }}>
-                <button className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem', marginRight: '5px' }}>
-                  🚀 Plan
-                </button>
-              </Link>
-            )}
-
-            {pathname !== '/cursada' && (
-              <Link href="/cursada" style={{ textDecoration: 'none' }}>
-                <button style={{ padding: '7px 15px', fontSize: '0.9rem', marginRight: '15px', borderRadius: '6px', background: 'transparent', border: '1px solid var(--border)', color: 'white', cursor: 'pointer' }} onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--cursando)'} onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--border)'}>
-                  🎒 Cursada
-                </button>
-              </Link>
-            )}
-
-            {pathname === '/plan' && (
-              <button className="help-btn" onClick={() => setIsModalOpen(true)} style={{ marginRight: '15px' }}>?</button>
-            )}
+          {/* 3. DERECHA: Botones anclados */}
+          <div style={{ flex: 1, display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'flex-end' }}>
             
-            <button className="btn-danger header-cafecito" onClick={handleLogout}>Cerrar sesión</button>
-          </div>
+            <Link href="/" style={{ textDecoration: 'none' }}>
+              <button style={{
+                  ...navBtnBase,
+                  background: pathname === '/' ? 'var(--cursando)' : 'rgba(255,255,255,0.03)',
+                  color: pathname === '/' ? 'black' : 'white',
+                  border: pathname === '/' ? 'none' : '1px solid var(--border)'
+                }}>
+                🏠 Inicio
+              </button>
+            </Link>
 
-          <button className="hamburger-btn mobile-only" onClick={() => setIsSidebarOpen(true)}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-          </button>
+            <Link href="/plan" style={{ textDecoration: 'none' }}>
+              <button style={{
+                  ...navBtnBase,
+                  background: pathname === '/plan' ? 'var(--cursando)' : 'rgba(255,255,255,0.03)',
+                  color: pathname === '/plan' ? 'black' : 'white',
+                  border: pathname === '/plan' ? 'none' : '1px solid var(--border)'
+                }}>
+                🚀 Plan
+              </button>
+            </Link>
+
+            <Link href="/cursada" style={{ textDecoration: 'none' }}>
+              <button style={{
+                  ...navBtnBase,
+                  background: pathname === '/cursada' ? 'var(--cursando)' : 'rgba(255,255,255,0.03)',
+                  color: pathname === '/cursada' ? 'black' : 'white',
+                  border: pathname === '/cursada' ? 'none' : '1px solid var(--border)'
+                }}>
+                🎒 Cursada
+              </button>
+            </Link>
+            
+            <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
+
+            <button 
+              className="btn-danger" 
+              onClick={handleLogout}
+              style={{ ...navBtnBase, background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.1)' }}
+              onMouseOver={(e) => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }}
+              onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#ef4444'; }}
+            >
+              Cerrar sesión
+            </button>
+          </div>
         </div>
       </header>
 
       <WelcomeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       <AnnouncementModal />
 
-      <div style={{ minHeight: '80vh' }}>
+      <div style={{ minHeight: '80vh', paddingTop: '70px' }}>
         {children}
       </div>
 
-      <footer style={{ background: 'var(--panel)', borderTop: '1px solid var(--border)', padding: '40px 20px', marginTop: 'auto', position: 'relative', zIndex: 100 }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'white' }}>
-              Mi Estado <span style={{ color: 'var(--cursando)' }}>Académico</span>
-            </div>
-            <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-              Proyecto independiente para estudiantes de la UTN FRLP. No oficial.
-            </div>
+      <footer style={{ background: 'var(--panel)', borderTop: '1px solid var(--border)', padding: '30px 40px', marginTop: '60px' }}>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
+            © {new Date().getFullYear()} Mateo Geffroy • <strong>Mi Estado Académico</strong>
           </div>
-
-          <div style={{ display: 'flex', gap: '20px', fontSize: '0.9rem' }}>
-            <Link href="/privacidad" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>
-              Política de Privacidad
-            </Link>
-            <Link href="/terminos" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>
-              Términos y Condiciones
-            </Link>
+          <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
+            UTN FRLP - Sistemas de Información
           </div>
-
-          <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-            © {new Date().getFullYear()} Mateo Geffroy. Todos los derechos reservados.
-          </div>
-
         </div>
       </footer>
     </>

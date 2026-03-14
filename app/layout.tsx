@@ -1,6 +1,6 @@
 import './globals.css';
 import { PlanProvider } from '../src/context/PlanContext';
-import LayoutClient from '../src/components/LayoutClient'; // Importamos el layout
+import LayoutClient from '../src/components/LayoutClient';
 
 export const metadata = {
   title: 'Mi Estado Académico',
@@ -16,10 +16,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
-      <body>
+    <html lang="es" style={{ overflowX: 'hidden', maxWidth: '100%' }}>
+      <body style={{ overflowX: 'hidden', maxWidth: '100%', position: 'relative' }}>
         <PlanProvider>
-          {/* Envolvemos los hijos con nuestro LayoutClient */}
           <LayoutClient>
             {children}
           </LayoutClient>
