@@ -11,7 +11,6 @@ export default function PlanDeEstudios() {
   const levels = [1, 2, 3, 4, 5];
 
   const [showScroll, setShowScroll] = useState(false);
-  const [footerOffset, setFooterOffset] = useState(0);
   
   const [tooltip, setTooltip] = useState({ visible: false, content: null as React.ReactNode, x: 0, y: 0 });
   const [menu, setMenu] = useState({ isOpen: false, x: 0, y: 0, subjectId: null as string | null });
@@ -44,17 +43,26 @@ export default function PlanDeEstudios() {
     const handleScrollAndMove = () => {
       setShowScroll(window.scrollY > 200);
 
+      // Cierra popups al instante sin gastar recursos si ya están cerrados
       setTooltip(prev => prev.visible ? { ...prev, visible: false } : prev);
       setMenu(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
       setBlockedShake(null);
 
+      // 🔥 MAGIA NEGRA PARA LA BARRA (CERO DELAY):
+      // Movemos la barra pixel por pixel calculando cuánto del footer entró en pantalla
       const footer = document.querySelector('footer');
-      if (footer) {
+      const statBar = document.getElementById('stat-bar-container');
+      
+      if (footer && statBar) {
         const rect = footer.getBoundingClientRect();
+        // Si el techo del footer (rect.top) sube por encima del piso de la pantalla (innerHeight)
         if (rect.top < window.innerHeight) {
-          setFooterOffset(window.innerHeight - rect.top);
+          const overlap = window.innerHeight - rect.top;
+          // Empujamos la barra hacia arriba de forma nativa (0 lag)
+          statBar.style.transform = `translateY(-${overlap}px)`;
         } else {
-          setFooterOffset(0);
+          // Si el footer no se ve, la dejamos pegada abajo
+          statBar.style.transform = `translateY(0px)`;
         }
       }
     };
@@ -63,6 +71,8 @@ export default function PlanDeEstudios() {
     window.addEventListener('touchmove', handleScrollAndMove, { passive: true });
     window.addEventListener('wheel', handleScrollAndMove, { passive: true });
     window.addEventListener('resize', handleScrollAndMove);
+    
+    // Ejecutamos una vez al cargar por si arranca desde el fondo
     handleScrollAndMove();
     
     return () => {
@@ -252,7 +262,6 @@ export default function PlanDeEstudios() {
       estadoActual = (subject.level === 1 || subject.isElective || subject.isElectivePlaceholder) ? 'available' : 'disabled';
     }
 
-    // 🔥 CALCULAR HORAS EXACTAMENTE COMO EL SCRIPT VIEJO PARA EL TEXTO
     let displayHours = `${subject.hours} hs`;
 
     if (subject.isElectivePlaceholder) {
@@ -352,6 +361,7 @@ export default function PlanDeEstudios() {
         .action-btn:hover { background: var(--border); }
       `}</style>
 
+      {/* Le devuelvo un paddingBottom de 80px para asegurarme de que la barra fija no tape la última materia */}
       <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '80px' }}>
         
         <div style={{ flex: 1, paddingBottom: '40px' }}>
@@ -430,7 +440,8 @@ export default function PlanDeEstudios() {
           </div>
         )}
 
-        <div className="stats-bar" style={{ position: 'fixed', bottom: `${footerOffset}px`, left: 0, right: 0, width: '100%', zIndex: 900, background: 'var(--bg)' }}>
+        {/* 🔥 VOLVIÓ A POSITION: FIXED pero la animamos por JS */}
+        <div id="stat-bar-container" className="stats-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 900, background: 'var(--bg)', borderTop: '1px solid var(--border)' }}>
           <div className="stat">
             <span className="stat-val" style={{ color: 'var(--aprobada)' }}>{stats.aprobadas}</span>
             <span className="stat-label">aprobadas</span>
