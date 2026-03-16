@@ -17,6 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" style={{ overflowX: 'hidden', maxWidth: '100%' }}>
+      <head>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3038983835600086" crossorigin="anonymous"></script>
+      </head>
       <body style={{ overflowX: 'hidden', maxWidth: '100%', position: 'relative' }}>
         <PlanProvider>
           <LayoutClient>
