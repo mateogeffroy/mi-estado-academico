@@ -206,37 +206,51 @@ export default function PlanDeEstudios() {
   };
 
   const buildTooltipContent = (subject: any) => {
-    if (subject.isElectivePlaceholder) return <>🎯 Requiere: {subject.targetHours} hs anuales<br />Aprobando electivas de {subject.level}° nivel.</>;
-    if (subject.isOutdated) return <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '4px 6px', borderRadius: '4px', display: 'inline-block' }}>⚠️ Materia fuera del plan.</span>;
+    if (subject.isElectivePlaceholder) return (
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: '2px', flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        <div>Requiere: {subject.targetHours} hs anuales<br />Aprobando electivas de {subject.level}° nivel.</div>
+      </div>
+    );
+    if (subject.isOutdated) return (
+      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '4px 8px', borderRadius: '6px', width: 'fit-content' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+        Materia fuera del plan.
+      </div>
+    );
 
     let hasTitle = false;
     const lines: JSX.Element[] = [];
 
+    const getCheckIcon = (ok: boolean) => ok 
+      ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+      : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+
     if (subject.correlCursada?.length) {
       hasTitle = true;
-      lines.push(<div key="t1" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Correlativas</div>);
-      lines.push(<b key="s1">Cursada(s):</b>);
+      lines.push(<div key="t1" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Correlativas</div>);
+      lines.push(<b key="s1" style={{ display: 'block', marginBottom: '2px', opacity: 0.9 }}>Cursada(s):</b>);
       subject.correlCursada.forEach((cid: any) => {
         const s = getSubjectById(cid);
         const cleanName = s ? s.name.replace(/\s*\(.*?\)/g, '') : cid;
         const ok = materias[cid] === 'cursada' || materias[cid] === 'aprobada';
-        lines.push(<div key={`c-${cid}`}>{ok ? '✅' : '❌'} {cleanName}</div>);
+        lines.push(<div key={`c-${cid}`} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>{getCheckIcon(ok)} <span style={{ opacity: ok ? 1 : 0.7 }}>{cleanName}</span></div>);
       });
     }
 
     if (subject.correlAprobada?.length) {
-      if (!hasTitle) lines.push(<div key="t2" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Correlativas</div>);
-      lines.push(<b key="s2" style={{ display: 'block', marginTop: '4px' }}>Aprobada(s):</b>);
+      if (!hasTitle) lines.push(<div key="t2" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Correlativas</div>);
+      lines.push(<b key="s2" style={{ display: 'block', marginTop: '6px', marginBottom: '2px', opacity: 0.9 }}>Aprobada(s):</b>);
       subject.correlAprobada.forEach((cid: any) => {
         const s = getSubjectById(cid);
         const cleanName = s ? s.name.replace(/\s*\(.*?\)/g, '') : cid;
         const ok = materias[cid] === 'aprobada';
-        lines.push(<div key={`a-${cid}`}>{ok ? '✅' : '❌'} {cleanName}</div>);
+        lines.push(<div key={`a-${cid}`} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>{getCheckIcon(ok)} <span style={{ opacity: ok ? 1 : 0.7 }}>{cleanName}</span></div>);
       });
     }
 
-    if (lines.length === 0) return <>Sin correlatividades</>;
-    return <>{lines}</>;
+    if (lines.length === 0) return <div style={{ fontStyle: 'italic', opacity: 0.8 }}>Sin correlatividades</div>;
+    return <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>{lines}</div>;
   };
 
   const handleMouseMove = (e: React.MouseEvent, subject: any) => {
@@ -300,6 +314,22 @@ export default function PlanDeEstudios() {
 
     const isShaking = blockedShake === subject.id;
 
+    // --- Íconos SVG Minimalistas para los Estados en las Tarjetas ---
+    const getStatusIcon = (status: string) => {
+      switch (status) {
+        case 'aprobada':
+          return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+        case 'cursada':
+          return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+        case 'cursando':
+          return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>;
+        case 'disabled':
+          return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
+        default:
+          return null;
+      }
+    };
+
     return (
       <div
         key={subject.id}
@@ -313,11 +343,8 @@ export default function PlanDeEstudios() {
         <div className="subject-num">{subject.num}</div>
         <div className="subject-name">{subject.name}</div>
         <div className="subject-hours">{displayHours}</div>
-        <div className="subject-status-icon">
-          {estadoActual === 'aprobada' ? '✅' : 
-           estadoActual === 'cursada' ? '📖' : 
-           estadoActual === 'cursando' ? '✍️' :
-           estadoActual === 'available' ? '' : '🔒'}
+        <div className="subject-status-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {getStatusIcon(estadoActual)}
         </div>
       </div>
     );
@@ -359,9 +386,15 @@ export default function PlanDeEstudios() {
           gap: 8px; transition: background 0.2s; width: 100%;
         }
         .action-btn:hover { background: var(--border); }
+
+        .subject-status-icon {
+          position: absolute;
+          bottom: 10px;
+          right: 10px;
+          opacity: 0.8;
+        }
       `}</style>
 
-      {/* Le devuelvo un paddingBottom de 80px para asegurarme de que la barra fija no tape la última materia */}
       <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '80px' }}>
         
         <div style={{ flex: 1, paddingBottom: '40px' }}>
@@ -428,7 +461,7 @@ export default function PlanDeEstudios() {
           onClick={scrollToTop} 
           title="Volver arriba"
         >
-          ↑
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
         </button>
 
         {tooltip.visible && (
@@ -440,7 +473,6 @@ export default function PlanDeEstudios() {
           </div>
         )}
 
-        {/* 🔥 VOLVIÓ A POSITION: FIXED pero la animamos por JS */}
         <div id="stat-bar-container" className="stats-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 900, background: 'var(--bg)', borderTop: '1px solid var(--border)' }}>
           <div className="stat">
             <span className="stat-val" style={{ color: 'var(--aprobada)' }}>{stats.aprobadas}</span>
@@ -469,8 +501,7 @@ export default function PlanDeEstudios() {
             onClick={handleReiniciarClick}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="1 4 1 10 7 10"></polyline>
-              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
             </svg> 
             Reiniciar
           </button>

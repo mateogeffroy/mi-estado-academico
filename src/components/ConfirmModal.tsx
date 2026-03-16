@@ -39,8 +39,21 @@ export default function ConfirmModal({
         textAlign: 'center'
       }}>
         
-        <div style={{ fontSize: '3rem', marginBottom: '15px' }}>
-          {isDanger ? '⚠️' : '❓'}
+        {/* --- ÍCONOS SVG MINIMALISTAS --- */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+          {isDanger ? (
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="rgba(234, 179, 8, 0.1)" stroke="#eab308" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          ) : (
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="rgba(59, 130, 246, 0.1)" stroke="var(--cursando)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          )}
         </div>
         
         <h3 style={{ color: 'white', fontSize: '1.4rem', margin: '0 0 15px 0' }}>
@@ -55,6 +68,8 @@ export default function ConfirmModal({
           <button 
             onClick={onCancel}
             style={{ flex: 1, padding: '12px', borderRadius: '12px', background: 'transparent', border: '1px solid var(--border)', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}
+            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
           >
             {cancelText}
           </button>
@@ -64,8 +79,11 @@ export default function ConfirmModal({
             className={isDanger ? "" : "btn-primary"}
             style={{ 
               flex: 1, padding: '12px', borderRadius: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer',
-              background: isDanger ? '#ef4444' : '', color: isDanger ? 'white' : ''
+              background: isDanger ? '#ef4444' : '', color: isDanger ? 'white' : '',
+              transition: 'background 0.2s'
             }}
+            onMouseOver={(e) => { if (isDanger) e.currentTarget.style.background = '#dc2626' }}
+            onMouseOut={(e) => { if (isDanger) e.currentTarget.style.background = '#ef4444' }}
           >
             {confirmText}
           </button>

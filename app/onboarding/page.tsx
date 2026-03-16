@@ -50,8 +50,8 @@ export default function OnboardingPage() {
       return;
     }
 
-    // Todo listo, al dashboard
-    router.push('/');
+    // 🔥 SOLUCIÓN: Forzamos una recarga completa para que el Dashboard lea el nombre nuevo al instante
+    window.location.href = '/';
   };
 
   return (
@@ -87,12 +87,6 @@ export default function OnboardingPage() {
               style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '1rem', cursor: 'pointer' }}
             >
               <option value="Ingeniería en Sistemas de Información">Ingeniería en Sistemas de Información</option>
-              <option value="Ingeniería Civil">Ingeniería Civil</option>
-              <option value="Ingeniería Eléctrica">Ingeniería Eléctrica</option>
-              <option value="Ingeniería Mecánica">Ingeniería Mecánica</option>
-              <option value="Ingeniería Química">Ingeniería Química</option>
-              <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-              <option value="Otra">Otra</option>
             </select>
           </div>
 

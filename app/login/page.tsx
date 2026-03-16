@@ -163,8 +163,8 @@ export default function AuthPage() {
         /* --- ESTILOS PARA CELULAR --- */
         @media (max-width: 768px) {
           .login-section {
-            justify-content: flex-start; /* Empieza desde arriba */
-            padding: 30px 15px 15px 15px; /* Menos espacio arriba para que entre bien */
+            justify-content: flex-start;
+            padding: 30px 15px 15px 15px; 
           }
           .login-box {
             padding: 25px 15px;
@@ -172,14 +172,14 @@ export default function AuthPage() {
             margin-bottom: 40px;
           }
           .responsive-title {
-            font-size: 1.8rem; /* Tamaño ajustado para iPhone */
+            font-size: 1.8rem; 
           }
           .arrow-container {
             margin-top: auto;
             padding-bottom: 30px;
           }
           .input-field {
-            padding: 12px; /* Inputs un poquito más finos en celular */
+            padding: 12px; 
           }
         }
       `}</style>
@@ -199,7 +199,7 @@ export default function AuthPage() {
                 <span style={{ color: 'var(--cursando)' }}>Académico</span>
               </h1>
               <p style={{ color: 'var(--muted)', fontSize: '1rem', margin: 0 }}>
-                {isLogin ? 'Bienvenido de vuelta, futuro colega.' : 'Creá tu cuenta para empezar a trackear.'}
+                {isLogin ? 'Bienvenido de vuelta' : 'Creá tu cuenta para empezar a trackear.'}
               </p>
             </div>
 
@@ -228,8 +228,12 @@ export default function AuthPage() {
                     style={{ paddingRight: '50px' }}
                     required
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
-                    {showPassword ? '👁️' : '🙈'}
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {showPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                    )}
                   </button>
                 </div>
               </div>
@@ -245,8 +249,12 @@ export default function AuthPage() {
                       style={{ paddingRight: '50px' }}
                       required
                     />
-                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
-                      {showConfirmPassword ? '👁️' : '🙈'}
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {showConfirmPassword ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -260,7 +268,7 @@ export default function AuthPage() {
                     return (
                       <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: isMet ? 'white' : 'var(--muted)' }}>
                         <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: isMet ? '#10b981' : 'transparent', border: `1px solid ${isMet ? '#10b981' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          {isMet && <span style={{ color: 'black', fontSize: '10px' }}>✓</span>}
+                          {isMet && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                         </div>
                         {req.label}
                       </div>
@@ -327,15 +335,19 @@ export default function AuthPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px', maxWidth: '1100px', width: '100%', boxSizing: 'border-box' }}>
             
             <div style={{ background: 'var(--panel)', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🗺️</div>
+              <div style={{ marginBottom: '20px' }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+              </div>
               <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '15px' }}>Plan de Estudios Dinámico</h3>
               <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: '1.6' }}>
-                Podés visualizar en tiempo real el estado de tu plan pudiendo marcar las materias como aprobadas, cursadas y cursando. A medida que se completa se van desbloqueando las materias disponibles.
+                Visualizá tu plan de estudios completo, con las correlatividades claras y actualizadas. Podés marcar las materias que cursaste, estás cursando o planeás cursar para tener un mapa claro de tu progreso.
               </p>
             </div>
 
             <div style={{ background: 'var(--panel)', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '20px' }}>📈</div>
+              <div style={{ marginBottom: '20px' }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+              </div>
               <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '15px' }}>Seguimiento de Promedio y Progreso</h3>
               <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: '1.6' }}>
                 Podés visualizar el promedio rellenando en la tabla de materias aprobadas las notas finales de las materias.
@@ -343,12 +355,15 @@ export default function AuthPage() {
             </div>
 
             <div style={{ background: 'var(--panel)', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '20px' }}>📅</div>
+              <div style={{ marginBottom: '20px' }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
               <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '15px' }}>Cursada</h3>
               <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: '1.6' }}>
-                Podés seleccionar las comisiones de cursada por cada materia que se encuentre en el estado "cursando" y se plasman los horarios en la página de cursada. A su vez, se pueden agendar eventos que se ven en un calendario.
+                Seleccioná en el plan de estudios dinámico las materias que cursas actualmente para que se reflejen automáticamente en tu cursada. Entrando a una materia, podés agregar fechas de eventos y seleccionar la comisión en la que cursas para que se te coloque en el horario semanal automático.
               </p>
             </div>
+
           </div>
         </section>
         </div>

@@ -1,19 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../src/context/PlanContext';
 import { ALL } from '../src/lib/data';
 import AnimatedList from '../src/components/AnimatedList';
 import CountUp from '../src/components/CountUp';
 import GradeModal from '../src/components/GradeModal';
+import { supabase } from '../src/lib/supabase'; // Importamos supabase para blindar la lectura del nombre
 
 export default function Dashboard() {
   const { materias, stats, detalles, actualizarDetalleMateria, user } = usePlan();
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
   const [selectedMateria, setSelectedMateria] = useState<{ id: string; name: string } | null>(null);
+  
+  // Estado local para el nombre por si el contexto llega vacío
+  const [nombreDinamico, setNombreDinamico] = useState('');
 
-  const primerNombre = user?.user_metadata?.full_name?.split(' ')[0] || 'Estudiante';
+  useEffect(() => {
+    const fetchDirectName = async () => {
+      const { data } = await supabase.auth.getUser();
+      const metaName = data.user?.user_metadata?.full_name;
+      if (metaName) {
+        setNombreDinamico(metaName.split(' ')[0]);
+      }
+    };
+    fetchDirectName();
+  }, []);
+
+  // Priorizamos el nombre que acabamos de buscar, o el del contexto, o 'Estudiante' por defecto
+  const primerNombre = nombreDinamico || user?.user_metadata?.full_name?.split(' ')[0] || 'Estudiante';
 
   const aprobadasOrdenadas = ALL.filter((s: any) =>
     materias[s.id] === 'aprobada' &&
@@ -50,8 +66,11 @@ export default function Dashboard() {
               fontSize: 'clamp(1rem, 4vw, 1.6rem)',
               color: 'white', margin: '0 0 8px 0', fontWeight: 600,
               animation: 'fadeIn 0.5s ease-out',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
             }}>
-              ¡Hola, <span style={{ color: 'var(--cursando)' }}>{primerNombre}</span>! 👋
+              ¡Hola, <span style={{ color: 'var(--cursando)' }}>{primerNombre}</span>! 
+              {/* SVG de destellos reemplazando a la mano 👋 */}
+              👋
             </h2>
 
             <h1

@@ -206,7 +206,8 @@ export default function MateriaPage() {
             {/* Lista de Eventos Guardados */}
             <div style={{ background: 'transparent' }}>
               <h3 style={{ color: 'var(--cursando)', marginBottom: '15px', fontSize: '1.2rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>📅</span> Agenda de la materia
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Agenda de la materia
               </h3>
               {eventosGuardados.length === 0 ? (
                 <div style={{ background: 'var(--panel)', padding: '30px', borderRadius: '16px', border: '1px dashed var(--border)', textAlign: 'center' }}>
@@ -249,7 +250,8 @@ export default function MateriaPage() {
             {materia.comisiones && materia.comisiones.length > 0 && (
               <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
                 <h2 style={{ color: 'white', fontSize: '1.2rem', marginBottom: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>🕒</span> Horarios de Cursada
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Horarios de Cursada
                 </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 5px 0' }}>Seleccioná tu comisión para organizar tus horarios:</p>

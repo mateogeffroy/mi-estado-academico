@@ -199,7 +199,6 @@ main {
   background: var(--disabled);
   color: var(--disabled-text);
   padding: 10px 14px;
-  /* ↓ En desktop mantiene 200px, en mobile se adapta al grid */
   width: 200px;
   min-width: 0;
   cursor: default;
@@ -208,7 +207,6 @@ main {
   font-size: 0.78rem;
   line-height: 1.35;
   font-weight: 600;
-  /* Evita que texto largo desborde la card */
   overflow-wrap: break-word;
   word-break: break-word;
 }
@@ -458,8 +456,6 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex; flex-direction: column;
-  /* KEY FIX: visibility:hidden cuando está cerrado evita que el browser
-     lo incluya en el cálculo del scroll horizontal */
   visibility: hidden;
   pointer-events: none;
 }
@@ -673,7 +669,7 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
 
 /* El main nunca puede desbordar */
 main {
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
   box-sizing: border-box !important;
 }
 
