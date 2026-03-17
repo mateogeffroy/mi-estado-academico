@@ -58,20 +58,12 @@ export default function Dashboard() {
            60% { transform: rotate( 0.0deg) }
           100% { transform: rotate( 0.0deg) }
         }
-        .mobile-ad-container {
-          width: 100%;
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 0 16px;
-        }
-        @media (min-width: 1450px) {
-          .mobile-ad-container { display: none; }
-        }
+        /* Eliminamos el bloque .mobile-ad-container de acá porque pisaba las reglas de globals.css */
       `}</style>
 
       {/* ANUNCIO TOP (Móvil) */}
-      <div className="mobile-ad-container">
-        <AdBanner dataAdSlot="MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
+      <div className="mobile-ad-container" style={{ marginTop: '10px' }}>
+        <AdBanner dataAdSlot="MOB_TOP" dataAdFormat="horizontal" />
       </div>
 
       {/* ============================================================
@@ -87,14 +79,11 @@ export default function Dashboard() {
         <section
           id="progreso"
           style={{
-            // Reducimos de 70vh a 50vh para que no ocupe tanto espacio vertical inicial
-            minHeight: '50vh', 
+            /* Eliminamos minHeight: 50vh y justifyContent para que el anuncio no lo catapulte abajo */
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
-            // Reducimos el padding superior para pegarlo más al header
-            paddingTop: '0px', 
-            marginTop: '-20px' // Opcional: un margen negativo para subirlo aún más
+            alignItems: 'center',
+            marginBottom: '20px'
           }}
         >
           <div style={{ width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px', padding: '0 16px' }}>
@@ -148,7 +137,7 @@ export default function Dashboard() {
       </div>
 
       <div className="mobile-ad-container">
-        <AdBanner dataAdSlot="MOB_MID" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
+        <AdBanner dataAdSlot="MOB_MID" dataAdFormat="horizontal" />
       </div>
 
       {/* ============================================================
@@ -192,8 +181,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div style={{ padding: '0 12px', maxWidth: '800px', width: '100%', margin: '0 auto' }}>
-        <AdBanner dataAdSlot="PENDIENTE_CENTRO" dataAdFormat="horizontal" style={{ minHeight: '120px', width: '100%' }} />
+      <div className="mobile-ad-container">
+        <AdBanner dataAdSlot="PENDIENTE_CENTRO" dataAdFormat="horizontal" />
       </div>
 
       {/* ============================================================
