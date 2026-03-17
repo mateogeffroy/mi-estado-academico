@@ -37,8 +37,9 @@ export default function Dashboard() {
     s.id !== 'PPS'
   ).sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
+  // Quitamos el gap global del main para controlarlo mejor individualmente
   return (
-    <main style={{ display: 'flex', flexDirection: 'column', gap: '40px', paddingBottom: '80px' }}>
+    <main style={{ display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
       
       <style>{`
         .wave {
@@ -58,28 +59,43 @@ export default function Dashboard() {
            60% { transform: rotate( 0.0deg) }
           100% { transform: rotate( 0.0deg) }
         }
+
+        /* 🔥 CORRECCIÓN DEFINITIVA DE SALTOS (CLS) Y RESPONSIVIDAD 🔥 */
         .mobile-ad-container {
           width: 100%;
           max-width: 800px;
           margin: 0 auto;
           padding: 0 16px;
+          /* Candado de altura estricto */
+          min-height: 50px;
+          max-height: 100px;
+          overflow: hidden;
+          display: flex;
+          justify-content: center;
+          align-items: center;
         }
-        @media (min-width: 1450px) {
-          .mobile-ad-container { display: none; }
+
+        /* En celulares, destruimos las reglas del desktop que rompen el diseño */
+        @media (max-width: 1450px) {
+          .section-row {
+            min-height: 0 !important;
+            height: auto !important;
+            display: block !important;
+            margin-bottom: 30px;
+          }
+          .ad-wrapper-left, .ad-wrapper-right, .desktop-side-ad {
+            display: none !important;
+          }
+        }
+
+        @media (min-width: 1451px) {
+          .mobile-ad-container { display: none !important; }
         }
       `}</style>
 
       {/* ANUNCIO TOP (Móvil) */}
-      <div 
-          className="mobile-ad-container" 
-          style={{ 
-            minHeight: '50px', 
-            maxHeight: '100px',
-            overflow: 'hidden',
-            marginBottom: '10px'
-          }}
-        >
-        <AdBanner dataAdSlot="MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
+      <div className="mobile-ad-container" style={{ marginTop: '10px', marginBottom: '10px' }}>
+        <AdBanner dataAdSlot="MOB_TOP" dataAdFormat="horizontal" />
       </div>
 
       {/* ============================================================
@@ -92,18 +108,13 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ============================================================
-            SECCIÓN 1: HERO (AJUSTADA PARA MÓVIL)
-           ============================================================ */}
         <section
           id="progreso"
           style={{
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center', // Centra horizontalmente
-            marginTop: '10px', // Margen pequeño para que pegue arriba
+            alignItems: 'center',
             marginBottom: '40px'
-            // Eliminamos el minHeight y el justifyContent: 'center' que causaban el hueco
           }}
         >
           <div style={{ width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px', padding: '0 16px' }}>
@@ -156,8 +167,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="mobile-ad-container">
-        <AdBanner dataAdSlot="MOB_MID" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
+      <div className="mobile-ad-container" style={{ marginBottom: '30px' }}>
+        <AdBanner dataAdSlot="MOB_MID" dataAdFormat="horizontal" />
       </div>
 
       {/* ============================================================
@@ -170,7 +181,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <section id="aprobadas" style={{ padding: '0 12px', width: '100%', maxWidth: '800px' }}>
+        <section id="aprobadas" style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)' }}>
             <h3 style={{ color: 'var(--aprobada)', marginBottom: '16px', fontSize: '1.1rem', fontWeight: 700 }}>Materias aprobadas</h3>
             {aprobadasOrdenadas.length === 0 ? (
@@ -201,8 +212,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div style={{ padding: '0 12px', maxWidth: '800px', width: '100%', margin: '0 auto' }}>
-        <AdBanner dataAdSlot="PENDIENTE_CENTRO" dataAdFormat="horizontal" style={{ minHeight: '120px', width: '100%' }} />
+      <div className="mobile-ad-container" style={{ marginTop: '10px', marginBottom: '30px' }}>
+        <AdBanner dataAdSlot="PENDIENTE_CENTRO" dataAdFormat="horizontal" />
       </div>
 
       {/* ============================================================
@@ -215,7 +226,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <section id="blog" style={{ padding: '0 12px', marginTop: '10px', width: '100%', maxWidth: '800px' }}>
+        <section id="blog" style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
           <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
             Blog y Novedades
