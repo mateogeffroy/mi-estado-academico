@@ -1,32 +1,51 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface AdBannerProps {
-  dataAdSlot: string; // Este ID te lo da Google al crear un "Bloque de anuncios"
+  dataAdSlot: string;
   dataAdFormat?: string;
   dataFullWidthResponsive?: boolean;
+  style?: React.CSSProperties;
+  className?: string;
 }
 
-export default function AdBanner({ dataAdSlot, dataAdFormat = "auto", dataFullWidthResponsive = true }: AdBannerProps) {
+export default function AdBanner({
+  dataAdSlot,
+  dataAdFormat = 'auto',
+  dataFullWidthResponsive = true,
+  style,
+  className = ''
+}: AdBannerProps) {
+  const [isLocalhost, setIsLocalhost] = useState(false);
+
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsLocalhost(window.location.hostname === 'localhost');
+    }
+
     try {
-      // @ts-ignore
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (e: any) {
-      console.error("Error en AdSense:", e.message);
+      const adsbygoogle = (window as any).adsbygoogle || [];
+      adsbygoogle.push({});
+    } catch (error) {
+      console.error('Error al cargar el anuncio de AdSense:', error);
     }
   }, []);
 
+  const PUBLISHER_ID = "ca-pub-3038983835600086"; 
+
   return (
-    <div style={{ textAlign: 'center', margin: '20px 0', overflow: 'hidden', minHeight: '100px' }}>
+    <div 
+      className={`ad-container ${isLocalhost ? 'is-localhost' : ''} ${className}`}
+      style={style}
+    >
+      <span className="ad-placeholder">Espacio<br/>publicitario</span>
       <ins
         className="adsbygoogle"
-        style={{ display: 'block' }}
-        data-ad-client="ca-pub-3038983835600086"
+        data-ad-client={PUBLISHER_ID}
         data-ad-slot={dataAdSlot}
         data-ad-format={dataAdFormat}
-        data-full-width-responsive={dataFullWidthResponsive.toString()}
+        data-full-width-responsive={dataFullWidthResponsive ? "true" : "false"}
       />
     </div>
   );

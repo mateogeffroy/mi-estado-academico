@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
 import { SUBJECTS, ELECTIVAS, getSubjectById, ALL } from '../../src/lib/data';
 import ConfirmModal from '../../src/components/ConfirmModal';
+import AdBanner from '../../src/components/AdBanner'; 
 
 export default function PlanDeEstudios() {
   const { materias, detalles, cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas, stats } = usePlan();
@@ -43,25 +44,19 @@ export default function PlanDeEstudios() {
     const handleScrollAndMove = () => {
       setShowScroll(window.scrollY > 200);
 
-      // Cierra popups al instante sin gastar recursos si ya están cerrados
       setTooltip(prev => prev.visible ? { ...prev, visible: false } : prev);
       setMenu(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
       setBlockedShake(null);
 
-      // 🔥 MAGIA NEGRA PARA LA BARRA (CERO DELAY):
-      // Movemos la barra pixel por pixel calculando cuánto del footer entró en pantalla
       const footer = document.querySelector('footer');
       const statBar = document.getElementById('stat-bar-container');
       
       if (footer && statBar) {
         const rect = footer.getBoundingClientRect();
-        // Si el techo del footer (rect.top) sube por encima del piso de la pantalla (innerHeight)
         if (rect.top < window.innerHeight) {
           const overlap = window.innerHeight - rect.top;
-          // Empujamos la barra hacia arriba de forma nativa (0 lag)
           statBar.style.transform = `translateY(-${overlap}px)`;
         } else {
-          // Si el footer no se ve, la dejamos pegada abajo
           statBar.style.transform = `translateY(0px)`;
         }
       }
@@ -72,7 +67,6 @@ export default function PlanDeEstudios() {
     window.addEventListener('wheel', handleScrollAndMove, { passive: true });
     window.addEventListener('resize', handleScrollAndMove);
     
-    // Ejecutamos una vez al cargar por si arranca desde el fondo
     handleScrollAndMove();
     
     return () => {
@@ -276,7 +270,7 @@ export default function PlanDeEstudios() {
       estadoActual = (subject.level === 1 || subject.isElective || subject.isElectivePlaceholder) ? 'available' : 'disabled';
     }
 
-    let displayHours = `${subject.hours} hs`;
+    let displayHours = subject.hours;
 
     if (subject.isElectivePlaceholder) {
       let globalCursadaHoursAnalista = 0;
@@ -314,7 +308,6 @@ export default function PlanDeEstudios() {
 
     const isShaking = blockedShake === subject.id;
 
-    // --- Íconos SVG Minimalistas para los Estados en las Tarjetas ---
     const getStatusIcon = (status: string) => {
       switch (status) {
         case 'aprobada':
@@ -330,6 +323,57 @@ export default function PlanDeEstudios() {
       }
     };
 
+    let durationBadges = null;
+
+    if (!subject.isElectivePlaceholder && estadoActual !== 'disabled') {
+      const duracionesUnicas = Array.from(
+        new Set((subject.comisiones || []).map((c: any) => c.duration).filter(Boolean))
+      ) as string[];
+
+      if (duracionesUnicas.length === 0 && !subject.isOutdated) {
+        duracionesUnicas.push('A');
+      }
+
+      if (duracionesUnicas.length > 0) {
+        durationBadges = (
+          <div style={{ marginTop: '6px', marginBottom: '8px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {duracionesUnicas.sort().map(dur => {
+              let label = 'Anual';
+              let pillBg = 'rgba(59, 130, 246, 0.85)';
+              let pillColor = '#ffffff'; 
+              
+              if (dur === '1') {
+                label = '1C';
+                pillBg = 'rgba(34, 197, 94, 0.85)';
+              } else if (dur === '2') {
+                label = '2C';
+                pillBg = 'rgba(244, 63, 94, 0.85)';
+              }
+
+              const isCardColored = estadoActual === 'aprobada' || estadoActual === 'cursada' || estadoActual === 'cursando';
+              const finalBg = isCardColored ? 'rgba(0, 0, 0, 0.6)' : pillBg;
+              const finalColor = isCardColored ? 'rgba(255, 255, 255, 0.95)' : pillColor;
+
+              return (
+                <span key={dur} style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  background: finalBg, color: finalColor, padding: '4px 12px',
+                  borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', 
+                  letterSpacing: '0.3px', pointerEvents: 'none',
+                  border: isCardColored ? '1px solid rgba(255,255,255,0.1)' : 'none', 
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)', 
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  fontVariantNumeric: 'tabular-nums lining-nums',
+                }}>
+                  {label}
+                </span>
+              );
+            })}
+          </div>
+        );
+      }
+    }
+
     return (
       <div
         key={subject.id}
@@ -338,11 +382,12 @@ export default function PlanDeEstudios() {
         onContextMenu={(e) => handleContextMenu(e, subject.id, estadoActual)}
         onMouseMove={(e) => handleMouseMove(e, subject)}
         onMouseLeave={handleMouseLeave}
-        style={{ cursor: estadoActual === 'disabled' ? 'not-allowed' : 'pointer' }}
+        style={{ cursor: estadoActual === 'disabled' ? 'not-allowed' : 'pointer', display: 'flex', flexDirection: 'column' }}
       >
         <div className="subject-num">{subject.num}</div>
         <div className="subject-name">{subject.name}</div>
-        <div className="subject-hours">{displayHours}</div>
+        {durationBadges}
+        <div className="subject-hours" style={{ marginTop: durationBadges ? '0' : '10px' }}>{displayHours}</div>
         <div className="subject-status-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {getStatusIcon(estadoActual)}
         </div>
@@ -353,52 +398,42 @@ export default function PlanDeEstudios() {
   return (
     <>
       <style>{`
-        .subject-card:hover,
-        .subject-card.aprobada:hover,
-        .subject-card.cursada:hover,
-        .subject-card.available:hover {
-          transform: none !important;
-        }
-
-        .subject-card.highlight-blocked {
-          border-color: #ef4444 !important;
-          box-shadow: 0 0 15px rgba(239, 68, 68, 0.6) !important;
-          animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-          z-index: 50;
-        }
-
+        .subject-card:hover, .subject-card.aprobada:hover, .subject-card.cursada:hover, .subject-card.available:hover { transform: none !important; }
+        .subject-card.highlight-blocked { border-color: #ef4444 !important; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6) !important; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; z-index: 50; }
         @keyframes shake {
           10%, 90% { transform: translate3d(-1px, 0, 0); }
           20%, 80% { transform: translate3d(2px, 0, 0); }
           30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
           40%, 60% { transform: translate3d(4px, 0, 0); }
         }
-        
-        .action-menu {
-          background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
-          padding: 6px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); min-width: 140px;
-          animation: fadeIn 0.2s ease-out; flex-direction: column; gap: 4px;
-        }
-        .action-btn {
-          background: transparent; color: var(--text); border: none; padding: 10px 12px;
-          text-align: left; border-radius: 4px; font-family: 'Syne', sans-serif;
-          font-size: 0.85rem; cursor: pointer; display: flex; align-items: center;
-          gap: 8px; transition: background 0.2s; width: 100%;
-        }
+        .action-menu { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 6px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); min-width: 140px; animation: fadeIn 0.2s ease-out; flex-direction: column; gap: 4px; }
+        .action-btn { background: transparent; color: var(--text); border: none; padding: 10px 12px; text-align: left; border-radius: 4px; font-family: 'Syne', sans-serif; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; width: 100%; }
         .action-btn:hover { background: var(--border); }
+        .subject-status-icon { position: absolute; bottom: 10px; right: 10px; opacity: 0.8; }
+        
+        .mobile-ad-container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 16px; }
+        @media (min-width: 1450px) { .mobile-ad-container { display: none; } }
 
-        .subject-status-icon {
+        /* 🔥 MAGIA ABSOLUTA: 3 anuncios por lado, colgando del contenedor central 🔥 */
+        .scatter-ad-left, .scatter-ad-right {
           position: absolute;
-          bottom: 10px;
-          right: 10px;
-          opacity: 0.8;
+          width: 160px;
+          height: 600px;
+          display: none;
+          z-index: 10;
         }
+        @media (min-width: 1450px) {
+          .scatter-ad-left, .scatter-ad-right { display: block; }
+        }
+        .scatter-ad-left { right: 100%; margin-right: 40px; }
+        .scatter-ad-right { left: 100%; margin-left: 40px; }
       `}</style>
 
-      <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '80px' }}>
+      <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '80px', gap: '40px' }}>
         
-        <div style={{ flex: 1, paddingBottom: '40px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        {/* HEADER DE LA PÁGINA */}
+        <div style={{ maxWidth: '950px', width: '100%', margin: '0 auto', padding: '0 16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <div className="header-titles">
               <h1 className="logo">Plan de estudios <span>dinámico</span></h1>
             </div>
@@ -406,38 +441,85 @@ export default function PlanDeEstudios() {
               <button className="btn-secondary">← Volver al Dashboard</button>
             </Link>
           </div>
-
-          {levels.map(lvl => {
-            const materiasObligatorias = SUBJECTS.filter((s: any) => s.level === lvl && !s.isElective && !s.isElectivePlaceholder);
-            const electivas = ELECTIVAS[lvl as keyof typeof ELECTIVAS] || [];
-            const placeholders = SUBJECTS.filter((s: any) => s.level === lvl && s.isElectivePlaceholder);
-
-            return (
-              <div key={lvl} className="level-section">
-                <div className="level-header" style={{ color: `var(--n${lvl})` }}>
-                  <div className="level-badge" style={{ borderColor: `var(--n${lvl})` }}>Nivel {lvl}</div>
-                  <button className="mark-all-btn" onClick={() => marcarNivel(lvl)}>Marcar todas</button>
-                  <div className="level-line" style={{ backgroundColor: `var(--n${lvl})` }}></div>
-                </div>
-                
-                <div className="subject-grid">
-                  {materiasObligatorias.map(renderCard)}
-                  {placeholders.map(renderCard)}
-                </div>
-
-                {electivas.length > 0 && (
-                  <>
-                    <div className="electivas-level-label" style={{ marginTop: '24px' }}>Electivas</div>
-                    <div className="subject-grid">
-                      {electivas.map(renderCard)}
-                    </div>
-                  </>
-                )}
-              </div>
-            );
-          })}
         </div>
 
+        {/* ANUNCIO TOP (Móvil) */}
+        <div className="mobile-ad-container">
+          <AdBanner dataAdSlot="PLAN_MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
+        </div>
+
+        {/* CONTENEDOR RELATIVO (Es el ancla para los anuncios absolutos) */}
+        <div style={{ position: 'relative', width: '100%', maxWidth: '950px', margin: '0 auto', padding: '0 16px' }}>
+          
+          {/* ==========================================
+              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS
+              ========================================== */}
+          {/* Lado Izquierdo */}
+          <div className="scatter-ad-left" style={{ top: '2%' }}>
+            <AdBanner dataAdSlot="PLAN_L_1" dataAdFormat="vertical" style={{ height: '100%' }} />
+          </div>
+          <div className="scatter-ad-left" style={{ top: '40%' }}>
+            <AdBanner dataAdSlot="PLAN_L_2" dataAdFormat="vertical" style={{ height: '100%' }} />
+          </div>
+          <div className="scatter-ad-left" style={{ top: '75%' }}>
+            <AdBanner dataAdSlot="PLAN_L_3" dataAdFormat="vertical" style={{ height: '100%' }} />
+          </div>
+
+          {/* Lado Derecho */}
+          <div className="scatter-ad-right" style={{ top: '2%' }}>
+            <AdBanner dataAdSlot="PLAN_R_1" dataAdFormat="vertical" style={{ height: '100%' }} />
+          </div>
+          <div className="scatter-ad-right" style={{ top: '40%' }}>
+            <AdBanner dataAdSlot="PLAN_R_2" dataAdFormat="vertical" style={{ height: '100%' }} />
+          </div>
+          <div className="scatter-ad-right" style={{ top: '75%' }}>
+            <AdBanner dataAdSlot="PLAN_R_3" dataAdFormat="vertical" style={{ height: '100%' }} />
+          </div>
+
+          {/* CONTENIDO CENTRAL (Grillas de materias) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+            {levels.map((lvl, index) => {
+              const materiasObligatorias = SUBJECTS.filter((s: any) => s.level === lvl && !s.isElective && !s.isElectivePlaceholder);
+              const electivas = ELECTIVAS[lvl as keyof typeof ELECTIVAS] || [];
+              const placeholders = SUBJECTS.filter((s: any) => s.level === lvl && s.isElectivePlaceholder);
+
+              return (
+                <div key={lvl} style={{ display: 'flex', flexDirection: 'column' }}>
+                  {/* Separador móvil cada 2 niveles */}
+                  {index > 0 && index % 2 === 0 && (
+                    <div className="mobile-ad-container" style={{ margin: '0 auto 40px auto' }}>
+                      <AdBanner dataAdSlot={`PLAN_MOB_MID_${lvl}`} dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
+                    </div>
+                  )}
+
+                  <div className="level-section" style={{ marginBottom: 0 }}>
+                    <div className="level-header" style={{ color: `var(--n${lvl})` }}>
+                      <div className="level-badge" style={{ borderColor: `var(--n${lvl})` }}>Nivel {lvl}</div>
+                      <button className="mark-all-btn" onClick={() => marcarNivel(lvl)}>Marcar todas</button>
+                      <div className="level-line" style={{ backgroundColor: `var(--n${lvl})` }}></div>
+                    </div>
+                    
+                    <div className="subject-grid">
+                      {materiasObligatorias.map(renderCard)}
+                      {placeholders.map(renderCard)}
+                    </div>
+
+                    {electivas.length > 0 && (
+                      <>
+                        <div className="electivas-level-label" style={{ marginTop: '24px' }}>Electivas</div>
+                        <div className="subject-grid">
+                            {electivas.map(renderCard)}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* MODALS Y MENUS */}
         {menu.isOpen && (
           <div id="action-menu" className="action-menu" style={{ position: 'absolute', top: menu.y, left: menu.x, zIndex: 1000, display: 'flex' }}>
             <button className="action-btn" onClick={(e) => handleMenuAction(e, 'set_aprobada')}>
@@ -465,14 +547,10 @@ export default function PlanDeEstudios() {
         </button>
 
         {tooltip.visible && (
-          <div 
-            className="tooltip show" 
-            style={{ left: tooltip.x, top: tooltip.y, textAlign: 'left', zIndex: 9999 }}
-          >
-            {tooltip.content}
-          </div>
+          <div className="tooltip show" style={{ left: tooltip.x, top: tooltip.y, textAlign: 'left', zIndex: 9999 }}>{tooltip.content}</div>
         )}
 
+        {/* BARRA DE ESTADÍSTICAS */}
         <div id="stat-bar-container" className="stats-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 900, background: 'var(--bg)', borderTop: '1px solid var(--border)' }}>
           <div className="stat">
             <span className="stat-val" style={{ color: 'var(--aprobada)' }}>{stats.aprobadas}</span>
@@ -487,7 +565,7 @@ export default function PlanDeEstudios() {
             <span className="stat-label">cursando</span>
           </div>
           <div className="stat">
-            <span className="stat-val" style={{ color: 'var(--muted)' }}>{36 + (ALL.filter((s: any) => materias[s.id] === 'aprobada' && s.level && ELECTIVAS[s.level as keyof typeof ELECTIVAS]?.some((e:any) => e.id === s.id)).length)}</span>
+            <span className="stat-val" style={{ color: 'var(--muted)' }}>{36 + (ALL.filter((s: any) => materias[s.id] === 'aprobada' && s.level && ELECTIVAS[s.level as keyof typeof ELECTIVAS] ?.some((e:any) => e.id === s.id)).length)}</span>
             <span className="stat-label">total materias</span>
           </div>
           <div className="progress-bar desktop-only">

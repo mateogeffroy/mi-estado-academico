@@ -107,6 +107,27 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
   return (
     <>
+      {/* 🔥 MAGIA DE RESPONSIVIDAD: 
+        Forzamos a que el menú completo desaparezca y aparezca la hamburguesa
+        mucho antes (a los 1150px) para que los botones no se aplasten.
+      */}
+      <style>{`
+        .nav-full-menu {
+          display: flex;
+        }
+        .nav-burger-btn {
+          display: none;
+        }
+        @media (max-width: 1150px) {
+          .nav-full-menu {
+            display: none !important;
+          }
+          .nav-burger-btn {
+            display: flex !important;
+          }
+        }
+      `}</style>
+
       <header>
         <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', position: 'relative', zIndex: 1000 }}>
           
@@ -116,12 +137,13 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                 <div className="logo">
                   Mi Estado <span style={{ color: 'var(--cursando)' }}>Académico</span>
                 </div>
-                <div className="subtitle desktop-only">ING. EN SISTEMAS DE INFORMACIÓN - UTN FRLP</div>
+                {/* Ocultamos el subtítulo a los 1150px también para hacer espacio */}
+                <div className="subtitle nav-full-menu">ING. EN SISTEMAS DE INFORMACIÓN - UTN FRLP</div>
               </div>
             </Link>
           </div>
 
-          <div className="desktop-only" style={{ flex: 1, justifyContent: 'center' }}>
+          <div className="nav-full-menu" style={{ flex: 1, justifyContent: 'center' }}>
             {pathname === '/plan' && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot ld-disabled" style={{ width: '8px', height: '8px' }}></div>Bloqueada</div>
@@ -130,7 +152,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot ld-cursada" style={{ width: '8px', height: '8px' }}></div>Cursada</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot ld-aprobada" style={{ width: '8px', height: '8px' }}></div>Aprobada</div>
                 
-                {/* 🔥 SOLUCIÓN: SVG sin el círculo para que aproveche el de la clase .help-btn */}
                 <button 
                   className="help-btn"
                   onClick={() => setIsModalOpen(true)}
@@ -144,7 +165,9 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           </div>
 
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-            <div className="desktop-only" style={{ gap: '10px', alignItems: 'center' }}>
+            
+            {/* ESTE ES EL MENÚ COMPLETO (Se oculta en pantallas medianas/chicas) */}
+            <div className="nav-full-menu" style={{ gap: '10px', alignItems: 'center' }}>
               
               {/* BOTÓN CAFECITO (PC) */}
               {pathname === '/' && (
@@ -155,7 +178,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                     onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'; e.currentTarget.style.color = '#f59e0b'; }}
                     title="Invitame un Cafecito"
                   >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4-4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
                     Cafecito
                   </button>
                 </Link>
@@ -195,8 +218,9 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               </button>
             </div>
 
+            {/* ESTA ES LA HAMBURGUESA (Aparece cuando el menú completo se oculta) */}
             <button 
-              className="mobile-only hamburger-btn" 
+              className="nav-burger-btn hamburger-btn" 
               onClick={() => setIsSidebarOpen(true)}
             >
               <div className={`hamburger-icon ${isSidebarOpen ? 'open' : ''}`}>
@@ -282,7 +306,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               }}
               style={{ justifyContent: 'center', background: 'var(--cursando)', color: 'black', border: 'none', marginTop: '4px' }}
             >
-              {/* SVG de ayuda simplificado */}
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               ¿Cómo usar el Plan?
             </button>

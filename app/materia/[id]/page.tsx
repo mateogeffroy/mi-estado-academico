@@ -78,8 +78,10 @@ export default function MateriaPage() {
   };
 
   // Separamos el nombre para hacer el efecto bicolor del título estilo Logo
-  const primerPalabra = materia.name.split(' ')[0];
-  const restoNombre = materia.name.substring(materia.name.indexOf(' ') + 1);
+  // Separamos el nombre para hacer el efecto bicolor del título estilo Logo
+  const spaceIndex = materia.name.indexOf(' ');
+  const primerPalabra = spaceIndex === -1 ? materia.name : materia.name.substring(0, spaceIndex);
+  const restoNombre = spaceIndex === -1 ? '' : materia.name.substring(spaceIndex + 1);
 
   return (
     <>
@@ -139,7 +141,6 @@ export default function MateriaPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '20px', gap: '20px', flexWrap: 'wrap' }}>
           
           <div style={{ flex: '1 1 0%', minWidth: '250px' }}>
-            {/* 🔥 SOLUCIÓN: clamp() modificado para que baje hasta 1.4rem en celulares, pero mantenga los 2.8rem en PC */}
             <h1 className="logo" style={{ fontSize: 'clamp(1.4rem, 6vw, 2.8rem)', marginBottom: '10px', textTransform: 'uppercase', lineHeight: '1.1' }}>
               <span style={{ color: 'white' }}>{primerPalabra}</span> {restoNombre && <span style={{ color: 'var(--cursando)' }}>{restoNombre}</span>}
             </h1>
@@ -149,7 +150,6 @@ export default function MateriaPage() {
           </div>
 
           <Link href="/cursada#gestionar-materias" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            {/* Botón alineado al estilo de las páginas anteriores */}
             <button 
               className="btn-secondary"
               style={{ textAlign: 'center', lineHeight: '1.4', padding: '8px 16px' }}
@@ -257,35 +257,73 @@ export default function MateriaPage() {
                   <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 5px 0' }}>Seleccioná tu comisión para organizar tus horarios:</p>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {materia.comisiones.map((comision: any) => (
-                      <button
-                        key={comision.id}
-                        onClick={() => handleSeleccionarComision(comision.id)}
-                        style={{
-                          width: '100%',
-                          padding: '16px',
-                          borderRadius: '12px',
-                          border: comisionGuardada === comision.id ? '2px solid var(--cursando)' : '1px solid var(--border)',
-                          background: comisionGuardada === comision.id ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0,0,0,0.2)',
-                          color: 'white',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'flex-start',
-                          transition: 'all 0.2s ease',
-                        }}
-                      >
-                        <span style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '12px', color: comisionGuardada === comision.id ? 'var(--cursando)' : 'white' }}>
-                          Comisión {comision.id}
-                        </span>
-                        {comision.dias.map((dia: any, index: number) => (
-                          <div key={index} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px' }}>
-                            <span style={{ color: 'white' }}>{dia.nombre}</span>
-                            <span>{dia.inicio} - {dia.fin}</span>
+                    {materia.comisiones.map((comision: any) => {
+                      
+                      // Lógica de colores y etiquetas según la duración
+                      const duracion = comision.duration || 'A';
+                      let labelDuracion = 'Anual';
+                      let colorFondoDur = 'rgba(59, 130, 246, 0.15)'; // Azul
+                      let colorTextoDur = '#3b82f6';
+
+                      if (duracion === '1') {
+                        labelDuracion = '1º Cuatrimestre';
+                        colorFondoDur = 'rgba(34, 197, 94, 0.15)'; // Verde
+                        colorTextoDur = '#22c55e';
+                      } else if (duracion === '2') {
+                        labelDuracion = '2º Cuatrimestre';
+                        colorFondoDur = 'rgba(244, 63, 94, 0.15)'; // Rojo
+                        colorTextoDur = '#f43f5e';
+                      }
+
+                      return (
+                        <button
+                          key={comision.id}
+                          onClick={() => handleSeleccionarComision(comision.id)}
+                          style={{
+                            width: '100%',
+                            padding: '16px',
+                            borderRadius: '12px',
+                            border: comisionGuardada === comision.id ? '2px solid var(--cursando)' : '1px solid var(--border)',
+                            background: comisionGuardada === comision.id ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0,0,0,0.2)',
+                            color: 'white',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start',
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
+                          {/* Contenedor del Título y el Badge */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '12px' }}>
+                            <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: comisionGuardada === comision.id ? 'var(--cursando)' : 'white' }}>
+                              Comisión {comision.id}
+                            </span>
+                            
+                            {/* Etiqueta Visual de Cuatrimestre */}
+                            <span style={{ 
+                              background: colorFondoDur, 
+                              color: colorTextoDur, 
+                              padding: '4px 8px', 
+                              borderRadius: '6px', 
+                              fontSize: '0.75rem', 
+                              fontWeight: 'bold',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                              border: `1px solid ${colorTextoDur}40`
+                            }}>
+                              {labelDuracion}
+                            </span>
                           </div>
-                        ))}
-                      </button>
-                    ))}
+
+                          {comision.dias.map((dia: any, index: number) => (
+                            <div key={index} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px' }}>
+                              <span style={{ color: 'white' }}>{dia.nombre}</span>
+                              <span>{dia.inicio} - {dia.fin}</span>
+                            </div>
+                          ))}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
