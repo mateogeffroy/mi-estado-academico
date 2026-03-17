@@ -724,19 +724,16 @@ input, select, textarea, button {
    SISTEMA DE PUBLICIDAD (TORRES LATERALES ABSOLUTAS)
    ========================================================================== */
 
-/* 1. Contenedor móvil con TECHO DE HORMIGÓN a nivel global */
 .mobile-ad-container {
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
   padding: 0 16px;
-  /* Evita los saltos (CLS) forzando el tamaño máximo */
-  min-height: 50px;
-  max-height: 100px;
+  height: 100px; /* 🔥 1. FIJAMOS la altura a 100px para que la caja exista */
   overflow: hidden;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: stretch; /* 🔥 2. STRETCH obliga a la caja punteada a ocupar todo el alto */
 }
 
 @media (min-width: 1450px) {
