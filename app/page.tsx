@@ -60,11 +60,6 @@ export default function Dashboard() {
         }
       `}</style>
 
-      {/* ANUNCIO TOP (Móvil) */}
-      <div className="mobile-ad-container">
-        <AdBanner dataAdSlot="MOB_TOP" dataAdFormat="horizontal" />
-      </div>
-
       {/* ============================================================
           SECCIÓN 1: HERO
           ============================================================ */}
