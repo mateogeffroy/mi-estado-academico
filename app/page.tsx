@@ -84,17 +84,18 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ============================================================
+            SECCIÓN 1: HERO (AJUSTADA PARA MÓVIL)
+           ============================================================ */}
         <section
           id="progreso"
           style={{
-            // Reducimos de 70vh a 50vh para que no ocupe tanto espacio vertical inicial
-            minHeight: '50vh', 
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
-            // Reducimos el padding superior para pegarlo más al header
-            paddingTop: '0px', 
-            marginTop: '-20px' // Opcional: un margen negativo para subirlo aún más
+            alignItems: 'center', // Centra horizontalmente
+            marginTop: '10px', // Margen pequeño para que pegue arriba
+            marginBottom: '40px'
+            // Eliminamos el minHeight y el justifyContent: 'center' que causaban el hueco
           }}
         >
           <div style={{ width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px', padding: '0 16px' }}>
