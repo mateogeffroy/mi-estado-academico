@@ -215,7 +215,12 @@ export default function Dashboard() {
             <AdBanner dataAdSlot="BLOG_R" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
         </div>
+
       </div>
+        {/* ANUNCIO TOP (Móvil) */}
+        <div className="mobile-ad-container">
+          <AdBanner dataAdSlot="MOB_TOP" dataAdFormat="horizontal" />
+        </div>
 
       <GradeModal isOpen={isGradeModalOpen} onClose={() => setIsGradeModalOpen(false)} materiaName={selectedMateria?.name || ''} onSubmit={(nota) => { if (selectedMateria) { actualizarDetalleMateria(selectedMateria.id, { ...detalles[selectedMateria.id], notaFinal: nota }); } }} />
     </main>
