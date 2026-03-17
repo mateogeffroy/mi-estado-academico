@@ -70,7 +70,15 @@ export default function Dashboard() {
       `}</style>
 
       {/* ANUNCIO TOP (Móvil) */}
-      <div className="mobile-ad-container">
+      <div 
+          className="mobile-ad-container" 
+          style={{ 
+            minHeight: '50px', 
+            maxHeight: '100px',
+            overflow: 'hidden',
+            marginBottom: '10px'
+          }}
+        >
         <AdBanner dataAdSlot="MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
       </div>
 
