@@ -37,7 +37,6 @@ export default function Dashboard() {
     s.id !== 'PPS'
   ).sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
-  // Quitamos el gap global del main para controlarlo mejor individualmente
   return (
     <main style={{ display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
       
@@ -59,48 +58,12 @@ export default function Dashboard() {
            60% { transform: rotate( 0.0deg) }
           100% { transform: rotate( 0.0deg) }
         }
-
-        /* 🔥 CORRECCIÓN DEFINITIVA DE SALTOS (CLS) Y RESPONSIVIDAD 🔥 */
-        .mobile-ad-container {
-          width: 100%;
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 0 16px;
-          /* Candado de altura estricto */
-          min-height: 50px;
-          max-height: 100px;
-          overflow: hidden;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        /* En celulares, destruimos las reglas del desktop que rompen el diseño */
-        @media (max-width: 1450px) {
-          .section-row {
-            min-height: 0 !important;
-            height: auto !important;
-            display: block !important;
-            margin-bottom: 30px;
-          }
-          .ad-wrapper-left, .ad-wrapper-right, .desktop-side-ad {
-            display: none !important;
-          }
-        }
-
-        @media (min-width: 1451px) {
-          .mobile-ad-container { display: none !important; }
-        }
       `}</style>
 
-      {/* ANUNCIO TOP (Móvil) */}
       <div className="mobile-ad-container" style={{ marginTop: '10px', marginBottom: '10px' }}>
         <AdBanner dataAdSlot="MOB_TOP" dataAdFormat="horizontal" />
       </div>
 
-      {/* ============================================================
-          SECCIÓN 1: HERO
-          ============================================================ */}
       <div className="section-row">
         <div className="ad-wrapper-left">
           <div className="desktop-side-ad">
@@ -108,15 +71,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <section
-          id="progreso"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            marginBottom: '40px'
-          }}
-        >
+        <section id="progreso" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '40px' }}>
           <div style={{ width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px', padding: '0 16px' }}>
             <div style={{ textAlign: 'center' }}>
               <h2 style={{ fontSize: 'clamp(1rem, 4vw, 1.6rem)', color: 'white', margin: '0 0 8px 0', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -171,9 +126,6 @@ export default function Dashboard() {
         <AdBanner dataAdSlot="MOB_MID" dataAdFormat="horizontal" />
       </div>
 
-      {/* ============================================================
-          SECCIÓN 2: HISTORIAL DE APROBADAS
-          ============================================================ */}
       <div className="section-row">
         <div className="ad-wrapper-left">
           <div className="desktop-side-ad">
@@ -216,9 +168,6 @@ export default function Dashboard() {
         <AdBanner dataAdSlot="PENDIENTE_CENTRO" dataAdFormat="horizontal" />
       </div>
 
-      {/* ============================================================
-          SECCIÓN 3: BLOG
-          ============================================================ */}
       <div className="section-row">
         <div className="ad-wrapper-left">
           <div className="desktop-side-ad">
