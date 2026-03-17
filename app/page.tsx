@@ -84,7 +84,19 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <section id="progreso" style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '20px', width: '100%', maxWidth: '900px' }}>
+        <section
+          id="progreso"
+          style={{
+            // Reducimos de 70vh a 50vh para que no ocupe tanto espacio vertical inicial
+            minHeight: '50vh', 
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            // Reducimos el padding superior para pegarlo más al header
+            paddingTop: '0px', 
+            marginTop: '-20px' // Opcional: un margen negativo para subirlo aún más
+          }}
+        >
           <div style={{ width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px', padding: '0 16px' }}>
             <div style={{ textAlign: 'center' }}>
               <h2 style={{ fontSize: 'clamp(1rem, 4vw, 1.6rem)', color: 'white', margin: '0 0 8px 0', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
