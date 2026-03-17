@@ -38,7 +38,7 @@ export default function Dashboard() {
   ).sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
   return (
-    <main style={{ display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
+    <main style={{ display: 'flex', flexDirection: 'column', gap: '40px', paddingBottom: '80px' }}>
       
       <style>{`
         .wave {
@@ -58,12 +58,25 @@ export default function Dashboard() {
            60% { transform: rotate( 0.0deg) }
           100% { transform: rotate( 0.0deg) }
         }
+        .mobile-ad-container {
+          width: 100%;
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 0 16px;
+        }
+        @media (min-width: 1450px) {
+          .mobile-ad-container { display: none; }
+        }
       `}</style>
 
-      <div className="mobile-ad-container" style={{ marginTop: '10px', marginBottom: '10px' }}>
-        <AdBanner dataAdSlot="MOB_TOP" dataAdFormat="horizontal" />
+      {/* ANUNCIO TOP (Móvil) */}
+      <div className="mobile-ad-container">
+        <AdBanner dataAdSlot="MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
       </div>
 
+      {/* ============================================================
+          SECCIÓN 1: HERO
+          ============================================================ */}
       <div className="section-row">
         <div className="ad-wrapper-left">
           <div className="desktop-side-ad">
@@ -71,7 +84,19 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <section id="progreso" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '40px' }}>
+        <section
+          id="progreso"
+          style={{
+            // Reducimos de 70vh a 50vh para que no ocupe tanto espacio vertical inicial
+            minHeight: '50vh', 
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            // Reducimos el padding superior para pegarlo más al header
+            paddingTop: '0px', 
+            marginTop: '-20px' // Opcional: un margen negativo para subirlo aún más
+          }}
+        >
           <div style={{ width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px', padding: '0 16px' }}>
             <div style={{ textAlign: 'center' }}>
               <h2 style={{ fontSize: 'clamp(1rem, 4vw, 1.6rem)', color: 'white', margin: '0 0 8px 0', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -122,10 +147,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="mobile-ad-container" style={{ marginBottom: '30px' }}>
-        <AdBanner dataAdSlot="MOB_MID" dataAdFormat="horizontal" />
+      <div className="mobile-ad-container">
+        <AdBanner dataAdSlot="MOB_MID" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
       </div>
 
+      {/* ============================================================
+          SECCIÓN 2: HISTORIAL DE APROBADAS
+          ============================================================ */}
       <div className="section-row">
         <div className="ad-wrapper-left">
           <div className="desktop-side-ad">
@@ -133,7 +161,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <section id="aprobadas" style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+        <section id="aprobadas" style={{ padding: '0 12px', width: '100%', maxWidth: '800px' }}>
           <div style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)' }}>
             <h3 style={{ color: 'var(--aprobada)', marginBottom: '16px', fontSize: '1.1rem', fontWeight: 700 }}>Materias aprobadas</h3>
             {aprobadasOrdenadas.length === 0 ? (
@@ -164,10 +192,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="mobile-ad-container" style={{ marginTop: '10px', marginBottom: '30px' }}>
-        <AdBanner dataAdSlot="PENDIENTE_CENTRO" dataAdFormat="horizontal" />
+      <div style={{ padding: '0 12px', maxWidth: '800px', width: '100%', margin: '0 auto' }}>
+        <AdBanner dataAdSlot="PENDIENTE_CENTRO" dataAdFormat="horizontal" style={{ minHeight: '120px', width: '100%' }} />
       </div>
 
+      {/* ============================================================
+          SECCIÓN 3: BLOG
+          ============================================================ */}
       <div className="section-row">
         <div className="ad-wrapper-left">
           <div className="desktop-side-ad">
@@ -175,7 +206,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <section id="blog" style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+        <section id="blog" style={{ padding: '0 12px', marginTop: '10px', width: '100%', maxWidth: '800px' }}>
           <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
             Blog y Novedades
