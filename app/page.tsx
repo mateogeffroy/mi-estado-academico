@@ -10,7 +10,7 @@ import { supabase } from '../src/lib/supabase';
 import AdBanner from '../src/components/AdBanner';
 
 export default function Dashboard() {
-  const { materias, stats, detalles, actualizarDetalleMateria, user, careerData } = usePlan();
+  const { materias, stats, detalles, actualizarDetalleMateria, user, careerData, careerId } = usePlan();
   const { ALL, careerInfo } = careerData;
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
   const [selectedMateria, setSelectedMateria] = useState<{ id: string; name: string } | null>(null);
@@ -36,6 +36,35 @@ export default function Dashboard() {
     s.id !== 'SEM' &&
     s.id !== 'PPS'
   ).sort((a, b) => parseInt(a.id) - parseInt(b.id));
+
+  const NOVEDADES = [
+    {
+      id: 'como-se-hizo',
+      href: '/blog/como-se-hizo',
+      tag: 'Desarrollo',
+      tagColor: 'var(--cursando)',
+      titulo: 'Detrás del código: Cómo construí Mi Estado Académico',
+      descripcion: 'Un repaso por las tecnologías, desafíos y la historia de cómo nació esta herramienta para los alumnos de la UTN.',
+      iconColor: 'var(--cursando)',
+      // Lo ven los de Sistemas UTN y APU UNLP (por ser carreras tech)
+      targetCareers: ['utn-sistemas-2023'] 
+    },
+    {
+      id: 'correlatividades',
+      href: '/blog/correlatividades',
+      tag: 'Guía UTN',
+      tagColor: 'var(--aprobada)',
+      titulo: 'Correlatividades UTN: El mapa para no trabarte',
+      descripcion: 'Elegir mal una materia te puede costar un año. Analizamos los cuellos de botella del Plan 2023 de Sistemas.',
+      iconColor: 'var(--aprobada)',
+      targetCareers: ['utn-sistemas-2023'] 
+    }
+  ];
+
+  // 🔥 EL FILTRO MÁGICO
+  const novedadesFiltradas = NOVEDADES.filter(post => 
+    post.targetCareers.includes(careerId)
+  );
 
   return (
     <main style={{ display: 'flex', flexDirection: 'column', gap: '40px', paddingBottom: '80px' }}>
@@ -174,53 +203,56 @@ export default function Dashboard() {
       {/* ============================================================
           SECCIÓN 3: BLOG
           ============================================================ */}
-      <div className="section-row">
-        <div className="ad-wrapper-left">
-          <div className="desktop-side-ad">
-            <AdBanner dataAdSlot="BLOG_L" dataAdFormat="vertical" style={{ height: '100%' }} />
+      {/* ============================================================
+          SECCIÓN 3: BLOG (Condicional)
+          ============================================================ */}
+      {novedadesFiltradas.length > 0 && (
+        <div className="section-row">
+          <div className="ad-wrapper-left">
+            <div className="desktop-side-ad">
+              <AdBanner dataAdSlot="BLOG_L" dataAdFormat="vertical" style={{ height: '100%' }} />
+            </div>
+          </div>
+
+          <section id="blog" style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+            <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+              Blog y Novedades
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+              
+              {novedadesFiltradas.map((post) => (
+                <Link key={post.id} href={post.href} style={{ textDecoration: 'none' }}>
+                  <article className="premium-card" style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid var(--border)' }}>
+                    <div style={{ opacity: 1, display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <div style={{ color: post.tagColor, fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '1px' }}>
+                        {post.tag}
+                      </div>
+                      <h4 style={{ color: 'white', margin: '0 0 12px 0', fontSize: '1.1rem', lineHeight: '1.3' }}>
+                        {post.titulo}
+                      </h4>
+                      <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: '1.5', margin: '0 0 20px 0', flex: 1 }}>
+                        {post.descripcion}
+                      </p>
+                      <div style={{ color: 'white', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        Leer artículo 
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={post.iconColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                      </div>
+                    </div>
+                  </article>
+                </Link>
+              ))}
+
+            </div>
+          </section>
+
+          <div className="ad-wrapper-right">
+            <div className="desktop-side-ad">
+              <AdBanner dataAdSlot="BLOG_R" dataAdFormat="vertical" style={{ height: '100%' }} />
+            </div>
           </div>
         </div>
-
-        <section id="blog" style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
-          <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
-            Blog y Novedades
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
-            <Link href="/blog/como-se-hizo" style={{ textDecoration: 'none' }}>
-              <article className="premium-card" style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid var(--border)' }}>
-                <div style={{ opacity: 1, display: 'flex', flexDirection: 'column', flex: 1 }}>
-                  <div style={{ color: 'var(--cursando)', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '1px' }}>Desarrollo</div>
-                  <h4 style={{ color: 'white', margin: '0 0 12px 0', fontSize: '1.1rem', lineHeight: '1.3' }}>Detrás del código: Cómo construí Mi Estado Académico</h4>
-                  <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: '1.5', margin: '0 0 20px 0', flex: 1 }}>Un repaso por las tecnologías, desafíos y la historia de cómo nació esta herramienta para los alumnos de la UTN.</p>
-                  <div style={{ color: 'white', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>Leer artículo <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
-                </div>
-              </article>
-            </Link>
-            <Link href="/blog/correlatividades" style={{ textDecoration: 'none' }}>
-              <article className="premium-card" style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid var(--border)' }}>
-                <div style={{ opacity: 1, display: 'flex', flexDirection: 'column', flex: 1 }}>
-                  <div style={{ color: 'var(--aprobada)', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '1px' }}>Guía UTN</div>
-                  <h4 style={{ color: 'white', margin: '0 0 12px 0', fontSize: '1.1rem', lineHeight: '1.3' }}>Correlatividades UTN: El mapa para no trabarte</h4>
-                  <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: '1.5', margin: '0 0 20px 0', flex: 1 }}>Elegir mal una materia te puede costar un año. Analizamos los cuellos de botella del Plan 2023 de Sistemas.</p>
-                  <div style={{ color: 'white', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>Leer artículo <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--aprobada)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
-                </div>
-              </article>
-            </Link>
-          </div>
-        </section>
-
-        <div className="ad-wrapper-right">
-          <div className="desktop-side-ad">
-            <AdBanner dataAdSlot="BLOG_R" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-        </div>
-
-      </div>
-        {/* ANUNCIO TOP (Móvil) */}
-        <div className="mobile-ad-container">
-          <AdBanner dataAdSlot="MOB_TOP" dataAdFormat="horizontal" />
-        </div>
+      )}
 
       <GradeModal isOpen={isGradeModalOpen} onClose={() => setIsGradeModalOpen(false)} materiaName={selectedMateria?.name || ''} onSubmit={(nota) => { if (selectedMateria) { actualizarDetalleMateria(selectedMateria.id, { ...detalles[selectedMateria.id], notaFinal: nota }); } }} />
     </main>

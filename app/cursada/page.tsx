@@ -9,6 +9,8 @@ import AdBanner from '../../src/components/AdBanner'; // 🔥 Importamos el Bann
 export default function CursadaPage() {
   const { materias, detalles, careerData } = usePlan();
   const { ALL } = careerData;
+  const soportaHorarios = ALL.some((m: any) => m.comisiones && m.comisiones.length > 0);
+
   const [hoveredDayData, setHoveredDayData] = useState<{ day: number, events: string[] } | null>(null);
   const [viewDate, setViewDate] = useState(new Date());
   
@@ -267,70 +269,79 @@ export default function CursadaPage() {
               </Link>
             </div>
 
-            {/* --- HORARIO SEMANAL CON FILTRO --- */}
-            <div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
-                <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  Horario Semanal
-                </h3>
+            {/* --- HORARIO SEMANAL CON FILTRO (Condicional) --- */}
+            {soportaHorarios ? (
+              <div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+                  <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Horario Semanal
+                  </h3>
 
-                <div style={{ display: 'flex', background: 'var(--panel)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)', width: 'fit-content' }}>
-                  {['1', 'Ambos', '2'].map((opcion) => (
-                    <div
-                      key={opcion}
-                      onClick={() => setFiltroCuatri(opcion)}
-                      style={{
-                        padding: '8px 16px', fontSize: '0.85rem', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease',
-                        color: filtroCuatri === opcion ? 'white' : 'var(--muted)',
-                        background: filtroCuatri === opcion ? 'var(--cursando)' : 'transparent',
-                        boxShadow: filtroCuatri === opcion ? '0 2px 10px rgba(0,0,0,0.2)' : 'none'
-                      }}
-                    >
-                      {opcion === '1' ? '1º Cuatri' : opcion === '2' ? '2º Cuatri' : 'Ambos'}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {diasMostrar.length === 0 ? (
-                <div style={{ padding: '30px', textAlign: 'center', color: 'var(--muted)', background: 'var(--panel)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-                  No tenés horarios guardados para este filtro.
-                </div>
-              ) : (
-                <div className="horario-grid">
-                  {diasMostrar.map((dia) => (
-                    <div key={dia} style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
-                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', textAlign: 'center', fontWeight: 'bold', color: 'white', borderBottom: '1px solid var(--border)' }}>
-                        {dia}
+                  <div style={{ display: 'flex', background: 'var(--panel)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)', width: 'fit-content' }}>
+                    {['1', 'Ambos', '2'].map((opcion) => (
+                      <div
+                        key={opcion}
+                        onClick={() => setFiltroCuatri(opcion)}
+                        style={{
+                          padding: '8px 16px', fontSize: '0.85rem', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease',
+                          color: filtroCuatri === opcion ? 'white' : 'var(--muted)',
+                          background: filtroCuatri === opcion ? 'var(--cursando)' : 'transparent',
+                          boxShadow: filtroCuatri === opcion ? '0 2px 10px rgba(0,0,0,0.2)' : 'none'
+                        }}
+                      >
+                        {opcion === '1' ? '1º Cuatri' : opcion === '2' ? '2º Cuatri' : 'Ambos'}
                       </div>
-                      <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '15px', minHeight: '120px' }}>
-                        {horariosSemanales[dia].map((clase: any) => (
-                          <div key={clase.id} style={{ background: clase.colorFondo, padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.03)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '45px 3px 1fr', gap: '12px', alignItems: 'stretch' }}>
-                              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', fontFamily: 'Space Mono, monospace', fontSize: '0.8rem', color: 'var(--muted)', padding: '2px 0' }}>
-                                <span style={{ color: 'white', fontWeight: 'bold' }}>{clase.inicio}</span>
-                                <span style={{ fontSize: '0.7rem', opacity: 0.6, margin: 'auto 0' }}>a</span>
-                                <span style={{ color: 'white', fontWeight: 'bold' }}>{clase.fin}</span>
-                              </div>
-                              <div style={{ background: clase.colorBorde, borderRadius: '4px', width: '100%', opacity: 0.9 }}></div>
-                              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2px 0' }}>
-                                <div style={{ fontWeight: 'bold', color: 'white', fontSize: '0.95rem', lineHeight: 1.2 }}>
-                                  {clase.materiaLimpia} <span style={{ fontSize: '0.75rem', color: clase.colorBorde, whiteSpace: 'nowrap' }}>{clase.cuatrimestre}</span>
+                    ))}
+                  </div>
+                </div>
+                
+                {diasMostrar.length === 0 ? (
+                  <div style={{ padding: '30px', textAlign: 'center', color: 'var(--muted)', background: 'var(--panel)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                    No tenés horarios guardados para este filtro.
+                  </div>
+                ) : (
+                  <div className="horario-grid">
+                    {diasMostrar.map((dia) => (
+                      <div key={dia} style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', textAlign: 'center', fontWeight: 'bold', color: 'white', borderBottom: '1px solid var(--border)' }}>
+                          {dia}
+                        </div>
+                        <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '15px', minHeight: '120px' }}>
+                          {horariosSemanales[dia].map((clase: any) => (
+                            <div key={clase.id} style={{ background: clase.colorFondo, padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.03)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: '45px 3px 1fr', gap: '12px', alignItems: 'stretch' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', fontFamily: 'Space Mono, monospace', fontSize: '0.8rem', color: 'var(--muted)', padding: '2px 0' }}>
+                                  <span style={{ color: 'white', fontWeight: 'bold' }}>{clase.inicio}</span>
+                                  <span style={{ fontSize: '0.7rem', opacity: 0.6, margin: 'auto 0' }}>a</span>
+                                  <span style={{ color: 'white', fontWeight: 'bold' }}>{clase.fin}</span>
                                 </div>
-                                <div style={{ color: 'var(--muted)', fontSize: '0.85rem', fontFamily: 'Space Mono, monospace', marginTop: '6px' }}>
-                                  Com. {clase.comision}
+                                <div style={{ background: clase.colorBorde, borderRadius: '4px', width: '100%', opacity: 0.9 }}></div>
+                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2px 0' }}>
+                                  <div style={{ fontWeight: 'bold', color: 'white', fontSize: '0.95rem', lineHeight: 1.2 }}>
+                                    {clase.materiaLimpia} <span style={{ fontSize: '0.75rem', color: clase.colorBorde, whiteSpace: 'nowrap' }}>{clase.cuatrimestre}</span>
+                                  </div>
+                                  <div style={{ color: 'var(--muted)', fontSize: '0.85rem', fontFamily: 'Space Mono, monospace', marginTop: '6px' }}>
+                                    Com. {clase.comision}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ padding: '30px', textAlign: 'center', background: 'var(--panel)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                <h3 style={{ color: 'white', fontSize: '1.2rem', marginBottom: '10px' }}>Horario Semanal</h3>
+                <p style={{ color: 'var(--muted)', margin: 0 }}>
+                  Las comisiones y horarios oficiales para tu carrera se agregarán próximamente. ¡Podés seguir esta seccion para agendar tus parciales!
+                </p>
+              </div>
+            )}
 
             {/* ANUNCIO MID 1 (Móvil) */}
             <div className="mobile-ad-container">

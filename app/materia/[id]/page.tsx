@@ -13,9 +13,8 @@ export default function MateriaPage() {
   const { detalles, actualizarDetalleMateria, careerData } = usePlan();
   const { getSubjectById, ALL } = careerData;
   const hoy = new Date().toISOString().split('T')[0];
-
-  // Buscamos la materia en la base de datos local
   const materia = getSubjectById(id);
+  const tieneComisiones = materia?.comisiones && materia.comisiones.length > 0;
   
   // Obtenemos los eventos guardados y LA COMISIÓN en Supabase/Local
   const eventosGuardados = detalles[id as string]?.eventos || [];
@@ -247,7 +246,8 @@ export default function MateriaPage() {
 
           {/* COLUMNA DERECHA (Flaca - Comisiones) */}
           <section style={{ flex: '1 1 35%', minWidth: '300px' }}>
-            {materia.comisiones && materia.comisiones.length > 0 && (
+
+            {tieneComisiones && (
               <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
                 <h2 style={{ color: 'white', fontSize: '1.2rem', marginBottom: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
