@@ -48,21 +48,11 @@ export default function PlanDeEstudios() {
       setTooltip(prev => prev.visible ? { ...prev, visible: false } : prev);
       setMenu(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
       setBlockedShake(null);
-
-      const footer = document.querySelector('footer');
-      const statBar = document.getElementById('stat-bar-container');
       
-      if (footer && statBar) {
-        const rect = footer.getBoundingClientRect();
-        if (rect.top < window.innerHeight) {
-          const overlap = window.innerHeight - rect.top;
-          statBar.style.transform = `translateY(-${overlap}px)`;
-        } else {
-          statBar.style.transform = `translateY(0px)`;
-        }
-      }
+      // 🔥 Borramos toda la lógica del "footer" y el "translateY" que había acá.
+      // Dejamos que el position: fixed nativo del navegador haga su trabajo.
     };
-    
+
     window.addEventListener('scroll', handleScrollAndMove, { passive: true });
     window.addEventListener('touchmove', handleScrollAndMove, { passive: true });
     window.addEventListener('wheel', handleScrollAndMove, { passive: true });
@@ -443,7 +433,7 @@ export default function PlanDeEstudios() {
         .scatter-ad-right { left: 100%; margin-left: 40px; }
       `}</style>
 
-      <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '80px', gap: '40px' }}>
+      <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '130px', gap: '40px' }}>
         
         {/* HEADER DE LA PÁGINA */}
         <div style={{ maxWidth: '950px', width: '100%', margin: '0 auto', padding: '0 16px' }}>
@@ -569,7 +559,7 @@ export default function PlanDeEstudios() {
         )}
 
         {/* BARRA DE ESTADÍSTICAS */}
-        <div id="stat-bar-container" className="stats-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 900, background: 'var(--bg)', borderTop: '1px solid var(--border)' }}>
+        <div id="stat-bar-container" className="stats-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 900, background: 'var(--bg)', borderTop: '1px solid var(--border)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="stat">
             <span className="stat-val" style={{ color: 'var(--aprobada)' }}>{stats.aprobadas}</span>
             <span className="stat-label">aprobadas</span>
