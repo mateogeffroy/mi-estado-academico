@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
-import { ALL } from '../../src/lib/data';
 import SpotlightCard from '../../src/components/SpotlightCard';
 import AdBanner from '../../src/components/AdBanner'; // 🔥 Importamos el Banner
 
 export default function CursadaPage() {
-  const { materias, detalles } = usePlan();
+  const { materias, detalles, careerData } = usePlan();
+  const { ALL } = careerData;
   const [hoveredDayData, setHoveredDayData] = useState<{ day: number, events: string[] } | null>(null);
   const [viewDate, setViewDate] = useState(new Date());
   

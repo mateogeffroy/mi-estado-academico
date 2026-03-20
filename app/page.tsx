@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../src/context/PlanContext';
-import { ALL } from '../src/lib/data';
 import AnimatedList from '../src/components/AnimatedList';
 import CountUp from '../src/components/CountUp';
 import GradeModal from '../src/components/GradeModal';
@@ -11,7 +10,8 @@ import { supabase } from '../src/lib/supabase';
 import AdBanner from '../src/components/AdBanner';
 
 export default function Dashboard() {
-  const { materias, stats, detalles, actualizarDetalleMateria, user } = usePlan();
+  const { materias, stats, detalles, actualizarDetalleMateria, user, careerData } = usePlan();
+  const { ALL, careerInfo } = careerData;
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
   const [selectedMateria, setSelectedMateria] = useState<{ id: string; name: string } | null>(null);
   

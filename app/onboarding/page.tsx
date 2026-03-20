@@ -4,26 +4,48 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../src/lib/supabase';
 
+// 🔥 DICCIONARIOS DE UNIVERSIDADES Y CARRERAS
+const UNIVERSIDADES = [
+  { id: 'utn', name: 'UTN (FRLP)' },
+  { id: 'unlp', name: 'UNLP' }
+];
+
+const CARRERAS_POR_UNI: Record<string, { id: string, name: string }[]> = {
+  'utn': [
+    { id: 'utn-sistemas-2023', name: 'Ingeniería en Sistemas de Información (Plan 2023)' }
+  ],
+  'unlp': [
+    { id: 'unlp-apu-2021', name: 'Analista Programador Universitario (Plan 2021)' }
+  ]
+};
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [nombre, setNombre] = useState('');
-  const [carrera, setCarrera] = useState('Ingeniería en Sistemas de Información');
+  const [universidad, setUniversidad] = useState('utn');
+  const [carreraId, setCarreraId] = useState('utn-sistemas-2023');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Verificamos si ya está logueado
+  // Verificamos si ya está logueado y tiene perfil
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.push('/login');
       } else if (session.user.user_metadata?.full_name) {
-        // Si ya tiene nombre, no tiene nada que hacer acá
         router.push('/');
       }
     };
     checkUser();
   }, [router]);
+
+  // Cuando cambia la universidad, seleccionamos por defecto la primera carrera de esa lista
+  useEffect(() => {
+    if (CARRERAS_POR_UNI[universidad] && CARRERAS_POR_UNI[universidad].length > 0) {
+      setCarreraId(CARRERAS_POR_UNI[universidad][0].id);
+    }
+  }, [universidad]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,11 +58,11 @@ export default function OnboardingPage() {
       return;
     }
 
-    // Actualizamos la metadata del usuario en Supabase
-    const { error: updateError } = await supabase.auth.updateUser({
+    // 1. Actualizamos la metadata del usuario en Supabase Auth
+    const { data: authData, error: updateError } = await supabase.auth.updateUser({
       data: {
         full_name: nombre,
-        carrera: carrera
+        carrera_id: carreraId // Guardamos el ID unificado
       }
     });
 
@@ -50,7 +72,23 @@ export default function OnboardingPage() {
       return;
     }
 
-    // 🔥 SOLUCIÓN: Forzamos una recarga completa para que el Dashboard lea el nombre nuevo al instante
+    // 2. 🔥 MAGIA: Upsert en la tabla progreso_usuarios
+    // Si la fila no existe la crea, si ya existe le actualiza la carrera_id
+    if (authData?.user) {
+      const { error: dbError } = await supabase
+        .from('progreso_usuarios')
+        .upsert({ 
+          id_usuario: authData.user.id,
+          carrera_id: carreraId
+        }, { onConflict: 'id_usuario' });
+      
+      if (dbError) {
+        console.error("Error vinculando la carrera en la BD:", dbError);
+        // Podrías manejar el error visualmente, pero por ahora avanzamos
+      }
+    }
+
+    // Forzamos recarga para que el PlanContext lea los datos frescos
     window.location.href = '/';
   };
 
@@ -67,6 +105,7 @@ export default function OnboardingPage() {
 
         <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
+          {/* Input: Nombre */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label style={{ color: 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold' }}>¿Cómo te llamás?</label>
             <input 
@@ -79,14 +118,35 @@ export default function OnboardingPage() {
             />
           </div>
 
+          {/* Selector: Universidad */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={{ color: 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold' }}>¿Qué carrera estudiás?</label>
+            <label style={{ color: 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold' }}>¿En qué universidad estudiás?</label>
             <select 
-              value={carrera}
-              onChange={(e) => setCarrera(e.target.value)}
+              value={universidad}
+              onChange={(e) => setUniversidad(e.target.value)}
               style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '1rem', cursor: 'pointer' }}
             >
-              <option value="Ingeniería en Sistemas de Información">Ingeniería en Sistemas de Información</option>
+              {UNIVERSIDADES.map(uni => (
+                <option key={uni.id} value={uni.id} style={{ background: 'var(--panel)' }}>
+                  {uni.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Selector: Carrera */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ color: 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold' }}>¿Qué carrera cursás?</label>
+            <select 
+              value={carreraId}
+              onChange={(e) => setCarreraId(e.target.value)}
+              style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '1rem', cursor: 'pointer' }}
+            >
+              {CARRERAS_POR_UNI[universidad]?.map(carrera => (
+                <option key={carrera.id} value={carrera.id} style={{ background: 'var(--panel)' }}>
+                  {carrera.name}
+                </option>
+              ))}
             </select>
           </div>
 

@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
-import { SUBJECTS, ELECTIVAS, getSubjectById, ALL } from '../../src/lib/data';
 import ConfirmModal from '../../src/components/ConfirmModal';
 import AdBanner from '../../src/components/AdBanner'; 
 
 export default function PlanDeEstudios() {
-  const { materias, detalles, cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas, stats } = usePlan();
-  const levels = [1, 2, 3, 4, 5];
+  const { materias, detalles, cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas, stats, careerData } = usePlan();
+  const { SUBJECTS, ELECTIVAS, getSubjectById, ALL } = careerData;
+  const maxLevel = Math.max(...SUBJECTS.map((s: any) => s.level || 1));
+  const levels = Array.from({ length: maxLevel }, (_, i) => i + 1);
 
   const [showScroll, setShowScroll] = useState(false);
   

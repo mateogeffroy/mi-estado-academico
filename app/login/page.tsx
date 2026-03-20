@@ -50,7 +50,7 @@ export default function AuthPage() {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         
-        setSuccessMsg('¡Cuenta creada con éxito! Ya podés iniciar sesión.');
+        setSuccessMsg('¡Cuenta creada con éxito! Revisá tu correo electrónico para confirmar la cuenta.');
         setIsLogin(true); 
         setPassword('');
         setConfirmPassword('');

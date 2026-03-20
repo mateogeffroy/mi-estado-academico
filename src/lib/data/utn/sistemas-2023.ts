@@ -420,3 +420,13 @@ function getSubjectById(id: any) {
 }
 
 export { ALL, SUBJECTS, ELECTIVAS, getSubjectById };
+
+export const careerInfo = {
+  id: 'utn-sistemas-2023',
+  universidad: 'UTN FRLP',
+  nombre: 'Ingeniería en Sistemas de Información',
+  plan: 'Plan 2023',
+  tituloIntermedio: 'Analista Universitario en Sistemas',
+  tituloFinal: 'Ingeniero en Sistemas de Información',
+  creditosTotales: 0, // Si lo usás en el futuro
+};
