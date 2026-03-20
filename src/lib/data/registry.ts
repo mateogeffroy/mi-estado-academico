@@ -26,6 +26,7 @@ export interface CareerData {
 // Mapeamos el ID de la carrera con su archivo de datos
 export const careersRegistry: Record<string, CareerData> = {
   'utn-sistemas-2023': UtnSistemas2023,
+  'unlp-apu-2021': UnlpApu2021,
 };
 
 // Función helper para obtener los datos de una carrera
