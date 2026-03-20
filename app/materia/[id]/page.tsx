@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePlan } from '../../../src/context/PlanContext';
-import { getSubjectById } from '../../../src/lib/data';
 import Link from 'next/link';
 import CustomSelect from '../../../src/components/CustomSelect';
 
@@ -11,7 +10,8 @@ export default function MateriaPage() {
   const params = useParams();
   const router = useRouter();
   const { id } = params;
-  const { detalles, actualizarDetalleMateria } = usePlan();
+  const { detalles, actualizarDetalleMateria, careerData } = usePlan();
+  const { getSubjectById, ALL } = careerData;
   const hoy = new Date().toISOString().split('T')[0];
 
   // Buscamos la materia en la base de datos local
