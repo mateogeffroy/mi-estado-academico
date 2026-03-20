@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
 import ConfirmModal from '../../src/components/ConfirmModal';
@@ -205,7 +205,7 @@ export default function PlanDeEstudios() {
     );
 
     let hasTitle = false;
-    const lines: JSX.Element[] = [];
+    const lines: React.ReactNode[] = [];
 
     const getCheckIcon = (ok: boolean) => ok 
       ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>

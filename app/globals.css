@@ -242,12 +242,20 @@ main {
    STATS BAR
    ============================================================ */
 .stats-bar {
-  position: sticky;
+  position: fixed; /* Forzamos fixed en el CSS para no depender del HTML */
   bottom: 0;
-  z-index: 100;
+  left: 0;
+  right: 0;
+  z-index: 1000; /* Lo subimos para que siempre esté al frente */
   background: var(--bg);
   border-top: 1px solid var(--border);
   padding: 10px 28px;
+  
+  /* Soportes mágicos para iOS */
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  
   display: flex;
   align-items: center;
   gap: 24px;
@@ -608,17 +616,15 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
     min-height: 90px !important;
   }
 
-  /* Stats bar */
+  /* Stats bar en Mobile */
   .stats-bar {
     flex-wrap: wrap !important;
     padding: 10px 14px !important;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
     gap: 10px !important;
   }
   .stat { flex: 1 1 30% !important; font-size: 0.65rem !important; }
   .stats-bar .progress-bar { width: 100% !important; order: 5; }
-
-  /* Scroll-to-top button */
-  .scroll-top-btn { bottom: 20px; right: 16px; width: 40px; height: 40px; font-size: 1.2rem; }
 }
 
 /* ============================================================
