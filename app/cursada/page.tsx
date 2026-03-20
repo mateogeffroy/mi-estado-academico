@@ -218,17 +218,19 @@ export default function CursadaPage() {
       
       <main style={{ paddingBottom: '80px', display: 'flex', flexDirection: 'column', gap: '40px', minHeight: '100vh' }}>
         
-        {/* ANUNCIO TOP (Móvil) */}
+        {/* ANUNCIO TOP (Móvil) (COMENTADO TEMPORALMENTE)
         <div className="mobile-ad-container">
           <AdBanner dataAdSlot="CURS_MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
         </div>
+        */}
 
         {/* CONTENEDOR RELATIVO (Ancla para los anuncios absolutos) */}
         <div style={{ position: 'relative', width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           
           {/* ==========================================
-              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS
+              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS (COMENTADOS)
               ========================================== */}
+          {/*
           <div className="scatter-ad-left" style={{ top: '2%' }}>
             <AdBanner dataAdSlot="CURS_L_1" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
@@ -248,6 +250,7 @@ export default function CursadaPage() {
           <div className="scatter-ad-right" style={{ top: '75%' }}>
             <AdBanner dataAdSlot="CURS_R_3" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
+          */}
 
           {/* ==========================================
               CONTENIDO CENTRAL
@@ -343,10 +346,11 @@ export default function CursadaPage() {
               </div>
             )}
 
-            {/* ANUNCIO MID 1 (Móvil) */}
+            {/* ANUNCIO MID 1 (Móvil) (COMENTADO TEMPORALMENTE)
             <div className="mobile-ad-container">
               <AdBanner dataAdSlot="CURS_MOB_MID_1" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
             </div>
+            */}
 
             {/* --- AGENDA Y CALENDARIO --- */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '40px', alignItems: 'flex-start' }}>
@@ -451,10 +455,11 @@ export default function CursadaPage() {
               </div>
             </div>
 
-            {/* ANUNCIO MID 2 (Móvil) */}
+            {/* ANUNCIO MID 2 (Móvil) (COMENTADO TEMPORALMENTE)
             <div className="mobile-ad-container">
               <AdBanner dataAdSlot="CURS_MOB_MID_2" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
             </div>
+            */}
 
             {/* --- MATERIAS EN CURSO --- */}
             <div id="gestionar-materias" style={{ scrollMarginTop: '120px' }}>
@@ -490,10 +495,11 @@ export default function CursadaPage() {
           </div>
         </div>
 
-        {/* ANUNCIO BOT (Móvil) */}
+        {/* ANUNCIO BOT (Móvil) (COMENTADO TEMPORALMENTE)
         <div className="mobile-ad-container">
           <AdBanner dataAdSlot="CURS_MOB_BOT" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
         </div>
+        */}
 
       </main>
     </>

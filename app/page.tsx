@@ -7,7 +7,8 @@ import AnimatedList from '../src/components/AnimatedList';
 import CountUp from '../src/components/CountUp';
 import GradeModal from '../src/components/GradeModal';
 import { supabase } from '../src/lib/supabase';
-import AdBanner from '../src/components/AdBanner';
+// El import lo dejamos por si el día de mañana los volvés a activar
+import AdBanner from '../src/components/AdBanner'; 
 
 export default function Dashboard() {
   const { materias, stats, detalles, actualizarDetalleMateria, user, careerData, careerId } = usePlan();
@@ -44,9 +45,9 @@ export default function Dashboard() {
       tag: 'Desarrollo',
       tagColor: 'var(--cursando)',
       titulo: 'Detrás del código: Cómo construí Mi Estado Académico',
-      descripcion: 'Un repaso por las tecnologías, desafíos y la historia de cómo nació esta herramienta para los alumnos de la UTN.',
+      descripcion: 'Un repaso por las tecnologías, desafíos y la historia de cómo nació esta herramienta para alumnos de la UTN.',
       iconColor: 'var(--cursando)',
-      // Lo ven los de Sistemas UTN y APU UNLP (por ser carreras tech)
+      // Lo ven de Sistemas UTN y APU UNLP (por ser carreras tech)
       targetCareers: ['utn-sistemas-2023'] 
     },
     {
@@ -93,11 +94,12 @@ export default function Dashboard() {
           SECCIÓN 1: HERO
           ============================================================ */}
       <div className="section-row">
-        <div className="ad-wrapper-left">
+        {/* <div className="ad-wrapper-left">
           <div className="desktop-side-ad">
             <AdBanner dataAdSlot="HERO_L" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
         </div>
+        */}
 
         {/* HERO LIMPIO: Sin flex centering raro ni vh, sube solo. */}
         <section id="progreso" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10px', marginBottom: '20px', width: '100%' }}>
@@ -144,26 +146,29 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <div className="ad-wrapper-right">
+        {/* <div className="ad-wrapper-right">
           <div className="desktop-side-ad">
             <AdBanner dataAdSlot="HERO_R" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
         </div>
+        */}
       </div>
 
-      <div className="mobile-ad-container">
+      {/* <div className="mobile-ad-container">
         <AdBanner dataAdSlot="MOB_MID" dataAdFormat="horizontal" />
       </div>
+      */}
 
       {/* ============================================================
           SECCIÓN 2: HISTORIAL DE APROBADAS
           ============================================================ */}
       <div className="section-row">
-        <div className="ad-wrapper-left">
+        {/* <div className="ad-wrapper-left">
           <div className="desktop-side-ad">
             <AdBanner dataAdSlot="APROB_L" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
         </div>
+        */}
 
         <section id="aprobadas" style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)' }}>
@@ -189,30 +194,30 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <div className="ad-wrapper-right">
+        {/* <div className="ad-wrapper-right">
           <div className="desktop-side-ad">
             <AdBanner dataAdSlot="APROB_R" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
         </div>
+        */}
       </div>
 
-      <div className="mobile-ad-container">
+      {/* <div className="mobile-ad-container">
         <AdBanner dataAdSlot="PENDIENTE_CENTRO" dataAdFormat="horizontal" />
       </div>
+      */}
 
-      {/* ============================================================
-          SECCIÓN 3: BLOG
-          ============================================================ */}
       {/* ============================================================
           SECCIÓN 3: BLOG (Condicional)
           ============================================================ */}
       {novedadesFiltradas.length > 0 && (
         <div className="section-row">
-          <div className="ad-wrapper-left">
+          {/* <div className="ad-wrapper-left">
             <div className="desktop-side-ad">
               <AdBanner dataAdSlot="BLOG_L" dataAdFormat="vertical" style={{ height: '100%' }} />
             </div>
           </div>
+          */}
 
           <section id="blog" style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
             <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -246,11 +251,12 @@ export default function Dashboard() {
             </div>
           </section>
 
-          <div className="ad-wrapper-right">
+          {/* <div className="ad-wrapper-right">
             <div className="desktop-side-ad">
               <AdBanner dataAdSlot="BLOG_R" dataAdFormat="vertical" style={{ height: '100%' }} />
             </div>
           </div>
+          */}
         </div>
       )}
 

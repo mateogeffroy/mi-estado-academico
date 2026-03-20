@@ -272,6 +272,12 @@ export default function PlanDeEstudios() {
     }
 
     let displayHours = subject.hours;
+    
+    // 🔥 MAGIA: Si es UNLP y el texto de horas es repetitivo ("1S", "2S", "Ingreso"), lo vaciamos
+    const isUnlp = careerData.careerInfo.id.includes('unlp');
+    if (isUnlp && ['1S', '2S', 'Ingreso'].includes(displayHours)) {
+      displayHours = '';
+    }
 
     if (subject.isElectivePlaceholder) {
       let globalCursadaHoursAnalista = 0;
@@ -327,9 +333,13 @@ export default function PlanDeEstudios() {
     let durationBadges = null;
 
     if (!subject.isElectivePlaceholder && estadoActual !== 'disabled') {
-      const duracionesUnicas = Array.from(
-        new Set((subject.comisiones || []).map((c: any) => c.duration).filter(Boolean))
-      ) as string[];
+      const duracionesSet = new Set<string>();
+      if (subject.duration) duracionesSet.add(subject.duration);
+      (subject.comisiones || []).forEach((c: any) => {
+        if (c.duration) duracionesSet.add(c.duration);
+      });
+
+      const duracionesUnicas = Array.from(duracionesSet);
 
       if (duracionesUnicas.length === 0 && !subject.isOutdated) {
         duracionesUnicas.push('A');
@@ -340,15 +350,18 @@ export default function PlanDeEstudios() {
           <div style={{ marginTop: '6px', marginBottom: '8px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {duracionesUnicas.sort().map(dur => {
               let label = 'Anual';
-              let pillBg = 'rgba(59, 130, 246, 0.85)';
+              let pillBg = 'rgba(59, 130, 246, 0.85)'; // Azul para Anual
               let pillColor = '#ffffff'; 
               
               if (dur === '1') {
-                label = '1C';
-                pillBg = 'rgba(34, 197, 94, 0.85)';
+                label = isUnlp ? '1S' : '1C';
+                pillBg = 'rgba(34, 197, 94, 0.85)'; // Verde
               } else if (dur === '2') {
-                label = '2C';
-                pillBg = 'rgba(244, 63, 94, 0.85)';
+                label = isUnlp ? '2S' : '2C';
+                pillBg = 'rgba(244, 63, 94, 0.85)'; // Rojo
+              } else if (dur === 'Ingreso') {
+                label = 'Ingreso';
+                pillBg = 'rgba(168, 85, 247, 0.85)'; // Violeta para el ingreso
               }
 
               const isCardColored = estadoActual === 'aprobada' || estadoActual === 'cursada' || estadoActual === 'cursando';
@@ -388,7 +401,7 @@ export default function PlanDeEstudios() {
         <div className="subject-num">{subject.num}</div>
         <div className="subject-name">{subject.name}</div>
         {durationBadges}
-        <div className="subject-hours" style={{ marginTop: durationBadges ? '0' : '10px' }}>{displayHours}</div>
+        {displayHours && <div className="subject-hours" style={{ marginTop: durationBadges ? '0' : '10px' }}>{displayHours}</div>}
         <div className="subject-status-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {getStatusIcon(estadoActual)}
         </div>
@@ -444,18 +457,19 @@ export default function PlanDeEstudios() {
           </div>
         </div>
 
-        {/* ANUNCIO TOP (Móvil) */}
+        {/* ANUNCIO TOP (Móvil) (COMENTADO TEMPORALMENTE) 
         <div className="mobile-ad-container">
           <AdBanner dataAdSlot="PLAN_MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
         </div>
+        */}
 
         {/* CONTENEDOR RELATIVO (Es el ancla para los anuncios absolutos) */}
         <div style={{ position: 'relative', width: '100%', maxWidth: '950px', margin: '0 auto', padding: '0 16px' }}>
           
           {/* ==========================================
-              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS
+              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS (COMENTADOS)
               ========================================== */}
-          {/* Lado Izquierdo */}
+          {/* Lado Izquierdo
           <div className="scatter-ad-left" style={{ top: '2%' }}>
             <AdBanner dataAdSlot="PLAN_L_1" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
@@ -465,8 +479,9 @@ export default function PlanDeEstudios() {
           <div className="scatter-ad-left" style={{ top: '75%' }}>
             <AdBanner dataAdSlot="PLAN_L_3" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
+          */}
 
-          {/* Lado Derecho */}
+          {/* Lado Derecho
           <div className="scatter-ad-right" style={{ top: '2%' }}>
             <AdBanner dataAdSlot="PLAN_R_1" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
@@ -476,6 +491,7 @@ export default function PlanDeEstudios() {
           <div className="scatter-ad-right" style={{ top: '75%' }}>
             <AdBanner dataAdSlot="PLAN_R_3" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
+          */}
 
           {/* CONTENIDO CENTRAL (Grillas de materias) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
@@ -486,12 +502,13 @@ export default function PlanDeEstudios() {
 
               return (
                 <div key={lvl} style={{ display: 'flex', flexDirection: 'column' }}>
-                  {/* Separador móvil cada 2 niveles */}
+                  {/* Separador móvil cada 2 niveles (COMENTADO TEMPORALMENTE) 
                   {index > 0 && index % 2 === 0 && (
                     <div className="mobile-ad-container" style={{ margin: '0 auto 40px auto' }}>
                       <AdBanner dataAdSlot={`PLAN_MOB_MID_${lvl}`} dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
                     </div>
                   )}
+                  */}
 
                   <div className="level-section" style={{ marginBottom: 0 }}>
                     <div className="level-header" style={{ color: `var(--n${lvl})` }}>

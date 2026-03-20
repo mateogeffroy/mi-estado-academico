@@ -75,18 +75,19 @@ export default function ComoSeHizoPost() {
 
       <main style={{ paddingBottom: '80px', display: 'flex', flexDirection: 'column', gap: '40px', minHeight: '100vh', paddingTop: '20px' }}>
         
-        {/* ANUNCIO TOP (Móvil) */}
+        {/* ANUNCIO TOP (Móvil) (COMENTADO TEMPORALMENTE)
         <div className="mobile-ad-container">
           <AdBanner dataAdSlot="BLOG_MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
         </div>
+        */}
 
         {/* CONTENEDOR RELATIVO (Ancla para los anuncios absolutos) */}
-        {/* Usamos maxWidth 1000px para que las torres queden un poco más cerca del texto (que tiene 800px) */}
         <div style={{ position: 'relative', width: '100%', maxWidth: '1000px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'center' }}>
           
           {/* ==========================================
-              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS
+              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS (COMENTADOS)
               ========================================== */}
+          {/* Lado Izquierdo
           <div className="scatter-ad-left" style={{ top: '2%' }}>
             <AdBanner dataAdSlot="BLOG_L_1" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
@@ -96,7 +97,9 @@ export default function ComoSeHizoPost() {
           <div className="scatter-ad-left" style={{ top: '75%' }}>
             <AdBanner dataAdSlot="BLOG_L_3" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
+          */}
 
+          {/* Lado Derecho
           <div className="scatter-ad-right" style={{ top: '2%' }}>
             <AdBanner dataAdSlot="BLOG_R_1" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
@@ -106,6 +109,7 @@ export default function ComoSeHizoPost() {
           <div className="scatter-ad-right" style={{ top: '75%' }}>
             <AdBanner dataAdSlot="BLOG_R_3" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
+          */}
 
           {/* ==========================================
               CONTENIDO CENTRAL DEL ARTÍCULO
@@ -150,10 +154,11 @@ export default function ComoSeHizoPost() {
                 El proyecto, al comenzar como un prototipo sencillo, fue desarrollado con <strong>HTML, CSS y JavaScript</strong>. El objetivo inicial era recrear el plan de estudios de forma clara, que al presionar una materia, pueda cambiar su estado y desbloquear las correlativas. Sin embargo, la interactividad necesaria para generar rutas, incluir librerías y funcionalidades avanzadas exigía un enfoque más moderno.
               </p>
               
-              {/* ANUNCIO IN-ARTICLE 1 (Muy efectivo en blogs) */}
+              {/* ANUNCIO IN-ARTICLE 1 (COMENTADO TEMPORALMENTE)
               <div className="mobile-ad-container" style={{ margin: '30px auto', display: 'block' }}>
                 <AdBanner dataAdSlot="BLOG_INSIDE_1" dataAdFormat="fluid" style={{ minHeight: '100px' }} />
               </div>
+              */}
 
               <p>
                 La transición a <strong>React</strong> fue el punto de inflexión. Esto permitió descomponer la interfaz en componentes reutilizables, como las tarjetas de las materias que hoy ves en el plan, facilitando el mantenimiento y la escalabilidad del proyecto para poder ampliarlos, eventualmente, a otros planes de estudios, sean de la UTN-FRLP o de otras instituciones.
@@ -176,10 +181,11 @@ export default function ComoSeHizoPost() {
                 Para que el progreso no se pierda al cerrar el navegador, inicialmente utilicé la función del <i>LocalStorage</i> que si bien fue útil para el comienzo del desarrollo, para el enfoque final del proyecto se quedaba chico. Por eso integré <strong>Supabase</strong> (un <i>BaaS, Backend as a Service</i>).
               </p>
 
-              {/* ANUNCIO IN-ARTICLE 2 */}
+              {/* ANUNCIO IN-ARTICLE 2 (COMENTADO TEMPORALMENTE)
               <div className="mobile-ad-container" style={{ margin: '30px auto', display: 'block' }}>
                 <AdBanner dataAdSlot="BLOG_INSIDE_2" dataAdFormat="rectangle" style={{ minHeight: '100px' }} />
               </div>
+              */}
 
               <p>
                 Esta tecnología, basada en PostgreSQL, nos permite manejar la base de datos y la autenticación de forma segura utilizando servicios de login de <i>Google OAuth</i> y <i>Resend</i>. Cada vez que marcás una materia como "Aprobada" o agendás un parcial, la información se sincroniza en tiempo real con la base de datos, así es portable a todos tus dispositivos a través de un sistema de cuentas.
@@ -245,10 +251,11 @@ export default function ComoSeHizoPost() {
           </article>
         </div>
 
-        {/* ANUNCIO BOT (Móvil) */}
+        {/* ANUNCIO BOT (Móvil) (COMENTADO TEMPORALMENTE)
         <div className="mobile-ad-container" style={{ marginTop: '20px' }}>
           <AdBanner dataAdSlot="BLOG_MOB_BOT" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
         </div>
+        */}
 
       </main>
     </>

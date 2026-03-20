@@ -66,17 +66,19 @@ export default function CorrelatividadesPost() {
 
       <main style={{ paddingBottom: '80px', display: 'flex', flexDirection: 'column', gap: '40px', minHeight: '100vh', paddingTop: '20px' }}>
         
-        {/* ANUNCIO TOP (Móvil) */}
+        {/* ANUNCIO TOP (Móvil) (COMENTADO TEMPORALMENTE)
         <div className="mobile-ad-container">
           <AdBanner dataAdSlot="CORREL_MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
         </div>
+        */}
 
         {/* CONTENEDOR RELATIVO (Ancla para los anuncios absolutos) */}
         <div style={{ position: 'relative', width: '100%', maxWidth: '1000px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'center' }}>
           
           {/* ==========================================
-              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS
+              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS (COMENTADOS)
               ========================================== */}
+          {/* Lado Izquierdo
           <div className="scatter-ad-left" style={{ top: '2%' }}>
             <AdBanner dataAdSlot="CORREL_L_1" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
@@ -86,7 +88,9 @@ export default function CorrelatividadesPost() {
           <div className="scatter-ad-left" style={{ top: '75%' }}>
             <AdBanner dataAdSlot="CORREL_L_3" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
+          */}
 
+          {/* Lado Derecho
           <div className="scatter-ad-right" style={{ top: '2%' }}>
             <AdBanner dataAdSlot="CORREL_R_1" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
@@ -96,6 +100,7 @@ export default function CorrelatividadesPost() {
           <div className="scatter-ad-right" style={{ top: '75%' }}>
             <AdBanner dataAdSlot="CORREL_R_3" dataAdFormat="vertical" style={{ height: '100%' }} />
           </div>
+          */}
 
           {/* ==========================================
               CONTENIDO CENTRAL DEL ARTÍCULO
@@ -138,10 +143,11 @@ export default function CorrelatividadesPost() {
               <h3>Algoritmos y Estructuras de Datos</h3>
               <p>Es la madre de la programación. Si no la aprobás (o firmás la cursada), te quedás fuera de la rama de desarrollo en 2do año, ya que bloquea <strong>Sintaxis</strong> y <strong>Paradigmas</strong>. Además, es necesaria para la integradora de 2do.</p>
 
-              {/* ANUNCIO IN-ARTICLE 1 (Móvil/Fluido) */}
+              {/* ANUNCIO IN-ARTICLE 1 (Móvil/Fluido) (COMENTADO TEMPORALMENTE)
               <div className="mobile-ad-container" style={{ margin: '30px auto', display: 'block' }}>
                 <AdBanner dataAdSlot="CORREL_INSIDE_1" dataAdFormat="fluid" style={{ minHeight: '100px' }} />
               </div>
+              */}
 
               <h3>Álgebra y Geometría Analítica</h3>
               <p>La "llave" silenciosa. Muchos la descuidan por las materias de código, pero sin Álgebra aprobada no podés tocar <strong>Economía</strong> ni <strong>Análisis Numérico</strong> en 3ro. Esto es crítico porque ambas son requisitos para el Título Intermedio.</p>
@@ -155,10 +161,11 @@ export default function CorrelatividadesPost() {
               <h3>Análisis Matemático II</h3>
               <p>A diferencia de lo que muchos creen, es un bloqueador mucho más potente que Física II. Te frena el acceso a <strong>Análisis Numérico</strong> y, más adelante, a materias de 4to como <strong>Simulación</strong>.</p>
 
-              {/* ANUNCIO IN-ARTICLE 2 (Móvil/Fluido) */}
+              {/* ANUNCIO IN-ARTICLE 2 (Móvil/Fluido) (COMENTADO TEMPORALMENTE)
               <div className="mobile-ad-container" style={{ margin: '30px auto', display: 'block' }}>
                 <AdBanner dataAdSlot="CORREL_INSIDE_2" dataAdFormat="rectangle" style={{ minHeight: '100px' }} />
               </div>
+              */}
 
               <div className="highlight-box">
                 <strong style={{ fontSize: '1.2rem', display: 'block', marginBottom: '10px' }}>🎯 El camino al Título Intermedio</strong>
@@ -207,10 +214,11 @@ export default function CorrelatividadesPost() {
           </article>
         </div>
 
-        {/* ANUNCIO BOT (Móvil) */}
+        {/* ANUNCIO BOT (Móvil) (COMENTADO TEMPORALMENTE)
         <div className="mobile-ad-container" style={{ marginTop: '20px' }}>
           <AdBanner dataAdSlot="CORREL_MOB_BOT" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
         </div>
+        */}
 
       </main>
     </>
