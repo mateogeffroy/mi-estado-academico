@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '../../src/lib/supabase';
 
 // 🔥 DICCIONARIOS DE UNIVERSIDADES Y CARRERAS
@@ -20,27 +19,22 @@ const CARRERAS_POR_UNI: Record<string, { id: string, name: string }[]> = {
 };
 
 export default function OnboardingPage() {
-  const router = useRouter();
   const [nombre, setNombre] = useState('');
   const [universidad, setUniversidad] = useState('utn');
   const [carreraId, setCarreraId] = useState('utn-sistemas-2023');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Verificamos si ya está logueado y tiene perfil
+  // 🔥 1. SOLO precargamos el nombre de Google (CERO redirecciones acá)
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
-      } else if (session.user.user_metadata?.full_name) {
-        router.push('/');
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.user_metadata?.full_name) {
+        setNombre(session.user.user_metadata.full_name);
       }
-    };
-    checkUser();
-  }, [router]);
+    });
+  }, []);
 
-  // Cuando cambia la universidad, seleccionamos por defecto la primera carrera de esa lista
+  // 2. Mantiene sincronizada la carrera al cambiar de universidad
   useEffect(() => {
     if (CARRERAS_POR_UNI[universidad] && CARRERAS_POR_UNI[universidad].length > 0) {
       setCarreraId(CARRERAS_POR_UNI[universidad][0].id);
@@ -58,12 +52,9 @@ export default function OnboardingPage() {
       return;
     }
 
-    // 1. Actualizamos la metadata del usuario en Supabase Auth
+    // Actualizamos la metadata
     const { data: authData, error: updateError } = await supabase.auth.updateUser({
-      data: {
-        full_name: nombre,
-        carrera_id: carreraId // Guardamos el ID unificado
-      }
+      data: { full_name: nombre, carrera_id: carreraId }
     });
 
     if (updateError) {
@@ -72,30 +63,23 @@ export default function OnboardingPage() {
       return;
     }
 
-    // 2. 🔥 MAGIA: Upsert en la tabla progreso_usuarios
-    // Si la fila no existe la crea, si ya existe le actualiza la carrera_id
+    // Insertamos la carrera en la BD
     if (authData?.user) {
-      const { error: dbError } = await supabase
+      await supabase
         .from('progreso_usuarios')
         .upsert({ 
           id_usuario: authData.user.id,
           carrera_id: carreraId
         }, { onConflict: 'id_usuario' });
-      
-      if (dbError) {
-        console.error("Error vinculando la carrera en la BD:", dbError);
-        // Podrías manejar el error visualmente, pero por ahora avanzamos
-      }
     }
 
-    // Forzamos recarga para que el PlanContext lea los datos frescos
+    // 🔥 Redirección dura al inicio para limpiar la caché de Next.js
     window.location.href = '/';
   };
 
   return (
     <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div className="login-card" style={{ maxWidth: '450px', width: '100%', padding: '40px', background: 'var(--panel)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-        
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <h1 style={{ color: 'white', fontSize: '2rem', fontWeight: 900, marginBottom: '10px' }}>
             ¡Ya casi estamos!
@@ -104,8 +88,6 @@ export default function OnboardingPage() {
         </div>
 
         <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
-          {/* Input: Nombre */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label style={{ color: 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold' }}>¿Cómo te llamás?</label>
             <input 
@@ -118,7 +100,6 @@ export default function OnboardingPage() {
             />
           </div>
 
-          {/* Selector: Universidad */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label style={{ color: 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold' }}>¿En qué universidad estudiás?</label>
             <select 
@@ -134,7 +115,6 @@ export default function OnboardingPage() {
             </select>
           </div>
 
-          {/* Selector: Carrera */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label style={{ color: 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold' }}>¿Qué carrera cursás?</label>
             <select 
