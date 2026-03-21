@@ -38,21 +38,31 @@ export default function PlanDeEstudios() {
       setMenu(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
       setTooltip(prev => prev.visible ? { ...prev, visible: false } : prev);
     };
-    
-    window.addEventListener('click', handleClickOutside);
-    window.addEventListener('touchstart', handleClickOutside, { passive: true });
 
     const handleScrollAndMove = () => {
       setShowScroll(window.scrollY > 200);
-
       setTooltip(prev => prev.visible ? { ...prev, visible: false } : prev);
       setMenu(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
-      setBlockedShake(null);
+
+      // LÓGICA DE ANCLAJE AL FOOTER (Instantánea, sin lag)
+      const footer = document.querySelector('footer');
+      const statBar = document.getElementById('stat-bar-container');
       
-      // 🔥 Borramos toda la lógica del "footer" y el "translateY" que había acá.
-      // Dejamos que el position: fixed nativo del navegador haga su trabajo.
+      if (footer && statBar) {
+        const rect = footer.getBoundingClientRect();
+        if (rect.top < window.innerHeight) {
+          const overlap = window.innerHeight - rect.top;
+          statBar.style.transform = `translateY(-${overlap}px)`;
+        } else {
+          statBar.style.transform = `translateY(0px)`;
+        }
+      }
     };
 
+    window.addEventListener('click', handleClickOutside);
+    window.addEventListener('touchstart', handleClickOutside, { passive: true });
+    
+    // Escuchamos el scroll directo para que no haya delay
     window.addEventListener('scroll', handleScrollAndMove, { passive: true });
     window.addEventListener('touchmove', handleScrollAndMove, { passive: true });
     window.addEventListener('wheel', handleScrollAndMove, { passive: true });
@@ -61,12 +71,12 @@ export default function PlanDeEstudios() {
     handleScrollAndMove();
     
     return () => {
+      window.removeEventListener('click', handleClickOutside);
+      window.removeEventListener('touchstart', handleClickOutside);
       window.removeEventListener('scroll', handleScrollAndMove);
       window.removeEventListener('touchmove', handleScrollAndMove);
       window.removeEventListener('wheel', handleScrollAndMove);
       window.removeEventListener('resize', handleScrollAndMove);
-      window.removeEventListener('click', handleClickOutside);
-      window.removeEventListener('touchstart', handleClickOutside);
     };
   }, []);
 

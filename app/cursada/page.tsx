@@ -4,18 +4,21 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
 import SpotlightCard from '../../src/components/SpotlightCard';
-import AdBanner from '../../src/components/AdBanner'; // 🔥 Importamos el Banner
 
 export default function CursadaPage() {
   const { materias, detalles, careerData } = usePlan();
   const { ALL } = careerData;
   const soportaHorarios = ALL.some((m: any) => m.comisiones && m.comisiones.length > 0);
-
   const [hoveredDayData, setHoveredDayData] = useState<{ day: number, events: string[] } | null>(null);
-  const [viewDate, setViewDate] = useState(new Date());
-  
-  // ESTADO PARA EL FILTRO DEL CUATRIMESTRE ('Ambos', '1', '2')
+  const [viewDate, setViewDate] = useState(new Date());  
   const [filtroCuatri, setFiltroCuatri] = useState('Ambos');
+
+  useEffect(() => {
+    const filtroGuardado = localStorage.getItem('filtroCuatrimestre');
+    if (filtroGuardado) {
+      setFiltroCuatri(filtroGuardado);
+    }
+  }, []);
 
   const cursando = ALL.filter((s: any) => materias[s.id] === 'cursando');
 
@@ -285,7 +288,10 @@ export default function CursadaPage() {
                     {['1', 'Ambos', '2'].map((opcion) => (
                       <div
                         key={opcion}
-                        onClick={() => setFiltroCuatri(opcion)}
+                        onClick={() => {
+                          setFiltroCuatri(opcion);
+                          localStorage.setItem('filtroCuatrimestre', opcion);
+                        }}
                         style={{
                           padding: '8px 16px', fontSize: '0.85rem', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease',
                           color: filtroCuatri === opcion ? 'white' : 'var(--muted)',
