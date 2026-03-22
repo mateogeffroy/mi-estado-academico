@@ -11,7 +11,12 @@ const UNIVERSIDADES = [
 
 const CARRERAS_POR_UNI: Record<string, { id: string, name: string }[]> = {
   'utn': [
-    { id: 'utn-sistemas-2023', name: 'Ingeniería en Sistemas de Información (Plan 2023)' }
+    { id: 'utn-sistemas-2023', name: 'Ingeniería en Sistemas de Información (Plan 2023)' },
+    { id: 'utn-civil-2023', name: 'Ingeniería Civil (Plan 2023)' },
+    { id: 'utn-industrial-2008', name: 'Ingeniería Industrial (Plan 2008)' },
+    { id: 'utn-mecanica-2023', name: 'Ingeniería Mecánica (Plan 2023)' },
+    { id: 'utn-quimica-2008', name: 'Ingeniería Química (Plan 2008)' },
+    { id: 'utn-electrica-2023', name: 'Ingeniería Eléctrica (Plan 2023)' },
   ],
   'unlp': [
     { id: 'unlp-apu-2021', name: 'Analista Programador Universitario (Plan 2021)' }
