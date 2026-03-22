@@ -44,7 +44,6 @@ export default function PlanDeEstudios() {
       setTooltip(prev => prev.visible ? { ...prev, visible: false } : prev);
       setMenu(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
 
-      // LÓGICA DE ANCLAJE AL FOOTER (Instantánea, sin lag)
       const footer = document.querySelector('footer');
       const statBar = document.getElementById('stat-bar-container');
       
@@ -62,7 +61,6 @@ export default function PlanDeEstudios() {
     window.addEventListener('click', handleClickOutside);
     window.addEventListener('touchstart', handleClickOutside, { passive: true });
     
-    // Escuchamos el scroll directo para que no haya delay
     window.addEventListener('scroll', handleScrollAndMove, { passive: true });
     window.addEventListener('touchmove', handleScrollAndMove, { passive: true });
     window.addEventListener('wheel', handleScrollAndMove, { passive: true });
@@ -273,7 +271,7 @@ export default function PlanDeEstudios() {
 
     let displayHours = subject.hours;
     
-    // 🔥 MAGIA: Si es UNLP y el texto de horas es repetitivo ("1S", "2S", "Ingreso"), lo vaciamos
+    // Vaciamos etiquetas redundantes en planes UNLP
     const isUnlp = careerData.careerInfo.id.includes('unlp');
     if (isUnlp && ['1S', '2S', 'Ingreso'].includes(displayHours)) {
       displayHours = '';
@@ -332,20 +330,26 @@ export default function PlanDeEstudios() {
 
     let durationBadges = null;
 
-    if (!subject.isElectivePlaceholder && estadoActual !== 'disabled') {
+    if (!subject.isElectivePlaceholder) {
+      const isCardColored = estadoActual === 'aprobada' || estadoActual === 'cursada' || estadoActual === 'cursando';
+      
       const duracionesSet = new Set<string>();
-      if (subject.duration) duracionesSet.add(subject.duration);
-      (subject.comisiones || []).forEach((c: any) => {
-        if (c.duration) duracionesSet.add(c.duration);
-      });
+      if (estadoActual !== 'disabled') {
+        if (subject.duration) duracionesSet.add(subject.duration);
+        (subject.comisiones || []).forEach((c: any) => {
+          if (c.duration) duracionesSet.add(c.duration);
+        });
+      }
 
       const duracionesUnicas = Array.from(duracionesSet);
 
-      if (duracionesUnicas.length === 0 && !subject.isOutdated) {
+      if (duracionesUnicas.length === 0 && !subject.isOutdated && estadoActual !== 'disabled') {
         duracionesUnicas.push('A');
       }
 
-      if (duracionesUnicas.length > 0) {
+      const hasTrackBadges = subject.isApu || subject.isProfesorado;
+
+      if (duracionesUnicas.length > 0 || hasTrackBadges) {
         durationBadges = (
           <div style={{ marginTop: '6px', marginBottom: '8px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {duracionesUnicas.sort().map(dur => {
@@ -364,7 +368,6 @@ export default function PlanDeEstudios() {
                 pillBg = 'rgba(168, 85, 247, 0.85)'; // Violeta para el ingreso
               }
 
-              const isCardColored = estadoActual === 'aprobada' || estadoActual === 'cursada' || estadoActual === 'cursando';
               const finalBg = isCardColored ? 'rgba(0, 0, 0, 0.6)' : pillBg;
               const finalColor = isCardColored ? 'rgba(255, 255, 255, 0.95)' : pillColor;
 
@@ -383,6 +386,39 @@ export default function PlanDeEstudios() {
                 </span>
               );
             })}
+
+            {/* 🔥 NUEVAS ETIQUETAS RENDERIZADAS CONDICIONALMENTE */}
+            {subject.isApu && (
+              <span key="apu" style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                background: isCardColored ? 'rgba(0, 0, 0, 0.6)' : 'rgba(6, 182, 212, 0.85)', // Cyan
+                color: isCardColored ? 'rgba(255, 255, 255, 0.95)' : '#ffffff', 
+                padding: '4px 12px',
+                borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', 
+                letterSpacing: '0.3px', pointerEvents: 'none',
+                border: isCardColored ? '1px solid rgba(255,255,255,0.1)' : 'none', 
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)', 
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+              }}>
+                APU
+              </span>
+            )}
+
+            {subject.isProfesorado && (
+              <span key="prof" style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                background: isCardColored ? 'rgba(0, 0, 0, 0.6)' : 'rgba(245, 158, 11, 0.85)', // Ámbar
+                color: isCardColored ? 'rgba(255, 255, 255, 0.95)' : '#ffffff', 
+                padding: '4px 12px',
+                borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', 
+                letterSpacing: '0.3px', pointerEvents: 'none',
+                border: isCardColored ? '1px solid rgba(255,255,255,0.1)' : 'none', 
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)', 
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+              }}>
+                Profesorado
+              </span>
+            )}
           </div>
         );
       }
@@ -428,7 +464,6 @@ export default function PlanDeEstudios() {
         .mobile-ad-container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 16px; }
         @media (min-width: 1450px) { .mobile-ad-container { display: none; } }
 
-        /* 🔥 MAGIA ABSOLUTA: 3 anuncios por lado, colgando del contenedor central 🔥 */
         .scatter-ad-left, .scatter-ad-right {
           position: absolute;
           width: 160px;
@@ -445,7 +480,6 @@ export default function PlanDeEstudios() {
 
       <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '130px', gap: '40px' }}>
         
-        {/* HEADER DE LA PÁGINA */}
         <div style={{ maxWidth: '950px', width: '100%', margin: '0 auto', padding: '0 16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <div className="header-titles">
@@ -457,43 +491,8 @@ export default function PlanDeEstudios() {
           </div>
         </div>
 
-        {/* ANUNCIO TOP (Móvil) (COMENTADO TEMPORALMENTE) 
-        <div className="mobile-ad-container">
-          <AdBanner dataAdSlot="PLAN_MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
-        </div>
-        */}
-
-        {/* CONTENEDOR RELATIVO (Es el ancla para los anuncios absolutos) */}
         <div style={{ position: 'relative', width: '100%', maxWidth: '950px', margin: '0 auto', padding: '0 16px' }}>
           
-          {/* ==========================================
-              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS (COMENTADOS)
-              ========================================== */}
-          {/* Lado Izquierdo
-          <div className="scatter-ad-left" style={{ top: '2%' }}>
-            <AdBanner dataAdSlot="PLAN_L_1" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-left" style={{ top: '40%' }}>
-            <AdBanner dataAdSlot="PLAN_L_2" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-left" style={{ top: '75%' }}>
-            <AdBanner dataAdSlot="PLAN_L_3" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          */}
-
-          {/* Lado Derecho
-          <div className="scatter-ad-right" style={{ top: '2%' }}>
-            <AdBanner dataAdSlot="PLAN_R_1" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-right" style={{ top: '40%' }}>
-            <AdBanner dataAdSlot="PLAN_R_2" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-right" style={{ top: '75%' }}>
-            <AdBanner dataAdSlot="PLAN_R_3" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          */}
-
-          {/* CONTENIDO CENTRAL (Grillas de materias) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             {levels.map((lvl, index) => {
               const materiasObligatorias = SUBJECTS.filter((s: any) => s.level === lvl && !s.isElective && !s.isElectivePlaceholder);
@@ -502,14 +501,6 @@ export default function PlanDeEstudios() {
 
               return (
                 <div key={lvl} style={{ display: 'flex', flexDirection: 'column' }}>
-                  {/* Separador móvil cada 2 niveles (COMENTADO TEMPORALMENTE) 
-                  {index > 0 && index % 2 === 0 && (
-                    <div className="mobile-ad-container" style={{ margin: '0 auto 40px auto' }}>
-                      <AdBanner dataAdSlot={`PLAN_MOB_MID_${lvl}`} dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
-                    </div>
-                  )}
-                  */}
-
                   <div className="level-section" style={{ marginBottom: 0 }}>
                     <div className="level-header" style={{ color: `var(--n${lvl})` }}>
                       <div className="level-badge" style={{ borderColor: `var(--n${lvl})` }}>Nivel {lvl}</div>
@@ -537,7 +528,6 @@ export default function PlanDeEstudios() {
           </div>
         </div>
 
-        {/* MODALS Y MENUS */}
         {menu.isOpen && (
           <div id="action-menu" className="action-menu" style={{ position: 'absolute', top: menu.y, left: menu.x, zIndex: 1000, display: 'flex' }}>
             <button className="action-btn" onClick={(e) => handleMenuAction(e, 'set_aprobada')}>
@@ -568,7 +558,6 @@ export default function PlanDeEstudios() {
           <div className="tooltip show" style={{ left: tooltip.x, top: tooltip.y, textAlign: 'left', zIndex: 9999 }}>{tooltip.content}</div>
         )}
 
-        {/* BARRA DE ESTADÍSTICAS */}
         <div id="stat-bar-container" className="stats-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 900, background: 'var(--bg)', borderTop: '1px solid var(--border)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="stat">
             <span className="stat-val" style={{ color: 'var(--aprobada)' }}>{stats.aprobadas}</span>
@@ -583,7 +572,7 @@ export default function PlanDeEstudios() {
             <span className="stat-label">cursando</span>
           </div>
           <div className="stat">
-            <span className="stat-val" style={{ color: 'var(--muted)' }}>{36 + (ALL.filter((s: any) => materias[s.id] === 'aprobada' && s.level && ELECTIVAS[s.level as keyof typeof ELECTIVAS] ?.some((e:any) => e.id === s.id)).length)}</span>
+            <span className="stat-val" style={{ color: 'var(--muted)' }}>{careerData?.careerInfo?.creditosTotales || (36 + (ALL.filter((s: any) => materias[s.id] === 'aprobada' && s.level && ELECTIVAS[s.level as keyof typeof ELECTIVAS]?.some((e:any) => e.id === s.id)).length))}</span>
             <span className="stat-label">total materias</span>
           </div>
           <div className="progress-bar desktop-only">

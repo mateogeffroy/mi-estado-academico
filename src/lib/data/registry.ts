@@ -1,11 +1,14 @@
 // Importamos todas las carreras disponibles
 import * as UtnSistemas2023 from './utn/sistemas-2023';
 import * as UtnCivil2023 from './utn/civil-2023';
-import * as UnlpApu2021 from './unlp/apu-2021';
 import * as UtnIndustrial2008 from './utn/industrial-2008';
 import * as UtnMecanica2023 from './utn/mecanica-2023';
 import * as UtnQuimica2008 from './utn/quimica-2008';
 import * as UtnElectrica2023 from './utn/electrica-2023';
+import * as UnlpApu2021 from './unlp/apu-2021';
+import * as UnlpSistemas2021 from './unlp/sistemas-2021';
+import * as UnlpInformatica2021 from './unlp/informatica-2021';
+import * as UnlpPsicologia2012 from './unlp/psicologia-2012';
 
 // Definimos la estructura REAL de lo que devuelve una carrera
 export interface CareerData {
@@ -35,6 +38,9 @@ export const careersRegistry: Record<string, CareerData> = {
   'utn-quimica-2008': UtnQuimica2008,
   'utn-electrica-2023': UtnElectrica2023,
   'unlp-apu-2021': UnlpApu2021,
+  'unlp-sistemas-2021': UnlpSistemas2021,
+  'unlp-informatica-2021': UnlpInformatica2021,
+  'unlp-psicologia-2012': UnlpPsicologia2012,
 };
 
 // Función helper para obtener los datos de una carrera

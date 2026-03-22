@@ -19,7 +19,10 @@ const CARRERAS_POR_UNI: Record<string, { id: string, name: string }[]> = {
     { id: 'utn-electrica-2023', name: 'Ingeniería Eléctrica (Plan 2023)' },
   ],
   'unlp': [
-    { id: 'unlp-apu-2021', name: 'Analista Programador Universitario (Plan 2021)' }
+    { id: 'unlp-apu-2021', name: 'Analista Programador Universitario (Plan 2021)' },
+    { id: 'unlp-sistemas-2021', name: 'Licenciatura en Sistemas (Plan 2021)' },
+    { id: 'unlp-informatica-2021', name: 'Licenciatura en Informática (Plan 2021)' },
+    { id: 'unlp-psicologia-2012', name: 'Licenciatura y Profesorado en Psicología (Plan 2012)' },
   ]
 };
 
@@ -30,7 +33,6 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔥 1. SOLO precargamos el nombre de Google (CERO redirecciones acá)
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user?.user_metadata?.full_name) {
