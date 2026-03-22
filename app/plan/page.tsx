@@ -335,14 +335,27 @@ export default function PlanDeEstudios() {
       
       const duracionesSet = new Set<string>();
       if (estadoActual !== 'disabled') {
-        if (subject.duration) duracionesSet.add(subject.duration);
+        // 🔥 MAGIA: Si la duración es 'C' (Cuatrimestral Libre), metemos ambas etiquetas
+        if (subject.duration === 'C') {
+          duracionesSet.add('1');
+          duracionesSet.add('2');
+        } else if (subject.duration) {
+          duracionesSet.add(subject.duration);
+        }
+
         (subject.comisiones || []).forEach((c: any) => {
-          if (c.duration) duracionesSet.add(c.duration);
+          if (c.duration === 'C') {
+            duracionesSet.add('1');
+            duracionesSet.add('2');
+          } else if (c.duration) {
+            duracionesSet.add(c.duration);
+          }
         });
       }
 
       const duracionesUnicas = Array.from(duracionesSet);
 
+      // Si no tiene duración explícita (salvo que sea obsoleta), asumimos Anual
       if (duracionesUnicas.length === 0 && !subject.isOutdated && estadoActual !== 'disabled') {
         duracionesUnicas.push('A');
       }
@@ -358,14 +371,16 @@ export default function PlanDeEstudios() {
               let pillColor = '#ffffff'; 
               
               if (dur === '1') {
-                label = isUnlp ? '1S' : '1C';
+                // Si es UNLP pero NO es Psicología, dejamos "1S", sino ponemos "1C"
+                label = (isUnlp && !careerData.careerInfo.id.includes('psicologia')) ? '1S' : '1C';
                 pillBg = 'rgba(34, 197, 94, 0.85)'; // Verde
               } else if (dur === '2') {
-                label = isUnlp ? '2S' : '2C';
+                // Si es UNLP pero NO es Psicología, dejamos "2S", sino ponemos "2C"
+                label = (isUnlp && !careerData.careerInfo.id.includes('psicologia')) ? '2S' : '2C';
                 pillBg = 'rgba(244, 63, 94, 0.85)'; // Rojo
               } else if (dur === 'Ingreso') {
                 label = 'Ingreso';
-                pillBg = 'rgba(168, 85, 247, 0.85)'; // Violeta para el ingreso
+                pillBg = 'rgba(168, 85, 247, 0.85)'; // Violeta
               }
 
               const finalBg = isCardColored ? 'rgba(0, 0, 0, 0.6)' : pillBg;
@@ -387,7 +402,7 @@ export default function PlanDeEstudios() {
               );
             })}
 
-            {/* 🔥 NUEVAS ETIQUETAS RENDERIZADAS CONDICIONALMENTE */}
+            {/* ETIQUETAS CONDICIONALES DE TRAYECTOS */}
             {subject.isApu && (
               <span key="apu" style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
