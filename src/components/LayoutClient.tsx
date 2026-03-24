@@ -20,7 +20,9 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     setIsSidebarOpen(false);
   }, [pathname]);
 
-  // --- LÓGICA DE SESIÓN BLINDADA ---
+  // --- LÓGICA DE SESIÓN BLINDADA Y SIMPLIFICADA ---
+  // LayoutClient AHORA SOLO verifica si estás logueado o no. 
+  // El PlanContext se encarga de enviarte al Onboarding si te falta la carrera.
   useEffect(() => {
     let isMounted = true; 
 
@@ -31,16 +33,15 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         if (!isMounted) return;
 
         if (!session) {
-          if (pathname !== '/login' && pathname !== '/onboarding') {
+          // Si NO hay sesión, solo puede estar en /login
+          if (pathname !== '/login') {
             router.replace('/login');
           } else {
             setIsChecking(false);
           }
         } else {
-          const hasName = session.user?.user_metadata?.full_name;
-          if (!hasName && pathname !== '/onboarding') {
-            router.replace('/onboarding');
-          } else if (hasName && (pathname === '/login' || pathname === '/onboarding')) {
+          // Si HAY sesión, no tiene nada que hacer en /login
+          if (pathname === '/login') {
             router.replace('/');
           } else {
             setIsChecking(false);
@@ -56,9 +57,9 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== 'INITIAL_SESSION' && isMounted) {
-        if (!session && pathname !== '/login' && pathname !== '/onboarding') {
+        if (!session && pathname !== '/login') {
            router.replace('/login');
-        } else if (session && (pathname === '/login' || pathname === '/onboarding')) {
+        } else if (session && pathname === '/login') {
            router.replace('/');
         } else {
            setIsChecking(false);
@@ -107,10 +108,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
   return (
     <>
-      {/* 🔥 MAGIA DE RESPONSIVIDAD: 
-        Forzamos a que el menú completo desaparezca y aparezca la hamburguesa
-        mucho antes (a los 1150px) para que los botones no se aplasten.
-      */}
       <style>{`
         .nav-full-menu {
           display: flex;
@@ -137,7 +134,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                 <div className="logo">
                   Mi Estado <span style={{ color: 'var(--cursando)' }}>Académico</span>
                 </div>
-                {/* Ocultamos el subtítulo a los 1150px también para hacer espacio */}
                 <div className="subtitle nav-full-menu">ING. EN SISTEMAS DE INFORMACIÓN - UTN FRLP</div>
               </div>
             </Link>
@@ -166,10 +162,8 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             
-            {/* ESTE ES EL MENÚ COMPLETO (Se oculta en pantallas medianas/chicas) */}
             <div className="nav-full-menu" style={{ gap: '10px', alignItems: 'center' }}>
               
-              {/* BOTÓN CAFECITO (PC) */}
               {pathname === '/' && (
                 <Link href="https://cafecito.app/mateogeffroy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                   <button 
@@ -218,7 +212,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               </button>
             </div>
 
-            {/* ESTA ES LA HAMBURGUESA (Aparece cuando el menú completo se oculta) */}
             <button 
               className="nav-burger-btn hamburger-btn" 
               onClick={() => setIsSidebarOpen(true)}
@@ -234,7 +227,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         </div>
       </header>
 
-      {/* --- MENÚ LATERAL (SIDEBAR) --- */}
       <div 
         className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`} 
         onClick={() => setIsSidebarOpen(false)}
@@ -250,7 +242,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         
         <div className="sidebar-content">
           
-          {/* BOTÓN CAFECITO (CELULAR) */}
           {pathname === '/' && (
             <>
               <Link 
@@ -260,7 +251,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                 className="sidebar-action-btn" 
                 style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.2)', background: 'rgba(245, 158, 11, 0.05)', display: 'flex', alignItems: 'center', gap: '12px' }}
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4-4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
                 Invitame un Cafecito
               </Link>
               <div className="sidebar-divider" style={{ margin: '4px 0' }}></div>

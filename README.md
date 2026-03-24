@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎓 Mi Estado Académico
 
-## Getting Started
+> La herramienta definitiva para trackear y organizar tu progreso en Ingeniería en Sistemas de Información (UTN FRLP - Plan 2023).
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg?style=for-the-badge)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📌 Sobre el proyecto
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Mi Estado Académico** nace para solucionar el problema clásico de la organización universitaria: depender de PDFs desactualizados o planillas de Excel para saber qué materias podés cursar. 
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Esta plataforma web ofrece un plan de estudios dinámico y personalizado donde los estudiantes pueden llevar un control exacto de su cursada, correlatividades y promedios, con una interfaz moderna y adaptada a dispositivos móviles.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ✨ Funcionalidades Principales
 
-## Learn More
+- 🗺️ **Plan de Estudios Dinámico:** Visualizá la grilla completa de materias. El sistema calcula automáticamente qué materias se desbloquean basándose en tus finales y cursadas aprobadas.
+- 📊 **Estadísticas en Tiempo Real:** Seguimiento automático de tu porcentaje de avance en la carrera, cantidad de materias aprobadas y cálculo de promedio.
+- 📅 **Gestión de Cursada:** Agregá tu comisión, horarios y fechas de parciales/entregas por cada materia.
+- 📱 **Mobile First:** Diseño fluido y responsivo, pensado para usarse cómodamente desde el celular entre clases.
+- 🔒 **Autenticación:** Sistema de usuarios seguro mediante email o Google Auth, guardando tu progreso en la nube.
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Stack Tecnológico
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Frontend:** React, Next.js (App Router), TypeScript.
+- **Backend / Base de Datos:** Supabase (PostgreSQL, Auth, RLS).
+- **Estilos:** CSS Modules y Variables CSS (Custom UI).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🚀 Instalación y Desarrollo Local
 
-## Deploy on Vercel
+Si querés correr este proyecto en tu máquina para probarlo o aportar mejoras:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Cloná el repositorio:
+   \`\`\`bash
+   git clone https://github.com/TU_USUARIO/mi-estado-academico.git
+   \`\`\`
+2. Instalá las dependencias:
+   \`\`\`bash
+   npm install
+   \`\`\`
+3. Configurá las variables de entorno:
+   Creá un archivo \`.env.local\` en la raíz del proyecto y agregá tus credenciales de Supabase:
+   \`\`\`env
+   NEXT_PUBLIC_SUPABASE_URL=tu_url_de_supabase
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
+   \`\`\`
+4. Iniciá el servidor de desarrollo:
+   \`\`\`bash
+   npm run dev
+   \`\`\`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📄 Licencia y Uso
+
+Este proyecto es Open Source y se distribuye bajo la licencia **[GNU AGPLv3](LICENSE)**. 
+
+Siendo un proyecto de código abierto, sos libre de estudiarlo, usarlo y modificarlo, **siempre y cuando se cumplan estrictamente las siguientes condiciones**:
+
+1. **Atribución:** Debés dar el crédito correspondiente al autor original del código (Mateo Geffroy).
+2. **Copyleft (Código Abierto):** Si modificás este código o lo utilizás como base para brindar un servicio a través de una red (por ejemplo, lo subís a otra página web), **estás obligado legalmente a hacer público el código fuente de tu versión** bajo esta misma licencia AGPLv3.
+
+*Para conocer los términos legales completos, revisá el archivo `LICENSE` incluido en este repositorio.*
+
+---
+Desarrollado por **Mateo Geffroy**
