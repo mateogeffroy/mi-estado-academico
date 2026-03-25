@@ -10,6 +10,7 @@ import * as UnlpSistemas2021 from './unlp/sistemas-2021';
 import * as UnlpInformatica2021 from './unlp/informatica-2021';
 import * as UnlpPsicologia2012 from './unlp/psicologia-2012';
 import * as UnlpComputacion2024 from './unlp/computacion-2024';
+import * as UnlpSonido2023 from './unlp/sonido-2023';
 
 // Definimos la estructura REAL de lo que devuelve una carrera
 export interface CareerData {
@@ -43,6 +44,7 @@ export const careersRegistry: Record<string, CareerData> = {
   'unlp-informatica-2021': UnlpInformatica2021,
   'unlp-psicologia-2012': UnlpPsicologia2012,
   'unlp-computacion-2024': UnlpComputacion2024,
+  'unlp-sonido-2023': UnlpSonido2023,
 };
 
 // Función helper para obtener los datos de una carrera

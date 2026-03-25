@@ -495,18 +495,24 @@ export default function PlanDeEstudios() {
 
       <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '130px', gap: '40px' }}>
         
-        <div style={{ maxWidth: '950px', width: '100%', margin: '0 auto', padding: '0 16px' }}>
+        <div style={{ maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '0 16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <div className="header-titles">
               <h1 className="logo">Plan de estudios <span>dinámico</span></h1>
             </div>
-            <Link href="/">
-              <button className="btn-secondary">← Volver al Dashboard</button>
+            <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
+              <button className="btn-secondary" style={{ whiteSpace: 'nowrap' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m12 19-7-7 7-7"/>
+                  <path d="M19 12H5"/>
+                </svg>
+                Volver al inicio
+              </button>
             </Link>
           </div>
         </div>
 
-        <div style={{ position: 'relative', width: '100%', maxWidth: '950px', margin: '0 auto', padding: '0 16px' }}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             {levels.map((lvl, index) => {

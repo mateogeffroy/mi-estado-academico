@@ -264,13 +264,16 @@ export default function CursadaPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="header-titles">
                 <h1 className="logo" style={{ lineHeight: '1.1' }}>
-                  Mi <br />
-                  <span>Cursada</span>
+                  Mi <span>Cursada</span>
                 </h1>
               </div>
               <Link href="/" style={{ textDecoration: 'none' }}>
-                <button className="btn-secondary" style={{ textAlign: 'center', lineHeight: '1.4', padding: '8px 16px' }}>
-                  ← Volver al <br /> Dashboard
+                <button className="btn-secondary">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m12 19-7-7 7-7"/>
+                    <path d="M19 12H5"/>
+                  </svg>
+                  Volver al Inicio
                 </button>
               </Link>
             </div>
@@ -468,6 +471,7 @@ export default function CursadaPage() {
             */}
 
             {/* --- MATERIAS EN CURSO --- */}
+            {/* --- MATERIAS EN CURSO --- */}
             <div id="gestionar-materias" style={{ scrollMarginTop: '120px' }}>
               <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', marginBottom: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
@@ -479,21 +483,39 @@ export default function CursadaPage() {
                      No tenés materias marcadas como "Cursando" actualmente.
                    </div>
                 ) : (
-                  cursando.map((m: any) => (
-                    <Link href={`/materia/${m.id}`} key={m.id} style={{ textDecoration: 'none', height: '100%' }}>
-                      <SpotlightCard className="premium-card" spotlightColor="rgba(0, 229, 255, 0.15)">
-                        <div style={{ fontSize: '0.8rem', color: 'var(--muted)', fontFamily: 'Space Mono', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                          {m.level ? `Nivel ${m.level}` : 'Electiva'}
-                        </div>
-                        <div style={{ fontWeight: '800', color: 'white', marginTop: '10px', fontSize: '1.3rem', lineHeight: 1.3, flexGrow: 1 }}>
-                          {m.name}
-                        </div>
-                        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', color: 'var(--cursando)', fontWeight: 'bold' }}>
-                          → Configurar comisión y parciales
-                        </div>
-                      </SpotlightCard>
-                    </Link>
-                  ))
+                  cursando.map((m: any) => {
+                    // Verificamos si la materia tiene comisiones en su plan
+                    const tieneComisiones = m.comisiones && m.comisiones.length > 0;
+                    // Buscamos si el usuario ya seleccionó una comisión para esta materia
+                    const comisionSeleccionada = detalles[m.id]?.comision;
+
+                    return (
+                      <Link href={`/materia/${m.id}`} key={m.id} style={{ textDecoration: 'none', height: '100%' }}>
+                        <SpotlightCard className="premium-card" spotlightColor="rgba(0, 229, 255, 0.15)">
+                          <div style={{ fontSize: '0.8rem', color: 'var(--muted)', fontFamily: 'Space Mono', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            {m.level ? `Nivel ${m.level}` : 'Electiva'}
+                          </div>
+                          
+                          <div style={{ fontWeight: '700', color: 'white', marginTop: '10px', fontSize: '1.25rem', lineHeight: 1.3, flexGrow: 1, fontFamily: 'Syne, sans-serif' }}>
+                            {m.name}
+                          </div>
+                          
+                          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', fontSize: '0.9rem', fontWeight: 'bold', minHeight: '1.2rem' }}>
+                            {tieneComisiones ? (
+                              comisionSeleccionada ? (
+                                <span style={{ color: 'var(--cursando)' }}>Comisión: {comisionSeleccionada}</span>
+                              ) : (
+                                <span style={{ color: '#ef4444' }}>No hay comisión seleccionada</span>
+                              )
+                            ) : (
+                              /* Guión invisible para mantener la altura exacta de la tarjeta */
+                              <span style={{ visibility: 'hidden' }}>-</span>
+                            )}
+                          </div>
+                        </SpotlightCard>
+                      </Link>
+                    );
+                  })
                 )}
               </div>
             </div>

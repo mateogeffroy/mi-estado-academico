@@ -239,9 +239,6 @@ main {
 .subject-hours { font-size: 0.65rem; opacity: 0.6; margin-top: 6px; }
 
 /* ============================================================
-   STATS BAR
-   ============================================================ */
-/* ============================================================
    STATS BAR (Optimizada y Centrada)
    ============================================================ */
 .stats-bar {
@@ -299,8 +296,22 @@ button {
 
 .btn-primary { background: var(--accent); color: white; }
 .btn-primary:hover { background: #2563eb; }
-.btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
-.btn-secondary:hover { background: var(--border); }
+
+/* 🔥 DISEÑO INVERSO EN BOTÓN SECUNDARIO (VOLVER AL INICIO, ETC) 🔥 */
+.btn-secondary {
+  background: var(--border);
+  color: white;
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-secondary:hover {
+  background: transparent;
+  color: var(--text);
+}
+
 .btn-danger {
   background-color: #dc2626; color: white; border: 1px solid #b91c1c;
   padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;

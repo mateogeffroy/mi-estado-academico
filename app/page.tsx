@@ -88,21 +88,28 @@ export default function Dashboard() {
            60% { transform: rotate( 0.0deg) }
           100% { transform: rotate( 0.0deg) }
         }
+
+        /* 🔥 ANULA EL HOVER DE LA TARJETA PRINCIPAL PARA QUE QUEDE ESTÁTICA */
+        .no-hover-card:hover {
+          transform: none !important;
+          border-color: rgba(255, 255, 255, 0.1) !important;
+          box-shadow: none !important;
+        }
+
+        /* 🔥 SOLUCIONA EL ESPACIO GIGANTE EN MONITORES 1920x1080 */
+        @media (min-width: 1350px) {
+          .section-row {
+            min-height: auto !important;
+          }
+        }
       `}</style>
 
       {/* ============================================================
           SECCIÓN 1: HERO
           ============================================================ */}
       <div className="section-row">
-        {/* <div className="ad-wrapper-left">
-          <div className="desktop-side-ad">
-            <AdBanner dataAdSlot="HERO_L" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-        </div>
-        */}
-
         {/* HERO LIMPIO: Sin flex centering raro ni vh, sube solo. */}
-        <section id="progreso" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10px', marginBottom: '20px', width: '100%' }}>
+        <section id="progreso" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '30px', marginBottom: '40px', width: '100%' }}>
           <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px', padding: '0 16px' }}>
             <div style={{ textAlign: 'center' }}>
               <h2 style={{ fontSize: 'clamp(1rem, 4vw, 1.6rem)', color: 'white', margin: '0 0 8px 0', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -114,7 +121,8 @@ export default function Dashboard() {
               <p style={{ color: 'var(--muted)', fontSize: 'clamp(0.85rem, 2.5vw, 1.05rem)' }}>Registrá tu progreso hacia el título.</p>
             </div>
 
-            <div className="premium-card" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '24px', padding: 'clamp(16px, 5vw, 36px)' }}>
+            {/* APLICAMOS LA CLASE .no-hover-card PARA QUE NO SE ELEVE NI SE PONGA AZUL */}
+            <div className="premium-card no-hover-card" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '24px', padding: 'clamp(16px, 5vw, 36px)' }}>
               <div style={{ textAlign: 'center', flex: '1 1 160px' }}>
                 <div style={{ fontSize: 'clamp(3rem, 14vw, 6rem)', fontWeight: 900, color: 'white', lineHeight: 0.9, display: 'flex', alignItems: 'baseline', justifyContent: 'center', fontVariantNumeric: 'tabular-nums' }}>
                   <CountUp from={0} to={stats.porcentaje} duration={0.2} />
@@ -146,29 +154,12 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* <div className="ad-wrapper-right">
-          <div className="desktop-side-ad">
-            <AdBanner dataAdSlot="HERO_R" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-        </div>
-        */}
       </div>
-
-      {/* <div className="mobile-ad-container">
-        <AdBanner dataAdSlot="MOB_MID" dataAdFormat="horizontal" />
-      </div>
-      */}
 
       {/* ============================================================
           SECCIÓN 2: HISTORIAL DE APROBADAS
           ============================================================ */}
       <div className="section-row">
-        {/* <div className="ad-wrapper-left">
-          <div className="desktop-side-ad">
-            <AdBanner dataAdSlot="APROB_L" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-        </div>
-        */}
 
         <section id="aprobadas" style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)' }}>
@@ -194,33 +185,16 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* <div className="ad-wrapper-right">
-          <div className="desktop-side-ad">
-            <AdBanner dataAdSlot="APROB_R" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-        </div>
-        */}
       </div>
-
-      {/* <div className="mobile-ad-container">
-        <AdBanner dataAdSlot="PENDIENTE_CENTRO" dataAdFormat="horizontal" />
-      </div>
-      */}
 
       {/* ============================================================
           SECCIÓN 3: BLOG (Condicional)
           ============================================================ */}
       {novedadesFiltradas.length > 0 && (
         <div className="section-row">
-          {/* <div className="ad-wrapper-left">
-            <div className="desktop-side-ad">
-              <AdBanner dataAdSlot="BLOG_L" dataAdFormat="vertical" style={{ height: '100%' }} />
-            </div>
-          </div>
-          */}
 
           <section id="blog" style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
-            <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
               Blog y Novedades
             </h3>
@@ -251,12 +225,6 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* <div className="ad-wrapper-right">
-            <div className="desktop-side-ad">
-              <AdBanner dataAdSlot="BLOG_R" dataAdFormat="vertical" style={{ height: '100%' }} />
-            </div>
-          </div>
-          */}
         </div>
       )}
 
