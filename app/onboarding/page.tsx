@@ -24,7 +24,7 @@ const CARRERAS_POR_UNI: Record<string, { id: string, name: string }[]> = {
     { id: 'unlp-informatica-2021', name: 'Licenciatura en Informática (Plan 2021)' },
     { id: 'unlp-psicologia-2012', name: 'Licenciatura y Profesorado en Psicología (Plan 2012)' },
     { id: 'unlp-computacion-2024', name: 'Ingeniería en Computación (Plan 2024)' },
-    { id: 'unlp-sonido-2023', name: 'Tecnicatura Universitaria en Sonido y Grabación' },
+    { id: 'unlp-sonido-2023', name: 'Tecnicatura Universitaria en Sonido y Grabación (Plan 2019)' },
   ]
 };
 

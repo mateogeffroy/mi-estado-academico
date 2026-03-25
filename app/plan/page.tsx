@@ -335,7 +335,6 @@ export default function PlanDeEstudios() {
       
       const duracionesSet = new Set<string>();
       if (estadoActual !== 'disabled') {
-        // 🔥 MAGIA: Si la duración es 'C' (Cuatrimestral Libre), metemos ambas etiquetas
         if (subject.duration === 'C') {
           duracionesSet.add('1');
           duracionesSet.add('2');
@@ -355,7 +354,6 @@ export default function PlanDeEstudios() {
 
       const duracionesUnicas = Array.from(duracionesSet);
 
-      // Si no tiene duración explícita (salvo que sea obsoleta), asumimos Anual
       if (duracionesUnicas.length === 0 && !subject.isOutdated && estadoActual !== 'disabled') {
         duracionesUnicas.push('A');
       }
@@ -370,13 +368,14 @@ export default function PlanDeEstudios() {
               let pillBg = 'rgba(59, 130, 246, 0.85)'; // Azul para Anual
               let pillColor = '#ffffff'; 
               
+              // 🔥 ACÁ ESTÁ LA REGLA ACTUALIZADA PARA INCLUIR "SONIDO"
+              const usaCuatrimestres = careerData.careerInfo.id.includes('psicologia') || careerData.careerInfo.id.includes('sonido');
+
               if (dur === '1') {
-                // Si es UNLP pero NO es Psicología, dejamos "1S", sino ponemos "1C"
-                label = (isUnlp && !careerData.careerInfo.id.includes('psicologia')) ? '1S' : '1C';
+                label = (isUnlp && !usaCuatrimestres) ? '1S' : '1C';
                 pillBg = 'rgba(34, 197, 94, 0.85)'; // Verde
               } else if (dur === '2') {
-                // Si es UNLP pero NO es Psicología, dejamos "2S", sino ponemos "2C"
-                label = (isUnlp && !careerData.careerInfo.id.includes('psicologia')) ? '2S' : '2C';
+                label = (isUnlp && !usaCuatrimestres) ? '2S' : '2C';
                 pillBg = 'rgba(244, 63, 94, 0.85)'; // Rojo
               } else if (dur === 'Ingreso') {
                 label = 'Ingreso';
@@ -402,7 +401,6 @@ export default function PlanDeEstudios() {
               );
             })}
 
-            {/* ETIQUETAS CONDICIONALES DE TRAYECTOS */}
             {subject.isApu && (
               <span key="apu" style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -593,7 +591,10 @@ export default function PlanDeEstudios() {
             <span className="stat-label">cursando</span>
           </div>
           <div className="stat">
-            <span className="stat-val" style={{ color: 'var(--muted)' }}>{careerData?.careerInfo?.creditosTotales || (36 + (ALL.filter((s: any) => materias[s.id] === 'aprobada' && s.level && ELECTIVAS[s.level as keyof typeof ELECTIVAS]?.some((e:any) => e.id === s.id)).length))}</span>
+            {/* 🔥 ACÁ SE CALCULA EL TOTAL DINÁMICO */}
+            <span className="stat-val" style={{ color: 'var(--muted)' }}>
+              {careerData?.careerInfo?.creditosTotales || SUBJECTS.length}
+            </span>
             <span className="stat-label">total materias</span>
           </div>
           <div className="progress-bar desktop-only">
