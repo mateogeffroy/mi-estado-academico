@@ -113,7 +113,7 @@ export default function AuthPage() {
           justify-content: flex-start;
           
           /* Padding mínimo por defecto: ideal para notebook dividida con mouse */
-          padding: 20px 20px 40px 20px;
+          padding: 30px 20px 40px 20px;
         }
 
         /* 🔥 MAGIA DE DETECCIÓN DE HARDWARE (CELULARES REALES TÁCTILES) 🔥 */
@@ -223,9 +223,10 @@ export default function AuthPage() {
 
         .responsive-title {
           margin-bottom: 5px;
-          line-height: 1.1;
+          line-height: 1;
           letter-spacing: -0.5px;
-          font-size: 2.2rem;
+          /* Clamp permite un escalado fluído. Arranca desde un tamaño mínimo que evita recortes en celu */
+          font-size: clamp(1.1rem, 6.5vw, 2.4rem); 
         }
 
         /* ================================================================= */
@@ -255,7 +256,7 @@ export default function AuthPage() {
             padding-top: 20px; 
           }
           .responsive-title {
-            font-size: 2.2rem; 
+            font-size: 2.4rem; 
           }
           .login-box {
             padding: 20px 24px; 
@@ -274,32 +275,39 @@ export default function AuthPage() {
         /* ================================================================= */
         @media (min-width: 1400px) and (min-height: 850px) {
           .login-wrapper {
-            max-width: 500px; 
+            max-width: 600px; /* Agrandamos MUCHO la caja para rellenar la pantalla */
           }
           .responsive-title {
-            font-size: 3.2rem; 
+            font-size: 3.8rem; /* Título gigante */
           }
           .login-box {
-            padding: 40px 36px; 
-            gap: 22px;
+            padding: 50px 46px; 
+            gap: 28px;
+            border-radius: 24px;
           }
           .auth-form {
-            gap: 22px;
+            gap: 24px;
           }
           .input-field {
-            padding: 16px;
-            font-size: 1.05rem;
+            padding: 18px;
+            font-size: 1.15rem;
+            border-radius: 12px;
           }
           .auth-label {
-            font-size: 0.9rem;
+            font-size: 1rem;
           }
           .auth-submit-btn {
-            padding: 16px;
-            font-size: 1.15rem;
+            padding: 18px;
+            font-size: 1.2rem;
+            border-radius: 12px;
           }
           .auth-google-btn {
-            padding: 14px;
-            font-size: 1.05rem;
+            padding: 16px;
+            font-size: 1.15rem;
+            border-radius: 12px;
+          }
+          .arrow-container {
+            margin-top: 40px; 
           }
         }
       `}</style>
@@ -311,11 +319,29 @@ export default function AuthPage() {
           <div className="login-wrapper">
             
             {isLogin && (
-              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <h1 className="logo responsive-title">
-                  <span style={{ color: 'white' }}>Mi Estado</span><br />
-                  <span style={{ color: 'var(--cursando)' }}>Académico</span>
-                </h1>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px', width: '100%' }}>
+                
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(10px, 3vw, 20px)', width: '100%' }}>
+                  {/* Logo fluido que acompaña el reescalado del título */}
+                  <img 
+                    src="/icon.png" 
+                    alt="Logo Mi Estado Académico" 
+                    style={{ width: 'clamp(40px, 10vw, 75px)', height: 'clamp(40px, 10vw, 75px)', objectFit: 'contain', flexShrink: 0 }} 
+                  />
+                  
+                  {/* MAGIA: inline-flex obliga a la caja a ser EXACTAMENTE del ancho de "Académico" */}
+                  <h1 className="logo responsive-title" style={{ margin: 0, display: 'inline-flex', flexDirection: 'column', textAlign: 'left' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      <span style={{ color: 'white' }}>Mi</span>
+                      <span style={{ color: 'white' }}>Estado</span>
+                    </div>
+                    <span style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>Académico</span>
+                  </h1>
+                </div>
+
+                <p style={{ color: 'var(--muted)', fontSize: '1.05rem', margin: '12px 0 0 0', fontWeight: 500, textAlign: 'center' }}>
+                  Bienvenido de vuelta
+                </p>
               </div>
             )}
 

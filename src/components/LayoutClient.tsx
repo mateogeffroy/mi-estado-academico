@@ -133,7 +133,9 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', position: 'relative', zIndex: 1000 }}>
           
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
-            <Link href="/" style={{ textDecoration: 'none' }}>
+            {/* 🔥 AGREGAMOS EL LOGO AL LADO DEL TEXTO AQUÍ 🔥 */}
+            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <img src="/icon.png" alt="Logo Mi Estado Académico" style={{ width: '42px', height: '42px', objectFit: 'contain' }} />
               <div className="header-titles">
                 <div className="logo">
                   Mi Estado <span style={{ color: 'var(--cursando)' }}>Académico</span>
@@ -291,7 +293,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             </Link>
           </div>
 
-          {/* 🔥 GAP CORREGIDO: Se reemplazó el margin-top: 'auto' por '10px' */}
           <div style={{ marginTop: '10px' }}>
             <div className="sidebar-divider" style={{ margin: '10px 0' }}></div>
             <button className="sidebar-action-btn sidebar-action-btn-custom btn-danger-sidebar" onClick={handleLogout} style={{ width: '100%' }}>
