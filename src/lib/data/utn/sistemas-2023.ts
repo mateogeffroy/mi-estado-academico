@@ -185,7 +185,8 @@ const SUBJECTS = [
     comisiones: [
       { id: 'S31', duration: 'A', dias: [{ nombre: 'Jueves', inicio: '08:00', fin: '11:00' }, { nombre: 'Jueves', inicio: '10:30', fin: '13:00' }] },
       { id: 'S32', duration: '2', dias: [{ nombre: 'Lunes', inicio: '20:15', fin: '23:15' }, { nombre: 'Viernes', inicio: '17:00', fin: '20:00' }] },
-      { id: 'S33', duration: 'A', dias: [{ nombre: 'Lunes', inicio: '08:00', fin: '11:00' }] }
+      { id: 'S33', duration: 'A', dias: [{ nombre: 'Lunes', inicio: '08:00', fin: '11:00' }] },
+      { id: 'S34', duration: 'A', dias: [{ nombre: 'Martes', inicio: '20:00', fin: '23:00' }] }
     ]
   },
   { 
@@ -213,7 +214,7 @@ const SUBJECTS = [
     ]
   },
   { 
-    id:'SEM', num:'SEM', name:'Seminario Integrador (Título Intermedio)', hours:'Extra', level:3, correlCursada:[], correlAprobada:[], isSeminario: true,
+    id:'SEM', num:'SEM', name:'Seminario Integrador (Título Intermedio)', hours:'Extra', level:3, correlCursada:[16], correlAprobada:[6,8,13,14], isSeminario: true,
     comisiones: [
       { id: 'S31', duration: 'A', dias: [{ nombre: 'Lunes', inicio: '16:00', fin: '17:30' }, { nombre: 'Jueves', inicio: '16:30', fin: '18:00' }] },
       { id: 'S32', duration: 'A', dias: [{ nombre: 'Lunes', inicio: '16:00', fin: '17:30' }, { nombre: 'Jueves', inicio: '16:30', fin: '18:00' }] }

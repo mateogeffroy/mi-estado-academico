@@ -489,6 +489,62 @@ export default function PlanDeEstudios() {
         }
         .scatter-ad-left { right: 100%; margin-right: 40px; }
         .scatter-ad-right { left: 100%; margin-left: 40px; }
+
+        /* =========================================================
+           OVERRIDE STATS BAR (Diseño Fluido: 1 Fila PC / 2 Filas Mobile)
+           ========================================================= */
+        .plan-stats-bar-override {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 24px;
+        }
+        .stats-row-1 {
+          display: flex;
+          align-items: center;
+          gap: 24px;
+          flex-shrink: 0;
+        }
+        .stats-row-2 {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          flex: 1; /* Hace que este bloque ocupe el resto del espacio */
+        }
+        .stats-progress-wrapper {
+          flex: 1; /* Estira la barra de progreso para eliminar el espacio vacío */
+          display: flex;
+          align-items: center;
+          width: 100%;
+        }
+        
+        @media (max-width: 900px) {
+          .plan-stats-bar-override {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px !important;
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
+          .stats-row-1 {
+            width: 100%;
+            justify-content: space-between !important;
+            gap: 5px !important;
+          }
+          .stats-row-2 {
+            width: 100%;
+            justify-content: space-between !important;
+            gap: 12px !important;
+          }
+          /* Forzamos a mostrar el Total de Materias en celulares */
+          .plan-stats-bar-override .stat:nth-child(4) {
+            display: flex !important;
+          }
+          /* Ajustamos textos para que entren 4 stats en la misma línea */
+          .stats-row-1 .stat-val { font-size: 0.95rem !important; }
+          .stats-row-1 .stat-label { font-size: 0.6rem !important; letter-spacing: -0.5px; }
+        }
       `}</style>
 
       <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '130px', gap: '40px' }}>
@@ -577,41 +633,51 @@ export default function PlanDeEstudios() {
           <div className="tooltip show" style={{ left: tooltip.x, top: tooltip.y, textAlign: 'left', zIndex: 9999 }}>{tooltip.content}</div>
         )}
 
-        <div id="stat-bar-container" className="stats-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 900, background: 'var(--bg)', borderTop: '1px solid var(--border)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-          <div className="stat">
-            <span className="stat-val" style={{ color: 'var(--aprobada)' }}>{stats.aprobadas}</span>
-            <span className="stat-label">aprobadas</span>
-          </div>
-          <div className="stat">
-            <span className="stat-val" style={{ color: 'var(--cursada)' }}>{stats.cursadas}</span>
-            <span className="stat-label">cursadas</span>
-          </div>
-          <div className="stat">
-            <span className="stat-val" style={{ color: 'var(--cursando)' }}>{stats.cursando}</span>
-            <span className="stat-label">cursando</span>
-          </div>
-          <div className="stat">
-            {/* 🔥 ACÁ SE CALCULA EL TOTAL DINÁMICO */}
-            <span className="stat-val" style={{ color: 'var(--muted)' }}>
-              {careerData?.careerInfo?.creditosTotales || SUBJECTS.length}
-            </span>
-            <span className="stat-label">total materias</span>
-          </div>
-          <div className="progress-bar desktop-only">
-            <div className="progress-fill" style={{ width: `${stats.porcentaje}%` }}></div>
-          </div>
-          <span style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>{stats.porcentaje}%</span>
+        {/* 🔥 STATS BAR REFORMULADA 🔥 */}
+        <div id="stat-bar-container" className="stats-bar plan-stats-bar-override" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 900, background: 'var(--bg)', borderTop: '1px solid var(--border)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           
-          <button 
-            className="btn-secondary" 
-            style={{ display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 12px', marginLeft: 'auto', flex: '0 1 auto' }} 
-            onClick={handleReiniciarClick}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
-            </svg> 
-            Reiniciar
-          </button>
+          <div className="stats-row-1">
+            <div className="stat">
+              <span className="stat-val" style={{ color: 'var(--aprobada)' }}>{stats.aprobadas}</span>
+              <span className="stat-label">aprobadas</span>
+            </div>
+            <div className="stat">
+              <span className="stat-val" style={{ color: 'var(--cursada)' }}>{stats.cursadas}</span>
+              <span className="stat-label">cursadas</span>
+            </div>
+            <div className="stat">
+              <span className="stat-val" style={{ color: 'var(--cursando)' }}>{stats.cursando}</span>
+              <span className="stat-label">cursando</span>
+            </div>
+            <div className="stat">
+              <span className="stat-val" style={{ color: 'var(--muted)' }}>
+                {careerData?.careerInfo?.creditosTotales || SUBJECTS.length}
+              </span>
+              <span className="stat-label">total materias</span>
+            </div>
+          </div>
+
+          <div className="stats-row-2">
+            <span style={{ color: 'var(--text)', fontSize: '0.85rem', fontWeight: 'bold', flexShrink: 0 }}>{stats.porcentaje}%</span>
+            
+            <div className="stats-progress-wrapper">
+              <div className="progress-bar" style={{ width: '100%', height: '6px' }}>
+                <div className="progress-fill" style={{ width: `${stats.porcentaje}%` }}></div>
+              </div>
+            </div>
+
+            <button 
+              className="btn-secondary" 
+              style={{ display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 12px', flexShrink: 0 }} 
+              onClick={handleReiniciarClick}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+              </svg> 
+              Reiniciar
+            </button>
+          </div>
+
         </div>
 
         <ConfirmModal 

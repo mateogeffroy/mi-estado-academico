@@ -31,7 +31,11 @@ export default function MateriaPage() {
     return (
       <div style={{ textAlign: 'center', paddingTop: '150px', paddingBottom: '100px', color: 'white' }}>
         <h2>Materia no encontrada</h2>
-        <button className="btn-primary" onClick={() => router.push('/cursada')} style={{ marginTop: '20px', padding: '10px 20px', borderRadius: '6px' }}>
+        <button className="btn-secondary" onClick={() => router.push('/cursada')} style={{ marginTop: '20px', whiteSpace: 'nowrap' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m12 19-7-7 7-7"/>
+            <path d="M19 12H5"/>
+          </svg>
           Volver a Cursada
         </button>
       </div>
@@ -76,7 +80,6 @@ export default function MateriaPage() {
     return fechaISO;
   };
 
-  // Separamos el nombre para hacer el efecto bicolor del título estilo Logo
   // Separamos el nombre para hacer el efecto bicolor del título estilo Logo
   const spaceIndex = materia.name.indexOf(' ');
   const primerPalabra = spaceIndex === -1 ? materia.name : materia.name.substring(0, spaceIndex);
@@ -149,13 +152,12 @@ export default function MateriaPage() {
           </div>
 
           <Link href="/cursada#gestionar-materias" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <button 
-              className="btn-secondary"
-              style={{ textAlign: 'center', lineHeight: '1.4', padding: '8px 16px' }}
-              onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--cursando)'}
-              onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
-            >
-              ← Volver a <br /> Cursada
+            <button className="btn-secondary" style={{ whiteSpace: 'nowrap' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m12 19-7-7 7-7"/>
+                <path d="M19 12H5"/>
+              </svg>
+              Volver a Cursada
             </button>
           </Link>
         </div>
