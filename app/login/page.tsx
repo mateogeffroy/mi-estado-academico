@@ -78,59 +78,64 @@ export default function AuthPage() {
     }
   };
 
-  const scrollToInfo = () => {
-    document.getElementById('info-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
     <>
       <style>{`
-        /* 🔥 MATA EL PADDING DEL HEADER GLOBAL EN TODAS LAS RESOLUCIONES 🔥 */
+        /* 🔥 DESTRUIMOS LAS RESTRICCIONES DE GLOBALS.CSS SOLO PARA EL LOGIN 🔥 */
         #login-main {
-          padding-top: 0 !important; 
-        }
-
-        @keyframes bounce {
-          0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-10px); }
-          60% { transform: translateY(-5px); }
-        }
-        .scroll-arrow {
-          animation: bounce 2s infinite;
+          padding: 0 !important; 
+          margin: 0 !important;
+          max-width: 100% !important;
+          width: 100vw !important;
+          min-height: 100vh !important;
+          display: block !important;
         }
 
         /* ================================================================= */
-        /* ESTILOS BASE (PANTALLAS DIVIDIDAS Y DEFAULT)                      */
+        /* ESTRUCTURA SPLIT SCREEN (Base Móvil)                              */
         /* ================================================================= */
         
-        .login-section {
+        .split-layout {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
           min-height: 100vh;
+        }
+
+        .form-col {
+          order: 1; /* En celular el formulario va arriba */
           display: flex;
           flex-direction: column;
           align-items: center;
-          position: relative;
-          box-sizing: border-box;
-          justify-content: flex-start;
-          
-          /* Padding mínimo por defecto: ideal para notebook dividida con mouse */
-          padding: 30px 20px 40px 20px;
-        }
-
-        /* 🔥 MAGIA DE DETECCIÓN DE HARDWARE (CELULARES REALES TÁCTILES) 🔥 */
-        @media (pointer: coarse) {
-          .login-section {
-            /* Solo si usás el dedo en la pantalla, agregamos aire arriba */
-            padding-top: 6vh; 
-          }
+          padding: 20px 20px 40px 20px;
         }
         
+        .hero-col {
+          order: 2; /* En celular la info va abajo */
+          display: flex;
+          flex-direction: column;
+          padding: 40px 20px 60px 20px;
+          background: var(--panel);
+          border-top: 1px solid var(--border);
+          gap: 30px;
+        }
+
+        @media (pointer: coarse) {
+          .form-col { padding-top: 8vh; }
+        }
+
+        /* --- CLASES DE VISIBILIDAD --- */
+        .hero-logo-container { display: none; }
+        .form-logo-container { display: flex; width: 100%; }
+        .desktop-form-title { display: none !important; }
+
+        /* --- ESTILOS DEL FORMULARIO --- */
         .login-wrapper {
           width: 100%;
           max-width: 400px;
           display: flex;
           flex-direction: column;
           z-index: 10;
-          box-sizing: border-box;
         }
 
         .login-box {
@@ -144,256 +149,202 @@ export default function AuthPage() {
           gap: 18px;
         }
 
-        .auth-form {
-          display: flex;
-          flex-direction: column;
-          gap: 18px;
-        }
-
-        .auth-label {
-          color: var(--muted);
-          font-size: 0.85rem;
-          font-weight: bold;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
+        .auth-form { display: flex; flexDirection: column; gap: 18px; }
+        .auth-label { color: var(--muted); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
 
         .input-field {
-          width: 100%;
-          box-sizing: border-box;
-          padding: 14px;
-          border-radius: 10px;
-          border: 1px solid var(--border);
-          background: rgba(255, 255, 255, 0.02);
-          color: white;
-          font-size: 0.95rem;
-          outline: none;
+          width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--border);
+          background: rgba(255, 255, 255, 0.02); color: white; font-size: 0.95rem; outline: none;
           transition: border-color 0.2s ease, background 0.2s ease;
         }
-        
-        .input-field:focus {
-          border-color: var(--cursando);
-          background: rgba(255, 255, 255, 0.05);
-        }
+        .input-field:focus { border-color: var(--cursando); background: rgba(255, 255, 255, 0.05); }
 
-        .auth-submit-btn {
-          padding: 14px;
-          font-size: 1.05rem;
-          border-radius: 10px;
-          font-weight: bold;
-          width: 100%;
-          box-sizing: border-box;
-        }
+        .auth-submit-btn { padding: 14px; font-size: 1.05rem; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; border: none; }
 
         .auth-google-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          padding: 12px;
-          border-radius: 10px;
-          background: white;
-          color: black;
-          font-weight: bold;
-          font-size: 0.95rem;
-          border: none;
-          cursor: pointer;
-          transition: transform 0.2s;
-          width: 100%;
-          box-sizing: border-box;
+          display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px;
+          border-radius: 10px; background: white; color: black; font-weight: bold; font-size: 0.95rem;
+          border: none; cursor: pointer; transition: transform 0.2s; width: 100%;
         }
-        .auth-google-btn:hover {
-          transform: scale(1.02);
-        }
+        .auth-google-btn:hover { transform: scale(1.02); }
 
-        .arrow-container {
-          cursor: pointer;
-          color: var(--muted);
+        /* --- ESTILOS DEL HERO (CHECKLIST Y TEXTOS) --- */
+        .hero-subtitle {
+          color: var(--text);
+          font-size: 1.1rem;
+          line-height: 1.6;
+        }
+        .hero-checklist {
+          list-style: none;
           display: flex;
           flex-direction: column;
+          gap: 20px;
+          padding: 0;
+        }
+        .hero-checklist li {
+          display: flex;
+          align-items: flex-start;
+          gap: 16px;
+          color: var(--text);
+          font-size: 1rem;
+          line-height: 1.5;
+        }
+        .check-icon {
+          color: var(--cursando);
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+        .badge-carrera {
+          display: inline-flex;
+          background: rgba(59, 130, 246, 0.1);
+          color: var(--cursando);
+          padding: 10px 16px;
+          border-radius: 12px;
+          font-weight: bold;
+          font-size: 0.85rem;
           align-items: center;
           gap: 8px;
-          margin-top: 30px; 
-          transition: color 0.2s ease;
-        }
-        
-        .arrow-container:hover {
-          color: white;
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          width: fit-content;
         }
 
         .responsive-title {
           margin-bottom: 5px;
           line-height: 1;
           letter-spacing: -0.5px;
-          /* Clamp permite un escalado fluído. Arranca desde un tamaño mínimo que evita recortes en celu */
           font-size: clamp(1.1rem, 6.5vw, 2.4rem); 
         }
 
         /* ================================================================= */
-        /* ESCRITORIO GENERAL PANTALLA COMPLETA (> 1024px)                   */
+        /* ESCRITORIO (60/40 Split Screen Fijo sin Scroll)                   */
         /* ================================================================= */
         @media (min-width: 1025px) {
-          .login-section {
+          .split-layout {
+            flex-direction: row !important;
+            height: 100vh;
+          }
+
+          /* HERO A LA IZQUIERDA (60%) */
+          .hero-col {
+            order: 1;
+            flex: 0 0 60%;
+            max-width: 60%;
+            height: 100vh;
+            padding: 60px 6vw;
+            background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.08) 0%, transparent 50%), var(--panel);
+            border-right: 1px solid var(--border);
+            border-top: none;
             justify-content: center;
-            padding: 20px;
+            overflow-y: auto;
           }
+
+          /* FORMULARIO A LA DERECHA (40%) */
+          .form-col {
+            order: 2;
+            flex: 0 0 40%;
+            max-width: 40%;
+            height: 100vh;
+            padding: 40px;
+            justify-content: center;
+            background: var(--bg);
+          }
+
+          /* Intercambio de Logos */
+          .hero-logo-container { display: flex; flex-direction: column; align-items: flex-start; }
+          .form-logo-container { display: none !important; }
+          .desktop-form-title { display: flex !important; }
+
+          .login-wrapper { max-width: 450px; }
+          .login-box { padding: 40px 32px; gap: 24px; }
+          .auth-form { gap: 24px; }
           
-          .login-box {
-            padding: 30px 24px;
-          }
-
-          .responsive-title {
-            font-size: 2.6rem;
-          }
+          .hero-subtitle { font-size: 1.3rem; margin-top: 20px; max-width: 90%; }
+          .hero-checklist li { font-size: 1.1rem; }
+          
+          .responsive-title { font-size: 3.5rem; }
         }
 
-        /* ================================================================= */
-        /* NOTEBOOKS PANTALLA COMPLETA PERO BAJITAS (Ej: 1366x768)           */
-        /* ================================================================= */
+        /* Ajustes menores para Notebooks bajitas */
         @media (min-width: 1025px) and (max-height: 800px) {
-          .login-section {
-            justify-content: flex-start; 
-            padding-top: 20px; 
-          }
-          .responsive-title {
-            font-size: 2.4rem; 
-          }
-          .login-box {
-            padding: 20px 24px; 
-            gap: 14px; 
-          }
-          .auth-form {
-            gap: 14px;
-          }
-          .arrow-container {
-            margin-top: 15px; 
-          }
-        }
-
-        /* ================================================================= */
-        /* MONITORES GRANDES (Ej: 1920x1080)                                 */
-        /* ================================================================= */
-        @media (min-width: 1400px) and (min-height: 850px) {
-          .login-wrapper {
-            max-width: 600px; /* Agrandamos MUCHO la caja para rellenar la pantalla */
-          }
-          .responsive-title {
-            font-size: 3.8rem; /* Título gigante */
-          }
-          .login-box {
-            padding: 50px 46px; 
-            gap: 28px;
-            border-radius: 24px;
-          }
-          .auth-form {
-            gap: 24px;
-          }
-          .input-field {
-            padding: 18px;
-            font-size: 1.15rem;
-            border-radius: 12px;
-          }
-          .auth-label {
-            font-size: 1rem;
-          }
-          .auth-submit-btn {
-            padding: 18px;
-            font-size: 1.2rem;
-            border-radius: 12px;
-          }
-          .auth-google-btn {
-            padding: 16px;
-            font-size: 1.15rem;
-            border-radius: 12px;
-          }
-          .arrow-container {
-            margin-top: 40px; 
-          }
+          .hero-col { padding: 30px 4vw; gap: 20px; }
+          .login-box { padding: 30px 24px; gap: 18px; }
+          .auth-form { gap: 18px; }
+          .responsive-title { font-size: 2.8rem; }
+          .hero-subtitle { font-size: 1.1rem; }
+          .hero-checklist li { font-size: 1rem; }
         }
       `}</style>
 
-      <main id="login-main" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <main id="login-main">
         
-        <section className="login-section">
+        <div className="split-layout">
           
-          <div className="login-wrapper">
-            
-            {isLogin && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px', width: '100%' }}>
+          {/* ========================================================= */}
+          {/* COLUMNA 1: FORMULARIO DE LOGIN                            */}
+          {/* ========================================================= */}
+          <section className="form-col">
+            <div className="login-wrapper">
+              
+              <div style={{ textAlign: 'center', marginBottom: '24px', width: '100%' }}>
                 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(10px, 3vw, 20px)', width: '100%' }}>
-                  {/* Logo fluido que acompaña el reescalado del título */}
-                  <img 
-                    src="/icon.png" 
-                    alt="Logo Mi Estado Académico" 
-                    style={{ width: 'clamp(40px, 10vw, 75px)', height: 'clamp(40px, 10vw, 75px)', objectFit: 'contain', flexShrink: 0 }} 
-                  />
-                  
-                  {/* MAGIA: inline-flex obliga a la caja a ser EXACTAMENTE del ancho de "Académico" */}
-                  <h1 className="logo responsive-title" style={{ margin: 0, display: 'inline-flex', flexDirection: 'column', textAlign: 'left' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                      <span style={{ color: 'white' }}>Mi</span>
-                      <span style={{ color: 'white' }}>Estado</span>
-                    </div>
-                    <span style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>Académico</span>
-                  </h1>
+                {/* --- LOGO EN MÓVIL --- */}
+                <div className="form-logo-container" style={{ flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(10px, 3vw, 20px)', width: '100%' }}>
+                    <img src="/icon.png" alt="Logo Mi Estado Académico" style={{ width: 'clamp(40px, 10vw, 75px)', height: 'clamp(40px, 10vw, 75px)', objectFit: 'contain', flexShrink: 0 }} />
+                    
+                    <h1 className="logo responsive-title" style={{ margin: 0, display: 'inline-flex', flexDirection: 'column', textAlign: 'left' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'white', fontSize: '0.42em', lineHeight: 1, padding: '0 0.05em' }}>
+                        <span>MI</span><span>ESTADO</span>
+                      </div>
+                      <span style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>ACADÉMICO</span>
+                    </h1>
+                  </div>
+
+                  <p style={{ color: 'var(--muted)', fontSize: '1.05rem', margin: '14px 0 0 0', fontWeight: 500 }}>
+                    {isLogin ? 'Bienvenido de vuelta' : 'Creá tu cuenta para empezar'}
+                  </p>
                 </div>
 
-                <p style={{ color: 'var(--muted)', fontSize: '1.05rem', margin: '12px 0 0 0', fontWeight: 500, textAlign: 'center' }}>
-                  Bienvenido de vuelta
-                </p>
+                {/* --- TÍTULO EN ESCRITORIO --- */}
+                <div className="desktop-form-title" style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                  <h2 style={{ color: 'white', fontSize: '2rem', marginBottom: '8px', fontWeight: 'bold' }}>
+                    {isLogin ? '¡Bienvenido!' : '¡Creá tu cuenta!'}
+                  </h2>
+                  <p style={{ color: 'var(--muted)', fontSize: '1.05rem', margin: 0 }}>
+                    {isLogin ? 'Ingresá tus credenciales para acceder' : 'Registrate y organizá tu carrera'}
+                  </p>
+                </div>
+
               </div>
-            )}
 
-            <div className="login-box">
-              {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '14px', borderRadius: '10px', fontSize: '0.9rem', textAlign: 'center', fontWeight: 'bold' }}>{error}</div>}
-              {successMsg && <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '14px', borderRadius: '10px', fontSize: '0.9rem', textAlign: 'center', fontWeight: 'bold' }}>{successMsg}</div>}
+              <div className="login-box">
+                {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '14px', borderRadius: '10px', fontSize: '0.9rem', textAlign: 'center', fontWeight: 'bold' }}>{error}</div>}
+                {successMsg && <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '14px', borderRadius: '10px', fontSize: '0.9rem', textAlign: 'center', fontWeight: 'bold' }}>{successMsg}</div>}
 
-              <form onSubmit={handleSubmit} className="auth-form">
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label className="auth-label">Correo Electrónico</label>
-                  <input 
-                    type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                    placeholder="alumno@frlp.utn.edu.ar"
-                    className="input-field"
-                    required
-                  />
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label className="auth-label">Contraseña</label>
-                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <form onSubmit={handleSubmit} className="auth-form">
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label className="auth-label">Correo Electrónico</label>
                     <input 
-                      type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
+                      type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                      placeholder="alumno@frlp.utn.edu.ar"
                       className="input-field"
-                      style={{ paddingRight: '50px' }}
                       required
                     />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {showPassword ? (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                      ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
-                      )}
-                    </button>
                   </div>
-                </div>
 
-                {!isLogin && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label className="auth-label">Confirmar Contraseña</label>
+                    <label className="auth-label">Contraseña</label>
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                       <input 
-                        type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                        type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
                         className="input-field"
                         style={{ paddingRight: '50px' }}
                         required
                       />
-                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {showConfirmPassword ? (
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {showPassword ? (
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                         ) : (
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
@@ -401,119 +352,133 @@ export default function AuthPage() {
                       </button>
                     </div>
                   </div>
-                )}
 
-                {!isLogin && (
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '2px', fontWeight: 'bold' }}>Requisitos de tu contraseña:</span>
-                    {requirements.map((req, idx) => {
-                      const isMet = req.test(password, confirmPassword);
-                      return (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: isMet ? 'white' : 'var(--muted)' }}>
-                          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: isMet ? '#10b981' : 'transparent', border: `1px solid ${isMet ? '#10b981' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            {isMet && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                  {!isLogin && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label className="auth-label">Confirmar Contraseña</label>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <input 
+                          type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="input-field"
+                          style={{ paddingRight: '50px' }}
+                          required
+                        />
+                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {showConfirmPassword ? (
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                          ) : (
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isLogin && (
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '2px', fontWeight: 'bold' }}>Requisitos de tu contraseña:</span>
+                      {requirements.map((req, idx) => {
+                        const isMet = req.test(password, confirmPassword);
+                        return (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: isMet ? 'white' : 'var(--muted)' }}>
+                            <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: isMet ? '#10b981' : 'transparent', border: `1px solid ${isMet ? '#10b981' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              {isMet && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                            </div>
+                            {req.label}
                           </div>
-                          {req.label}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <button 
+                    type="submit" 
+                    className="btn-primary auth-submit-btn" 
+                    disabled={loading || (!isLogin && !isPasswordValid)} 
+                    style={{ opacity: (loading || (!isLogin && !isPasswordValid)) ? 0.5 : 1, cursor: (loading || (!isLogin && !isPasswordValid)) ? 'not-allowed' : 'pointer' }}
+                  >
+                    {loading ? 'Cargando...' : (isLogin ? 'Iniciar Sesión' : 'Crear Cuenta')}
+                  </button>
+                </form>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+                  <span style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase' }}>O ingresá con</span>
+                  <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+                </div>
 
                 <button 
-                  type="submit" 
-                  className="btn-primary auth-submit-btn" 
-                  disabled={loading || (!isLogin && !isPasswordValid)} 
-                  style={{ opacity: (loading || (!isLogin && !isPasswordValid)) ? 0.5 : 1, cursor: (loading || (!isLogin && !isPasswordValid)) ? 'not-allowed' : 'pointer' }}
+                  onClick={handleGoogleLogin} 
+                  type="button"
+                  className="auth-google-btn"
                 >
-                  {loading ? 'Cargando...' : (isLogin ? 'Iniciar Sesión' : 'Crear Cuenta')}
+                  <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  Continuar con Google
                 </button>
-              </form>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
-                <span style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase' }}>O ingresá con</span>
-                <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
-              </div>
-
-              <button 
-                onClick={handleGoogleLogin} 
-                type="button"
-                className="auth-google-btn"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Continuar con Google
-              </button>
-
-              <div style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--muted)' }}>
-                {isLogin ? '¿No tenés una cuenta? ' : '¿Ya tenés una cuenta? '}
-                <button onClick={() => { setIsLogin(!isLogin); setError(''); setSuccessMsg(''); setPassword(''); setConfirmPassword(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--cursando)', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}>
-                  {isLogin ? 'Registrate acá' : 'Iniciá sesión'}
-                </button>
+                <div style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                  {isLogin ? '¿No tenés una cuenta? ' : '¿Ya tenés una cuenta? '}
+                  <button onClick={() => { setIsLogin(!isLogin); setError(''); setSuccessMsg(''); setPassword(''); setConfirmPassword(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--cursando)', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}>
+                    {isLogin ? 'Registrate acá' : 'Iniciá sesión'}
+                  </button>
+                </div>
               </div>
             </div>
+          </section>
 
-          </div>
-
-          <div onClick={scrollToInfo} className="scroll-arrow arrow-container">
-            <span style={{ fontSize: '0.85rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 'bold' }}>Descubrí más</span>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </div>
-
-        </section>
-
-        {/* ========================================================= */}
-        {/* SECCIÓN 2: INFORMACIÓN (Landing Page)                     */}
-        {/* ========================================================= */}
-        <div style={{marginBottom: '120px', width: '100%', boxSizing: 'border-box'}}> 
-          <section id="info-section" style={{ padding: '30px 15px', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}>
-          
-          <div style={{ textAlign: 'center', maxWidth: '600px' }}>
-            <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', color: 'white', marginBottom: '15px' }}>¿Qué podés hacer acá?</h2>
-            <p style={{ color: 'var(--muted)', fontSize: 'clamp(1rem, 3vw, 1.2rem)', lineHeight: '1.6' }}>
-              Mi Estado Académico es la herramienta definitiva para que los estudiantes organicen su carrera sin volverse locos con excels o PDFs desactualizados.
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px', maxWidth: '1100px', width: '100%', boxSizing: 'border-box' }}>
+          {/* ========================================================= */}
+          {/* COLUMNA 2: HERO / INFO CARDS                              */}
+          {/* ========================================================= */}
+          <section className="hero-col">
             
-            <div style={{ background: 'var(--panel)', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-              <div style={{ marginBottom: '20px' }}>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+            <div className="hero-logo-container">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '10px' }}>
+                <img src="/icon.png" alt="Logo" style={{ width: '60px', height: '60px', objectFit: 'contain', flexShrink: 0 }} />
+                <h1 className="logo responsive-title" style={{ margin: 0, display: 'inline-flex', flexDirection: 'column', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'white', fontSize: '0.42em', lineHeight: 1, padding: '0 0.05em' }}>
+                    <span>MI</span><span>ESTADO</span>
+                  </div>
+                  <span style={{ color: 'var(--cursando)', lineHeight: 1 }}>ACADÉMICO</span>
+                </h1>
               </div>
-              <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '15px' }}>Plan de Estudios Dinámico</h3>
-              <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: '1.6' }}>
-                Visualizá tu plan de estudios completo, con las correlatividades claras y actualizadas. Podés marcar las materias que cursaste, estás cursando o planeás cursar para tener un mapa claro de tu progreso.
+              <p className="hero-subtitle">
+                Gestión inteligente, trazabilidad absoluta y control total de tu carrera académica.
               </p>
             </div>
 
-            <div style={{ background: 'var(--panel)', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-              <div style={{ marginBottom: '20px' }}>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-              </div>
-              <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '15px' }}>Seguimiento de Promedio y Progreso</h3>
-              <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: '1.6' }}>
-                Podés visualizar el promedio rellenando en la tabla de materias aprobadas las notas finales de las materias.
+            <ul className="hero-checklist">
+              <li>
+                <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Plan de Estudios Dinámico:</strong> Visualizá tu plan, correlatividades claras y marcá materias aprobadas o en curso.</span>
+              </li>
+              <li>
+                <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Seguimiento de Promedio:</strong> Calculá tu promedio analítico exacto cargando las notas finales de tus materias.</span>
+              </li>
+              <li>
+                <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Gestión de Cursada:</strong> Agendá eventos, parciales y organizá tus horarios seleccionando comisiones reales.</span>
+              </li>
+            </ul>
+
+            <div style={{ marginTop: 'auto', paddingTop: '30px' }}>
+              <p style={{ color: 'var(--muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold', marginBottom: '10px' }}>
+                Carreras Disponibles
               </p>
+              <div className="badge-carrera">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                Ingeniería en Sistemas - UTN FRLP
+              </div>
             </div>
 
-            <div style={{ background: 'var(--panel)', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-              <div style={{ marginBottom: '20px' }}>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </div>
-              <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '15px' }}>Cursada</h3>
-              <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: '1.6' }}>
-                Seleccioná en el plan de estudios dinámico las materias que cursas actualmente para que se reflejen automáticamente en tu cursada. Entrando a una materia, podés agregar fechas de eventos y seleccionar la comisión en la que cursas para que se te coloque en el horario semanal automático.
-              </p>
-            </div>
+          </section>
 
-          </div>
-        </section>
         </div>
       </main>
     </>
