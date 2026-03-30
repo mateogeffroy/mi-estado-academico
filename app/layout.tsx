@@ -2,6 +2,7 @@ import './globals.css';
 import { PlanProvider } from '../src/context/PlanContext';
 import LayoutClient from '../src/components/LayoutClient';
 import Script from 'next/script';
+import { Analytics } from '@vercel/analytics/react'; // <-- 1. Agregamos el import
 
 export const metadata = {
   title: 'Mi Estado Académico',
@@ -31,6 +32,8 @@ export default function RootLayout({
             {children}
           </LayoutClient>
         </PlanProvider>
+
+        <Analytics /> {/* <-- 2. Agregamos el componente al final del body */}
       </body>
     </html>
   );
