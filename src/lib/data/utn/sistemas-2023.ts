@@ -3,7 +3,7 @@
 const SUBJECTS = [
   // ── PRIMER NIVEL ──
   { 
-    id:1, num:'01', name:'Analisis Matemático I', hours:'5 hs/sem', level:1, correlCursada:[], correlAprobada:[],
+    id:1, num:'01', name:'Análisis Matemático I', hours:'5 hs/sem', level:1, correlCursada:[], correlAprobada:[],
     comisiones: [
       { id: 'S10', duration: 'A', dias: [{ nombre: 'Martes', inicio: '08:00', fin: '12:00' }] },
       { id: 'S11', duration: 'A', dias: [{ nombre: 'Miércoles', inicio: '08:00', fin: '12:00' }] },
@@ -96,7 +96,7 @@ const SUBJECTS = [
       { id: 'S21', duration: 'A', dias: [{ nombre: 'Lunes', inicio: '10:30', fin: '12:45' }, { nombre: 'Jueves', inicio: '09:45', fin: '11:15' }] },
       { id: 'S22', duration: 'A', dias: [{ nombre: 'Martes', inicio: '10:00', fin: '12:15' }, { nombre: 'Jueves', inicio: '08:15', fin: '09:45' }] },
       { id: 'S23', duration: 'A', dias: [{ nombre: 'Lunes', inicio: '20:15', fin: '21:45' }, { nombre: 'Jueves', inicio: '17:45', fin: '20:00' }] },
-      { id: 'S24', duration: 'A', dias: [{ nombre: 'Lunes', inicio: '18:00', fin: '19:30' }, { nombre: 'Jueves', inicio: '14:00', fin: '16:15' }] }
+      { id: 'S24', duration: 'A', dias: [{ nombre: 'Lunes', inicio: '18:00', fin: '19:30' }, { nombre: 'Martes', inicio: '14:00', fin: '16:15' }] }
     ]
   },
   { 
