@@ -1,14 +1,32 @@
+import type { Metadata } from 'next';
 import './globals.css';
 import { PlanProvider } from '../src/context/PlanContext';
 import LayoutClient from '../src/components/LayoutClient';
 import Script from 'next/script';
-import { Analytics } from '@vercel/analytics/react'; // <-- 1. Agregamos el import
+import { Analytics } from '@vercel/analytics/react';
 
-export const metadata = {
+// 🔥 METADATOS SEO OPTIMIZADOS PARA GOOGLE, BING Y REDES SOCIALES
+export const metadata: Metadata = {
   title: 'Mi Estado Académico',
-  description: 'Ing. en Sistemas UTN-FRLP',
+  description: 'Gestión inteligente, trazabilidad absoluta y control total de tu carrera universitaria. Organizá tus horarios, calculá tu promedio y llevá el seguimiento de tu plan de estudios.',
   icons: {
     icon: '/icon.png',
+    apple: '/icon.png',
+  },
+  openGraph: {
+    title: 'Mi Estado Académico',
+    description: 'Tu herramienta para gestionar tu cursada.',
+    url: 'https://miestadoacademico.com.ar',
+    siteName: 'Mi Estado Académico',
+    images: [
+      {
+        url: '/icon.png',
+        width: 800,
+        height: 800,
+      },
+    ],
+    locale: 'es_AR',
+    type: 'website',
   },
 };
 
@@ -20,6 +38,8 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body style={{ position: 'relative' }}>
+        
+        {/* 🔥 SCRIPT DE ADSENSE: Activo para que Google pueda verificar el sitio 🔥 */}
         <Script
           id="adsbygoogle-init"
           strategy="afterInteractive" 
@@ -33,7 +53,7 @@ export default function RootLayout({
           </LayoutClient>
         </PlanProvider>
 
-        <Analytics /> {/* <-- 2. Agregamos el componente al final del body */}
+        <Analytics /> 
       </body>
     </html>
   );
