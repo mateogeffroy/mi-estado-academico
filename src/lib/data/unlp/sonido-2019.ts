@@ -22,22 +22,22 @@ export const SUBJECTS = [
   { id: 'TU021', name: 'Análisis de Recursos II', level: 2, duration: '2', correlCursada: ['TU020'], correlAprobada: [] },
   { id: 'M0013', name: 'Lenguaje Musical I', level: 2, duration: 'A', correlCursada: ['M0213', 'M0210', 'TU017'], correlAprobada: ['M0213'] },
   { id: 'TU022', name: 'Producción y Análisis Musical - Sonido', level: 2, duration: 'A', correlCursada: ['M0213', 'M0210', 'TU017'], correlAprobada: ['M0213'] },
-  { id: 'M0023', name: 'Tecnología I', level: 2, duration: '1', correlCursada: ['M0005'], correlAprobada: ['TU018'] },
+  { id: 'M0023', name: 'Tecnología I', level: 2, duration: '1', correlCursada: ['M0005'], correlAprobada: ['TU019'] },
   { id: 'TU024', name: 'Tecnología II', level: 2, duration: '2', correlCursada: ['M0023'], correlAprobada: [] },
-  { id: 'TU025', name: 'Software de Grabación I', level: 2, duration: '1', correlCursada: ['M0005'], correlAprobada: ['TU018'] },
+  { id: 'TU025', name: 'Software de Grabación I', level: 2, duration: '1', correlCursada: ['M0005'], correlAprobada: ['TU019'] },
   { id: 'TU026', name: 'Software de Grabación II', level: 2, duration: '2', correlCursada: ['TU025'], correlAprobada: [] },
   { id: 'A0006', name: 'Sonido I', level: 2, duration: 'A', correlCursada: ['M0210', 'TU019'], correlAprobada: [] },
 
   // ── TERCER AÑO ──
-  { id: 'A0012', name: 'Sonido II', level: 3, duration: 'A', correlCursada: ['A0006'], correlAprobada: ['TU022'] },
+  { id: 'A0012', name: 'Sonido II', level: 3, duration: 'A', correlCursada: ['A0006'], correlAprobada: [] },
   { id: 'TU027', name: 'Técnicas de Mezcla y Masterización I', level: 3, duration: '1', correlCursada: ['TU024', 'TU026'], correlAprobada: [] },
   { id: 'TU028', name: 'Técnicas de Mezcla y Masterización II', level: 3, duration: '2', correlCursada: ['TU027'], correlAprobada: [] },
   { id: 'TU029', name: 'Taller de Sonido en Vivo I', level: 3, duration: '1', correlCursada: ['TU024', 'TU021'], correlAprobada: [] },
   { id: 'TU030', name: 'Taller de Sonido en Vivo II', level: 3, duration: '2', correlCursada: ['TU029'], correlAprobada: [] },
   { id: 'A0005', name: 'Montaje y Edición I', level: 3, duration: '1', correlCursada: ['A0006'], correlAprobada: [] },
   { id: 'A0011', name: 'Montaje y Edición II', level: 3, duration: '2', correlCursada: ['A0005'], correlAprobada: [] },
-  { id: 'TU031', name: 'Seminario', level: 3, duration: 'C', correlCursada: ['TU024', 'TU021'], correlAprobada: [] },
-  { id: 'TU032', name: 'Práctica Profesional Supervisada', level: 3, duration: 'A', correlCursada: ['TU024', 'TU027', 'TU026'], correlAprobada: [] }
+  { id: 'TU031', name: 'Seminario', level: 3, duration: 'C', correlCursada: ['TU024', 'TU022', 'TU021'], correlAprobada: [] },
+  { id: 'TU032', name: 'Práctica Profesional Supervisada', level: 3, duration: 'A', correlCursada: ['TU024', 'TU026', 'TU021'], correlAprobada: [] }
 ];
 
 export const ELECTIVAS = {};

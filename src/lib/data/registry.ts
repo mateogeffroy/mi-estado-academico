@@ -10,7 +10,7 @@ import * as UnlpSistemas2021 from './unlp/sistemas-2021';
 import * as UnlpInformatica2021 from './unlp/informatica-2021';
 import * as UnlpPsicologia2012 from './unlp/psicologia-2012';
 import * as UnlpComputacion2024 from './unlp/computacion-2024';
-import * as UnlpSonido2023 from './unlp/sonido-2023';
+import * as UnlpSonido2023 from './unlp/sonido-2019';
 
 // Definimos la estructura REAL de lo que devuelve una carrera
 export interface CareerData {

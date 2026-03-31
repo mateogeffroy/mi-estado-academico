@@ -104,14 +104,17 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         if (m.level === 1 && (!m.correlCursada || m.correlCursada.length === 0) && (!m.correlAprobada || m.correlAprobada.length === 0)) {
           cumple = true;
         } else {
-          const reqCursadaOK = m.correlCursada?.every((reqId: number) => {
+          // 🔥 Cambiamos el tipado a (reqId: any) para que acepte los strings de UNLP
+          const reqCursadaOK = m.correlCursada?.every((reqId: any) => {
             const est = estados[reqId.toString()];
             return est === 'cursada' || est === 'aprobada';
           }) ?? true;
-          const reqAprobadaOK = m.correlAprobada?.every((reqId: number) => {
+          
+          const reqAprobadaOK = m.correlAprobada?.every((reqId: any) => {
             const est = estados[reqId.toString()];
             return est === 'aprobada';
           }) ?? true;
+          
           cumple = reqCursadaOK && reqAprobadaOK;
         }
 
@@ -124,8 +127,13 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
   const calcularEstadisticas = (currentMaterias: any, currentDetalles: any, currentData: CareerData) => {
     const { ALL } = currentData;
-    const coreSubjects = ALL.filter((s: any) => typeof s.id === 'number' || s.id === 'SEM' || s.id === 'PPS');
-    const realElectives = ALL.filter((s: any) => s.annualHours !== undefined || s.hsAnuales !== undefined);
+    
+    // 🔥 LÓGICA DINÁMICA DE MATERIAS (A prueba de cualquier tipo de ID)
+    // 1. Buscamos las que son realmente electivas (tienen carga horaria definida o flag)
+    const realElectives = ALL.filter((s: any) => s.annualHours !== undefined || s.hsAnuales !== undefined || s.isElective);
+    
+    // 2. Las obligatorias (core) son todas las materias que NO son contenedores (placeholders) y NO son electivas reales
+    const coreSubjects = ALL.filter((s: any) => !s.isElectivePlaceholder && !realElectives.includes(s));
 
     const ap = coreSubjects.filter((s: any) => currentMaterias[s.id] === 'aprobada').length +
                realElectives.filter((s: any) => currentMaterias[s.id] === 'aprobada').length;

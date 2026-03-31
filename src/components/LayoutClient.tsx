@@ -19,6 +19,19 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     setIsSidebarOpen(false);
   }, [pathname]);
 
+  // 🔥 LÓGICA DEL TUTORIAL AUTOMÁTICO PARA /PLAN 🔥
+  useEffect(() => {
+    if (pathname === '/plan' && typeof window !== 'undefined') {
+      const hasSeenPlanTutorial = localStorage.getItem('mea_tutorial_plan_v2');
+      if (!hasSeenPlanTutorial) {
+        // Pequeño delay de medio segundo para que la carga sea suave
+        setTimeout(() => setIsModalOpen(true), 500);
+        // Guardamos la nueva key para que no lo vuelva a molestar
+        localStorage.setItem('mea_tutorial_plan_v2', 'true');
+      }
+    }
+  }, [pathname]);
+
   // --- LÓGICA DE SESIÓN BLINDADA Y SIMPLIFICADA ---
   useEffect(() => {
     let isMounted = true; 
@@ -180,6 +193,32 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                 </button>
               )}
 
+              {/* 🔥 BOTÓN DE AYUDA DEL HOME (DISPARA EL TOUR) 🔥 */}
+              {pathname === '/' && (
+                <button 
+                  className="help-btn"
+                  onClick={() => window.dispatchEvent(new Event('start-home-tour'))}
+                  title="Ver tutorial de inicio"
+                  style={{ marginRight: '6px' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </button>
+              )}
+
+              {pathname === '/' && (
+                <Link href="https://cafecito.app/mateogeffroy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                  <button 
+                    style={{ ...navBtnBase, background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }}
+                    onMouseOver={(e) => { e.currentTarget.style.background = '#f59e0b'; e.currentTarget.style.color = 'black'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'; e.currentTarget.style.color = '#f59e0b'; }}
+                    title="Invitame un Cafecito"
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4-4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+                    Cafecito
+                  </button>
+                </Link>
+              )}
+
               <Link href="/" style={{ textDecoration: 'none' }}>
                 <button style={{ ...navBtnBase, background: pathname === '/' ? 'var(--cursando)' : 'rgba(255,255,255,0.03)', color: pathname === '/' ? 'black' : 'white', border: pathname === '/' ? 'none' : '1px solid var(--border)' }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -203,33 +242,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
               <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
               
-              {pathname === '/' && (
-                <button 
-                  className="help-btn"
-                  onClick={() => window.dispatchEvent(new Event('start-home-tour'))}
-                  title="Guia de inicio"
-                  style={{ marginRight: '6px' }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                </button>
-              )}
-
-              {pathname === '/' && (
-                <Link href="https://cafecito.app/mateogeffroy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                  <button 
-                    style={{ ...navBtnBase, background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }}
-                    onMouseOver={(e) => { e.currentTarget.style.background = '#f59e0b'; e.currentTarget.style.color = 'black'; }}
-                    onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'; e.currentTarget.style.color = '#f59e0b'; }}
-                    title="Invitame un Cafecito"
-                  >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4-4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
-                    Cafecito
-                  </button>
-                </Link>
-              )}
-
-              <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
-
               <button 
                 className="btn-danger" 
                 onClick={handleLogout}
@@ -272,6 +284,32 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         <div className="sidebar-content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '16px', gap: '0' }}>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {pathname === '/' && (
+              <>
+                {/* 🔥 BOTÓN DE AYUDA DEL HOME EN VERSIÓN MÓVIL 🔥 */}
+                <button 
+                  onClick={() => { setIsSidebarOpen(false); window.dispatchEvent(new Event('start-home-tour')); }}
+                  className="sidebar-action-btn sidebar-action-btn-custom" 
+                  style={{ color: 'var(--cursando)', borderColor: 'var(--border)', background: 'transparent', display: 'flex', alignItems: 'center', gap: '12px' }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Ver tutorial de inicio
+                </button>
+                
+                <Link 
+                  href="https://cafecito.app/mateogeffroy" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="sidebar-action-btn sidebar-action-btn-custom" 
+                  style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.2)', background: 'rgba(245, 158, 11, 0.05)', display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4-4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+                  Invitame un Cafecito
+                </Link>
+                <div className="sidebar-divider" style={{ margin: '4px 0' }}></div>
+              </>
+            )}
+
             <Link href="/" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname === '/' ? 'active-route' : ''}`}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
               Inicio
@@ -284,29 +322,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               Mi Cursada
             </Link>
-            <div className="sidebar-divider" style={{ margin: '10px 0' }}></div>
-            {pathname === '/' && (
-              <>
-                <button 
-                  onClick={() => { setIsSidebarOpen(false); window.dispatchEvent(new Event('start-home-tour')); }}
-                  className="sidebar-action-btn sidebar-action-btn-custom" 
-                  style={{ color: 'var(--cursando)', borderColor: 'var(--border)', background: 'transparent', display: 'flex', alignItems: 'center', gap: '12px' }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  Guía de inicio
-                </button>
-                <Link 
-                  href="https://cafecito.app/mateogeffroy" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="sidebar-action-btn sidebar-action-btn-custom" 
-                  style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.2)', background: 'rgba(245, 158, 11, 0.05)', display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4-4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
-                  Invitame un Cafecito
-                </Link>
-              </>
-            )}
           </div>
 
           <div style={{ marginTop: '10px' }}>
