@@ -533,8 +533,7 @@ export default function AuthPage() {
                   </button>
                 </div>
               </div>
-              
-              {/* Flecha de scroll solo visible si el contenido da para bajar */}
+
               <div onClick={scrollToInfo} className="scroll-arrow arrow-container">
                 <span style={{ fontSize: '0.85rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 'bold' }}>Descubrí más</span>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -549,15 +548,15 @@ export default function AuthPage() {
               
               <ul className="hero-checklist">
                 <li>
-                  <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
                   <span><strong>Plan de Estudios Dinámico:</strong> Visualizá tu plan, correlatividades claras y marcá materias aprobadas o en curso.</span>
                 </li>
                 <li>
-                  <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
                   <span><strong>Seguimiento de Promedio:</strong> Calculá tu promedio analítico exacto cargando las notas finales de tus materias.</span>
                 </li>
                 <li>
-                  <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   <span><strong>Gestión de Cursada:</strong> Agendá eventos, parciales y organizá tus horarios seleccionando comisiones reales.</span>
                 </li>
               </ul>
@@ -571,12 +570,12 @@ export default function AuthPage() {
                       UTN - FRLP
                     </div>
                     <ul className="career-box-list">
-                      <li>• Ing. Civil (Plan 2023)</li>
-                      <li>• Ing. Eléctrica (Plan 2023)</li>
-                      <li>• Ing. Industrial (Plan 2023)</li>
-                      <li>• Ing. Mecánica (Plan 2023)</li>
-                      <li>• Ing. Química (Plan 2008)</li>
-                      <li>• Ing. en Sistemas (Plan 2023)</li>
+                      <li>Ing. Civil</li>
+                      <li>Ing. Eléctrica</li>
+                      <li>Ing. Industrial</li>
+                      <li>Ing. Mecánica</li>
+                      <li>Ing. Química</li>
+                      <li>Ing. en Sistemas</li>
                     </ul>
                   </div>
 
@@ -586,12 +585,12 @@ export default function AuthPage() {
                       UNLP
                     </div>
                     <ul className="career-box-list">
-                      <li>• Analista Programador Univ. (Plan 2021)</li>
-                      <li>• Licenciatura en Computación (Plan 2024)</li>
-                      <li>• Licenciatura en Informática (Plan 2021)</li>
-                      <li>• Licenciatura en Sistemas (Plan 2021)</li>
-                      <li>• Lic. y Prof. de Psicología (Plan 2012)</li>
-                      <li>• Licenciatura en Sonido (Plan 2023)</li>
+                      <li>Analista Programador Universitario</li>
+                      <li>Licenciatura en Computación</li>
+                      <li>Licenciatura en Informática</li>
+                      <li>Licenciatura en Sistemas</li>
+                      <li>Lic. y Prof. de Psicología</li>
+                      <li>Tecnicatura Universitaria en Sonido y Grabación</li>
                     </ul>
                   </div>
 
@@ -632,15 +631,15 @@ export default function AuthPage() {
 
             <ul className="hero-checklist">
               <li>
-                <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
                 <span><strong>Plan de Estudios Dinámico:</strong> Visualizá tu plan, correlatividades claras y marcá materias aprobadas o en curso.</span>
               </li>
               <li>
-                <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
                 <span><strong>Seguimiento de Promedio:</strong> Calculá tu promedio analítico exacto cargando las notas finales de tus materias.</span>
               </li>
               <li>
-                <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <span><strong>Gestión de Cursada:</strong> Agendá eventos, parciales y organizá tus horarios seleccionando comisiones reales.</span>
               </li>
             </ul>
@@ -655,12 +654,12 @@ export default function AuthPage() {
                     UTN - FRLP
                   </div>
                   <ul className="career-box-list">
-                    <li>• Ing. Civil (Plan 2023)</li>
-                    <li>• Ing. Eléctrica (Plan 2023)</li>
-                    <li>• Ing. Industrial (Plan 2023)</li>
-                    <li>• Ing. Mecánica (Plan 2023)</li>
-                    <li>• Ing. Química (Plan 2008)</li>
-                    <li>• Ing. en Sistemas (Plan 2023)</li>
+                    <li>Ing. Civil</li>
+                    <li>Ing. Eléctrica</li>
+                    <li>Ing. Industrial</li>
+                    <li>Ing. Mecánica</li>
+                    <li>Ing. Química</li>
+                    <li>Ing. en Sistemas</li>
                   </ul>
                 </div>
 
@@ -671,12 +670,12 @@ export default function AuthPage() {
                     UNLP
                   </div>
                   <ul className="career-box-list">
-                    <li>• Analista Programador Universitario (Plan 2021)</li>
-                    <li>• Licenciatura en Computación (Plan 2024)</li>
-                    <li>• Licenciatura en Informática (Plan 2021)</li>
-                    <li>• Licenciatura en Sistemas (Plan 2021)</li>
-                    <li>• Lic. y Prof. de Psicología (Plan 2012)</li>
-                    <li>• Licenciatura en Sonido (Plan 2023)</li>
+                    <li>Analista Programador Universitario</li>
+                    <li>Licenciatura en Computación</li>
+                    <li>Licenciatura en Informática</li>
+                    <li>Licenciatura en Sistemas</li>
+                    <li>Lic. y Prof. de Psicología</li>
+                    <li>Tecnicatura Universitaria en Sonido y Grabación</li>
                   </ul>
                 </div>
 
@@ -715,7 +714,7 @@ export default function AuthPage() {
                     <label className="auth-label">Correo Electrónico</label>
                     <input 
                       type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                      placeholder="alumno@frlp.utn.edu.ar" className="input-field" required
+                      placeholder="alumno@mail.com" className="input-field" required
                     />
                   </div>
 

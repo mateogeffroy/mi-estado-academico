@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import WelcomeModal from './WelcomeModal';
 import { supabase } from '../lib/supabase';
-import AnnouncementModal from './AnnouncementModal';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -114,7 +113,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           display: none;
         }
         
-        /* Ajustamos ligeramente el padding del sidebar en resoluciones chicas para ahorrar espacio */
         .sidebar-action-btn-custom {
           padding: 12px 14px !important;
         }
@@ -133,12 +131,12 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', position: 'relative', zIndex: 1000 }}>
           
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
-            {/* 🔥 AGREGAMOS EL LOGO AL LADO DEL TEXTO AQUÍ 🔥 */}
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <img src="/icon.png" alt="Logo Mi Estado Académico" style={{ width: '42px', height: '42px', objectFit: 'contain' }} />
+              <img src="/icon.png" alt="Logo Mi Estado Académico" style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0 }} />
               <div className="header-titles">
-                <div className="logo">
-                  Mi Estado <span style={{ color: 'var(--cursando)' }}>Académico</span>
+                <div className="logo" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+                  <div style={{ color: 'white', whiteSpace: 'nowrap' }}>Mi Estado</div>
+                  <div style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>Académico</div>
                 </div>
               </div>
             </Link>
@@ -146,7 +144,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
           <div className="nav-full-menu" style={{ flex: 1.5, justifyContent: 'center' }}>
             {pathname === '/plan' && (
-              /* MAGIA DEL FLEX-WRAP NATURAL (Se mantiene exacto como lo pusiste vos) */
               <div style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -172,12 +169,45 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             
             <div className="nav-full-menu" style={{ gap: '10px', alignItems: 'center' }}>
               
-              {/* Botón de ayuda correctamente posicionado junto a los demás botones */}
               {pathname === '/plan' && (
                 <button 
                   className="help-btn"
                   onClick={() => setIsModalOpen(true)}
                   title="Ver instrucciones del Plan"
+                  style={{ marginRight: '6px' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </button>
+              )}
+
+              <Link href="/" style={{ textDecoration: 'none' }}>
+                <button style={{ ...navBtnBase, background: pathname === '/' ? 'var(--cursando)' : 'rgba(255,255,255,0.03)', color: pathname === '/' ? 'black' : 'white', border: pathname === '/' ? 'none' : '1px solid var(--border)' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  Inicio
+                </button>
+              </Link>
+              
+              <Link href="/plan" style={{ textDecoration: 'none' }}>
+                <button style={{ ...navBtnBase, background: pathname === '/plan' ? 'var(--cursando)' : 'rgba(255,255,255,0.03)', color: pathname === '/plan' ? 'black' : 'white', border: pathname === '/plan' ? 'none' : '1px solid var(--border)' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+                  Plan de estudios
+                </button>
+              </Link>
+              
+              <Link href="/cursada" style={{ textDecoration: 'none' }}>
+                <button style={{ ...navBtnBase, background: pathname === '/cursada' ? 'var(--cursando)' : 'rgba(255,255,255,0.03)', color: pathname === '/cursada' ? 'black' : 'white', border: pathname === '/cursada' ? 'none' : '1px solid var(--border)' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  Mi Cursada
+                </button>
+              </Link>
+
+              <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
+              
+              {pathname === '/' && (
+                <button 
+                  className="help-btn"
+                  onClick={() => window.dispatchEvent(new Event('start-home-tour'))}
+                  title="Guia de inicio"
                   style={{ marginRight: '6px' }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -198,29 +228,8 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                 </Link>
               )}
 
-              <Link href="/" style={{ textDecoration: 'none' }}>
-                <button style={{ ...navBtnBase, background: pathname === '/' ? 'var(--cursando)' : 'rgba(255,255,255,0.03)', color: pathname === '/' ? 'black' : 'white', border: pathname === '/' ? 'none' : '1px solid var(--border)' }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                  Inicio
-                </button>
-              </Link>
-              
-              <Link href="/plan" style={{ textDecoration: 'none' }}>
-                <button style={{ ...navBtnBase, background: pathname === '/plan' ? 'var(--cursando)' : 'rgba(255,255,255,0.03)', color: pathname === '/plan' ? 'black' : 'white', border: pathname === '/plan' ? 'none' : '1px solid var(--border)' }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-                  Plan
-                </button>
-              </Link>
-              
-              <Link href="/cursada" style={{ textDecoration: 'none' }}>
-                <button style={{ ...navBtnBase, background: pathname === '/cursada' ? 'var(--cursando)' : 'rgba(255,255,255,0.03)', color: pathname === '/cursada' ? 'black' : 'white', border: pathname === '/cursada' ? 'none' : '1px solid var(--border)' }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  Cursada
-                </button>
-              </Link>
-
               <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
-              
+
               <button 
                 className="btn-danger" 
                 onClick={handleLogout}
@@ -263,22 +272,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         <div className="sidebar-content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '16px', gap: '0' }}>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {pathname === '/' && (
-              <>
-                <Link 
-                  href="https://cafecito.app/mateogeffroy" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="sidebar-action-btn sidebar-action-btn-custom" 
-                  style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.2)', background: 'rgba(245, 158, 11, 0.05)', display: 'flex', alignItems: 'center', gap: '12px' }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4-4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
-                  Invitame un Cafecito
-                </Link>
-                <div className="sidebar-divider" style={{ margin: '4px 0' }}></div>
-              </>
-            )}
-
             <Link href="/" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname === '/' ? 'active-route' : ''}`}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
               Inicio
@@ -289,8 +282,31 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             </Link>
             <Link href="/cursada" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname === '/cursada' ? 'active-route' : ''}`}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              Ver Mi Cursada
+              Mi Cursada
             </Link>
+            <div className="sidebar-divider" style={{ margin: '10px 0' }}></div>
+            {pathname === '/' && (
+              <>
+                <button 
+                  onClick={() => { setIsSidebarOpen(false); window.dispatchEvent(new Event('start-home-tour')); }}
+                  className="sidebar-action-btn sidebar-action-btn-custom" 
+                  style={{ color: 'var(--cursando)', borderColor: 'var(--border)', background: 'transparent', display: 'flex', alignItems: 'center', gap: '12px' }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Guía de inicio
+                </button>
+                <Link 
+                  href="https://cafecito.app/mateogeffroy" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="sidebar-action-btn sidebar-action-btn-custom" 
+                  style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.2)', background: 'rgba(245, 158, 11, 0.05)', display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4-4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+                  Invitame un Cafecito
+                </Link>
+              </>
+            )}
           </div>
 
           <div style={{ marginTop: '10px' }}>
@@ -329,7 +345,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       </aside>
 
       <WelcomeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      <AnnouncementModal />
 
       <div>
         {children}
@@ -339,7 +354,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
           
           <div style={{ color: 'var(--muted)', fontSize: '0.8rem', textAlign: 'center', flex: '1 1 auto' }}>
-            © {new Date().getFullYear()} Mateo Geffroy • <strong>Mi Estado Académico</strong>
+            © {new Date().getFullYear()} Mateo Geffroy - <strong>Mi Estado Académico</strong>
           </div>
 
           <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', alignItems: 'center', flex: '1 1 auto', fontSize: '0.8rem', color: 'var(--muted)' }}>
@@ -361,11 +376,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               Políticas de Privacidad
             </Link>
           </div>
-
-          <div style={{ color: 'var(--muted)', fontSize: '0.8rem', textAlign: 'center', flex: '1 1 auto' }}>
-            UTN FRLP - Sistemas de Información
-          </div>
-          
         </div>
       </footer>
     </>

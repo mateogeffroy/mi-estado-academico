@@ -552,7 +552,7 @@ export default function PlanDeEstudios() {
         <div style={{ maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '0 16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <div className="header-titles">
-              <h1 className="logo">Plan de estudios <span>dinámico</span></h1>
+              <h1 className="logo">Plan de <span>estudios</span></h1>
             </div>
             <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
               <button className="btn-secondary" style={{ whiteSpace: 'nowrap' }}>
