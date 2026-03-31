@@ -4,28 +4,30 @@ import AdBanner from '../../../src/components/AdBanner';
 // 🔥 MAGIA SEO: Esto es lo que Google mostrará en los resultados de búsqueda
 export const metadata = {
   title: 'Cómo construí Mi Estado Académico | Blog UTN',
-  description: 'Descubrí cómo pasamos de un HTML estático a una plataforma en Next.js y Supabase para los alumnos de Sistemas de la UTN FRLP.',
+  description: 'Descubrí cómo pasamos de un HTML estático a una plataforma Full-Stack en Next.js y Supabase para los alumnos de Sistemas de la UTN FRLP.',
 };
 
 export default function ComoSeHizoPost() {
   return (
     <>
       <style>{`
-        .blog-content h2 { color: white; margin-top: 40px; font-size: 1.5rem; font-weight: 800; }
-        .blog-content h3 { color: white; margin-top: 30px; font-size: 1.25rem; font-weight: 700; }
-        .blog-content p { margin-bottom: 20px; }
-        .blog-content ul { margin-bottom: 20px; padding-left: 20px; }
-        .blog-content li { margin-bottom: 10px; }
+        .blog-content h2 { color: white; margin-top: 45px; font-size: 1.6rem; font-weight: 800; line-height: 1.3; }
+        .blog-content h3 { color: white; margin-top: 35px; font-size: 1.3rem; font-weight: 700; }
+        .blog-content p { margin-bottom: 24px; font-size: 1.05rem; }
+        .blog-content ul { margin-bottom: 24px; padding-left: 20px; }
+        .blog-content li { margin-bottom: 12px; line-height: 1.6; }
         .blog-content strong { color: white; }
         
         .code-snippet { 
-          background: rgba(0,0,0,0.3); 
-          padding: 15px; 
-          border-radius: 8px; 
+          background: rgba(0,0,0,0.4); 
+          padding: 20px; 
+          border-radius: 12px; 
           font-family: 'Space Mono', monospace; 
           font-size: 0.9rem; 
           border: 1px solid var(--border);
-          margin: 20px 0;
+          margin: 25px 0;
+          color: #a78bfa;
+          overflow-x: auto;
         }
 
         .collab-container {
@@ -42,7 +44,9 @@ export default function ComoSeHizoPost() {
           background: rgba(0, 229, 255, 0.05);
           border-radius: 16px;
           border-left: 4px solid var(--cursando);
+          transition: transform 0.2s;
         }
+        .collab-box:hover { transform: translateY(-5px); }
 
         .repo-buttons {
           display: flex;
@@ -84,9 +88,6 @@ export default function ComoSeHizoPost() {
         {/* CONTENEDOR RELATIVO (Ancla para los anuncios absolutos) */}
         <div style={{ position: 'relative', width: '100%', maxWidth: '1000px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'center' }}>
           
-          {/* ==========================================
-              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS (COMENTADOS)
-              ========================================== */}
           {/* Lado Izquierdo
           <div className="scatter-ad-left" style={{ top: '2%' }}>
             <AdBanner dataAdSlot="BLOG_L_1" dataAdFormat="vertical" style={{ height: '100%' }} />
@@ -111,9 +112,6 @@ export default function ComoSeHizoPost() {
           </div>
           */}
 
-          {/* ==========================================
-              CONTENIDO CENTRAL DEL ARTÍCULO
-              ========================================== */}
           <article style={{ maxWidth: '800px', width: '100%' }}>
             
             {/* ENCABEZADO DE PÁGINA */}
@@ -122,36 +120,42 @@ export default function ComoSeHizoPost() {
               marginBottom: '40px', gap: '20px', flexWrap: 'wrap'
             }}>
               <div style={{ flex: 1, minWidth: '300px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                   <span style={{ 
                     background: 'rgba(255,255,255,0.05)', color: 'var(--cursando)', 
-                    padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', 
+                    padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', 
                     fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px',
                     border: `1px solid var(--cursando)`
                   }}>
                     Desarrollo
                   </span>
-                  <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>16 de Marzo, 2026</span>
+                  <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>16 de Marzo, 2026</span>
                 </div>
-                <h1 style={{ color: 'white', fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', fontWeight: 900, lineHeight: 1.1, margin: 0 }}>
+                <h1 style={{ color: 'white', fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, lineHeight: 1.1, margin: 0 }}>
                   Detrás del código: La evolución de <span style={{ color: 'var(--cursando)' }}>Mi Estado Académico</span>
                 </h1>
               </div>
               
-              <Link href="/#blog">
-                <button className="btn-secondary">← Volver al Dashboard</button>
+              <Link href="/blog">
+                <button className="btn-secondary" style={{ padding: '10px 18px', borderRadius: '10px' }}>← Volver al Blog</button>
               </Link>
             </div>
 
             {/* CONTENIDO DEL POST */}
-            <div className="blog-content" style={{ color: 'var(--muted)', fontSize: '1.1rem', lineHeight: '1.8' }}>
+            <div className="blog-content" style={{ color: 'var(--muted)', lineHeight: '1.8' }}>
               <p>
-                Para gestionar la carrera elegí usar plataformas como <i>Notion</i> y al pasar los años, siempre me han dicho que les interesaba tener una solución como la mía. Aventurado, decidí transformar el PDF estático del plan de estudios de la carrera a una aplicación web y así nació <strong>Plan de estudios dinámico</strong>. Si bien era una herramienta interesante, entre las sugerencias y al ver el apoyo recibido, decidí evolucionar la idea a <strong>Mi Estado Académico</strong>, una herramienta para poder organizar horarios, cursadas y estado del plan de estudios todo en un mismo portal pensada principalmente para estudiantes de <i>Ingeniería en Sistemas de Información</i> de la UTN-FRLP.
+                Para gestionar el progreso de la carrera elegí usar en su momento plataformas genéricas como <i>Notion</i>. Al pasar los años y ver que la organización de correlativas se volvía un dolor de cabeza, siempre me comentaban lo útil que sería tener una solución automatizada. Aventurado, decidí transformar el clásico PDF estático del plan de estudios en una aplicación web interactiva, y así nació la primera versión de <strong>Plan de Estudios Dinámico</strong>.
+              </p>
+              <p>
+                Si bien era una herramienta interesante, el feedback constante y el apoyo de la comunidad me impulsaron a evolucionar la idea hacia algo mucho más robusto: <strong>Mi Estado Académico</strong>. Una plataforma integral pensada no solo para marcar materias aprobadas, sino para organizar horarios, visualizar comisiones reales y proyectar la cursada de los estudiantes universitarios.
               </p>
 
-              <h2>El Origen: Del HTML estático a React</h2>
+              <h2>El Origen: Del HTML estático a React y Next.js</h2>
               <p>
-                El proyecto, al comenzar como un prototipo sencillo, fue desarrollado con <strong>HTML, CSS y JavaScript</strong>. El objetivo inicial era recrear el plan de estudios de forma clara, que al presionar una materia, pueda cambiar su estado y desbloquear las correlativas. Sin embargo, la interactividad necesaria para generar rutas, incluir librerías y funcionalidades avanzadas exigía un enfoque más moderno.
+                El proyecto comenzó como un prototipo sencillo desarrollado puramente con <strong>HTML, CSS y JavaScript Vanilla</strong>. El objetivo inicial era recrear el diseño del plan de estudios de forma clara y que, al presionar una materia, el algoritmo evaluara instantáneamente su estado y desbloqueara las correlativas.
+              </p>
+              <p>
+                Sin embargo, a medida que la aplicación crecía, la interactividad necesaria para manejar estados globales, calcular promedios en tiempo real e incluir un sistema de rutas exigía un enfoque más moderno. 
               </p>
               
               {/* ANUNCIO IN-ARTICLE 1 (COMENTADO TEMPORALMENTE)
@@ -161,24 +165,31 @@ export default function ComoSeHizoPost() {
               */}
 
               <p>
-                La transición a <strong>React</strong> fue el punto de inflexión. Esto permitió descomponer la interfaz en componentes reutilizables, como las tarjetas de las materias que hoy ves en el plan, facilitando el mantenimiento y la escalabilidad del proyecto para poder ampliarlos, eventualmente, a otros planes de estudios, sean de la UTN-FRLP o de otras instituciones.
+                La transición a <strong>React (utilizando el framework Next.js)</strong> fue el punto de inflexión definitivo. Este stack tecnológico me permitió descomponer la interfaz en componentes reutilizables, aprovechar el Server-Side Rendering (SSR) para un rendimiento óptimo y tipar todo el código de forma estricta utilizando <strong>TypeScript</strong>. Esto no solo facilitó el mantenimiento, sino que preparó el terreno para escalar la plataforma a nuevas carreras como las de la UNLP.
               </p>
 
-              <h2>La Ingeniería de Datos: data.ts y las comisiones</h2>
+              <h2>La Ingeniería de Datos: Modelando la realidad universitaria</h2>
               <p>
-                Uno de los mayores desafíos fue modelar la realidad académica de la facultad. Inicialmente, la información estaba dispersa, pero logré centralizarla en un archivo dentro del proyecto llamado <code>data.ts</code>. Esta práctica, llamada hardcoding, permite definir de forma estática la estructura y los datos de las materias sin cargar una base de datos externa, lo que agiliza el desarrollo y facilita la implementación de nuevas funcionalidades.
+                Uno de los mayores desafíos arquitectónicos fue modelar la compleja realidad académica de la facultad. Inicialmente, la información estaba dispersa, pero logré centralizar y normalizar todo en un archivo de configuración llamado <code>data.ts</code>.
               </p>
               <div className="code-snippet">
-                // Estructura optimizada de materias y comisiones<br/>
-                {`// Cada materia: { id, num, name, hours, level, correlCursada: [ids], correlAprobada: [ids], comisiones?: [...] }`}
+                // Estructura optimizada de materias mediante TypeScript<br/><br/>
+                {`export interface Subject {
+  id: string | number;
+  name: string;
+  level: number;
+  correlCursada: (string | number)[];
+  correlAprobada: (string | number)[];
+  comisiones?: Comision[];
+}`}
               </div>
               <p>
-                En este proceso, no solo incluí los nombres de las materias, sino también sus correlativas, comisiones y horarios específicos, lo que permitió una representación más fiel y dinámica del plan de estudios y realizar la menor cantidad de consultas a la base de datos.
+                Esta práctica de hardcoding inicial permite definir de forma estática la estructura sin sobrecargar una base de datos con peticiones constantes e innecesarias. Al incluir no solo los nombres, sino identificadores únicos y requisitos lógicos, logramos que el motor del Contexto en React evalúe en milisegundos si un alumno está en condiciones de cursar una materia o no.
               </p>
 
-              <h2>Persistencia con Supabase</h2>
+              <h2>Persistencia y Seguridad con Supabase</h2>
               <p>
-                Para que el progreso no se pierda al cerrar el navegador, inicialmente utilicé la función del <i>LocalStorage</i> que si bien fue útil para el comienzo del desarrollo, para el enfoque final del proyecto se quedaba chico. Por eso integré <strong>Supabase</strong> (un <i>BaaS, Backend as a Service</i>).
+                Para que el progreso del alumno no se evapore al cerrar el navegador, la primera versión dependía del <i>LocalStorage</i>. Era útil para pruebas, pero limitante. La verdadera magia ocurrió al integrar <strong>Supabase</strong>, el Backend as a Service (BaaS) de código abierto basado en PostgreSQL.
               </p>
 
               {/* ANUNCIO IN-ARTICLE 2 (COMENTADO TEMPORALMENTE)
@@ -188,31 +199,31 @@ export default function ComoSeHizoPost() {
               */}
 
               <p>
-                Esta tecnología, basada en PostgreSQL, nos permite manejar la base de datos y la autenticación de forma segura utilizando servicios de login de <i>Google OAuth</i> y <i>Resend</i>. Cada vez que marcás una materia como "Aprobada" o agendás un parcial, la información se sincroniza en tiempo real con la base de datos, así es portable a todos tus dispositivos a través de un sistema de cuentas.
+                Implementamos un sistema de autenticación seguro utilizando <i>Google OAuth</i>. Gracias a las políticas de seguridad de nivel de fila (Row Level Security o RLS) de Supabase, garantizamos que cada alumno solo pueda ver y modificar sus propios datos. Ahora, cada vez que marcás un final como "Aprobado", el cambio se sincroniza en la nube al instante, permitiéndote acceder a tu estado académico tanto desde la PC de tu casa como desde tu celular viajando en el colectivo.
               </p>
 
-              <h2>Un Proyecto Académico y Open Source</h2>
+              <h2>Un Proyecto Open Source para la Comunidad</h2>
               <p>
-                <strong>Mi Estado Académico</strong> es un espacio con una orientación gratuita para la comunidad estudiantil de los alumnos de Ingeniería en Sistemas de la UTN-FRLP. El enfoque es 100% abierto:
+                A pesar de todo su crecimiento tecnológico, <strong>Mi Estado Académico</strong> mantiene su esencia: ser un espacio gratuito, colaborativo y sin fines de lucro para la comunidad estudiantil.
               </p>
               <ul>
-                <li><strong>Open Source:</strong> El código está disponible para que pueda ser una herramienta para entender el desarrollo de aplicaciones web.</li>
-                <li><strong>Espacio Estudiantil:</strong> Diseñado respetando las necesidades reales de nuestra carrera.</li>
-                <li><strong>Evolución Constante:</strong> Desde el motor de correlatividades hasta el nuevo sistema de horario semanal automático, cada cambio busca mejorar la experiencia.</li>
+                <li><strong>Open Source:</strong> El código fuente es público. Sirve como herramienta de estudio para aquellos alumnos que estén dando sus primeros pasos en el desarrollo web.</li>
+                <li><strong>Espacio Estudiantil:</strong> Fue diseñado iterando sobre las necesidades y el feedback real de los estudiantes universitarios.</li>
+                <li><strong>Evolución Constante:</strong> Desde el motor de correlatividades hasta el gestor de "Mi Cursada", el proyecto sigue vivo y recibiendo actualizaciones.</li>
               </ul>
 
               {/* SECCIÓN DE LINKS A REPOSITORIOS */}
               <div style={{ marginTop: '50px', padding: '30px', background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px' }}>
                 <h3 style={{ margin: 0, fontSize: '1.2rem' }}>🔗 Links a los repositorios</h3>
                 <p style={{ fontSize: '0.95rem', marginTop: '10px' }}>
-                  Si te interesa revisar el código fuente o ver cómo evolucionó la lógica del proyecto, podés acceder a los repositorios oficiales en GitHub:
+                  Si te interesa revisar el código fuente o auditar cómo evolucionó la arquitectura del proyecto, podés acceder a los repositorios oficiales en GitHub:
                 </p>
                 <div className="repo-buttons">
                   <Link href="https://github.com/mateogeffroy/plan-estudios-dinamico" target="_blank">
-                    <button className="btn-secondary" style={{ fontSize: '0.85rem' }}>Versión HTML / JS</button>
+                    <button className="btn-secondary" style={{ fontSize: '0.9rem', padding: '10px 16px' }}>Versión Legacy (HTML / JS)</button>
                   </Link>
                   <Link href="https://github.com/mateogeffroy/mi-estado-academico" target="_blank">
-                    <button className="btn-primary" style={{ fontSize: '0.85rem' }}>Versión React (Next.js)</button>
+                    <button className="btn-primary" style={{ fontSize: '0.9rem', padding: '10px 16px' }}>Versión Actual (Next.js)</button>
                   </Link>
                 </div>
               </div>
@@ -220,13 +231,13 @@ export default function ComoSeHizoPost() {
               {/* SECCIÓN DE COLABORACIÓN EN FILA */}
               <div className="collab-container">
                 <div className="collab-box">
-                  <strong style={{ display: 'block', marginBottom: '10px' }}>¿Querés colaborar?</strong>
-                  Si sos estudiante y tenés ideas para mejorar el sistema de horarios o el contenido del blog, ¡tu feedback es bienvenido! Este espacio lo construimos entre todos.
+                  <strong style={{ display: 'block', marginBottom: '10px', color: 'var(--cursando)', fontSize: '1.1rem' }}>¿Querés colaborar con código?</strong>
+                  <span style={{ fontSize: '0.95rem' }}>Si sos desarrollador y tenés ideas para mejorar el sistema de horarios o detectar bugs, podés clonar el repositorio y enviar un Pull Request. ¡Toda ayuda suma!</span>
                 </div>
 
                 <div className="collab-box">
-                  <strong style={{ display: 'block', marginBottom: '10px' }}>¿Te interesa elaborar un artículo?</strong>
-                  ¡Escribime! Cualquier dinámica relacionada al ámbito del desarrollo y de la enseñanza es bienvenido.
+                  <strong style={{ display: 'block', marginBottom: '10px', color: 'var(--cursando)', fontSize: '1.1rem' }}>¿Te interesa aportar al Blog?</strong>
+                  <span style={{ fontSize: '0.95rem' }}>Buscamos artículos sobre tips de estudio, resúmenes de materias o guías técnicas. Podés enviar tu propuesta redactada al correo oficial del proyecto.</span>
                 </div>
               </div>
             </div>
@@ -234,17 +245,17 @@ export default function ComoSeHizoPost() {
             {/* FOOTER DEL POST / AUTOR */}
             <div style={{ 
               marginTop: '60px', paddingTop: '30px', borderTop: '1px solid var(--border)',
-              display: 'flex', alignItems: 'center', gap: '15px' 
+              display: 'flex', alignItems: 'center', gap: '20px' 
             }}>
               <div style={{ 
-                width: '56px', height: '56px', borderRadius: '50%', background: 'var(--cursando)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', fontWeight: 'bold', fontSize: '1.4rem'
+                width: '64px', height: '64px', borderRadius: '50%', background: 'var(--cursando)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', fontWeight: 'bold', fontSize: '1.5rem', flexShrink: 0
               }}>
                 MG
               </div>
               <div>
-                <div style={{ color: 'white', fontWeight: 'bold', fontSize: '1.1rem' }}>Mateo Arturo Geffroy</div>
-                <div style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Desarrollador Full-Stack y Estudiante de Ing. en Sistemas (UTN-FRLP)</div>
+                <div style={{ color: 'white', fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '4px' }}>Mateo Arturo Geffroy</div>
+                <div style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: '1.4' }}>Desarrollador Full-Stack y Creador de Mi Estado Académico. Estudiante de Ingeniería en Sistemas de Información (UTN-FRLP).</div>
               </div>
             </div>
 

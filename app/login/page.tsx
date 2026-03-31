@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '../../src/lib/supabase';
 
 export default function AuthPage() {
@@ -28,7 +29,6 @@ export default function AuthPage() {
 
   const isPasswordValid = requirements.every(req => req.test(password, confirmPassword));
 
-  // --- LOGIN TRADICIONAL ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -62,7 +62,6 @@ export default function AuthPage() {
     }
   };
 
-  // --- LOGIN CON GOOGLE ---
   const handleGoogleLogin = async () => {
     setError('');
     try {
@@ -85,7 +84,6 @@ export default function AuthPage() {
   return (
     <>
       <style>{`
-        /* 🔥 MATA EL PADDING DEL HEADER GLOBAL EN TODAS LAS RESOLUCIONES 🔥 */
         #login-main {
           padding: 0 !important; 
           margin: 0 !important;
@@ -105,7 +103,7 @@ export default function AuthPage() {
         }
 
         /* ================================================================= */
-        /* ESTILOS COMUNES (COMPARTIDOS ENTRE MÓVIL Y ESCRITORIO)            */
+        /* ESTILOS COMUNES Y COMPONENTES REUTILIZABLES                       */
         /* ================================================================= */
         .login-box {
           background: var(--panel);
@@ -116,152 +114,56 @@ export default function AuthPage() {
           flex-direction: column;
         }
 
-        .auth-form {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .auth-label {
-          color: var(--muted);
-          font-weight: bold;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
+        .auth-form { display: flex; flex-direction: column; }
+        .auth-label { color: var(--muted); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
 
         .input-field {
-          width: 100%;
-          box-sizing: border-box;
-          border-radius: 10px;
-          border: 1px solid var(--border);
-          background: rgba(255, 255, 255, 0.02);
-          color: white;
-          outline: none;
-          transition: border-color 0.2s ease, background 0.2s ease;
+          width: 100%; box-sizing: border-box; border-radius: 10px;
+          border: 1px solid var(--border); background: rgba(255, 255, 255, 0.02);
+          color: white; outline: none; transition: border-color 0.2s ease, background 0.2s ease;
         }
-        
-        .input-field:focus {
-          border-color: var(--cursando);
-          background: rgba(255, 255, 255, 0.05);
-        }
+        .input-field:focus { border-color: var(--cursando); background: rgba(255, 255, 255, 0.05); }
 
-        .auth-submit-btn {
-          border-radius: 10px;
-          font-weight: bold;
-          width: 100%;
-          box-sizing: border-box;
-          cursor: pointer;
-          border: none;
-        }
-
+        .auth-submit-btn { border-radius: 10px; font-weight: bold; width: 100%; box-sizing: border-box; cursor: pointer; border: none; }
         .auth-google-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          border-radius: 10px;
-          background: white;
-          color: black;
-          font-weight: bold;
-          border: none;
-          cursor: pointer;
-          transition: transform 0.2s;
-          width: 100%;
-          box-sizing: border-box;
+          display: flex; align-items: center; justify-content: center; gap: 12px;
+          border-radius: 10px; background: white; color: black; font-weight: bold;
+          border: none; cursor: pointer; transition: transform 0.2s; width: 100%; box-sizing: border-box;
         }
-        .auth-google-btn:hover {
-          transform: scale(1.02);
-        }
+        .auth-google-btn:hover { transform: scale(1.02); }
 
-        .arrow-container {
-          cursor: pointer;
-          color: var(--muted);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-          margin-top: 30px; 
-          transition: color 0.2s ease;
-        }
+        .arrow-container { cursor: pointer; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 30px; transition: color 0.2s ease; }
         .arrow-container:hover { color: white; }
 
-        /* --- ESTILOS DEL TEXTO INFORMATIVO (TICKS Y CARRERAS) --- */
-        .hero-subtitle {
-          color: var(--text);
-          line-height: 1.6;
-        }
-        .hero-checklist {
-          list-style: none;
-          display: flex;
-          flex-direction: column;
-          padding: 0;
-          margin: 0;
-        }
-        .hero-checklist li {
-          display: flex;
-          align-items: flex-start;
-          gap: 16px;
-          color: var(--text);
-          line-height: 1.5;
-        }
-        .check-icon {
-          color: var(--cursando);
-          flex-shrink: 0;
-          margin-top: 2px;
-        }
+        .hero-subtitle { color: var(--text); line-height: 1.6; }
+        .hero-checklist { list-style: none; display: flex; flex-direction: column; padding: 0; margin: 0; }
+        .hero-checklist li { display: flex; align-items: flex-start; gap: 16px; color: var(--text); line-height: 1.5; }
+        .check-icon { color: var(--cursando); flex-shrink: 0; margin-top: 2px; }
         
-        .career-box {
-          background: rgba(255, 255, 255, 0.03); 
-          border: 1px solid rgba(255, 255, 255, 0.08); 
-          border-radius: 12px;
-          padding: 16px;
-          box-sizing: border-box;
-        }
-        .career-box-title {
-          color: white; font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-        }
-        .career-box-list {
-          list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; color: var(--muted);
-        }
-        .contact-text {
-          color: var(--muted); text-align: center; width: 100%;
-        }
+        .career-box { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px; box-sizing: border-box; }
+        .career-box-title { color: white; font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .career-box-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; color: var(--muted); }
+        .contact-text { color: var(--muted); text-align: center; width: 100%; }
 
-        /* ================================================================= */
-        /* MÓVIL Y PANTALLAS CHICAS (< 1024px)                               */
-        /* ================================================================= */
-        
-        .mobile-layout {
-          display: flex;
-          flex-direction: column;
-          width: 100%;
-        }
-
-        .mobile-login-section {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          box-sizing: border-box;
-        }
-
-        .mobile-info-section {
-          background: var(--panel);
-          border-top: 1px solid var(--border);
-          display: flex;
-          flex-direction: column;
-          box-sizing: border-box;
-        }
+        .mobile-layout { display: flex; flex-direction: column; width: 100%; }
+        .mobile-login-section { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; }
+        .mobile-info-section { background: var(--panel); border-top: 1px solid var(--border); display: flex; flex-direction: column; box-sizing: border-box; }
 
         .desktop-layout { display: none !important; }
 
         /* ================================================================= */
-        /* BREAKPOINT 1: MÓVILES PEQUEÑOS Y PANTALLAS DIVIDIDAS EXTREMAS (< 768px) */
+        /* RESPONSIVIDAD DINÁMICA                                            */
         /* ================================================================= */
+        
+        /* CELULARES (< 768px) */
         @media (max-width: 767px) {
-          /* 🔥 SUPERAMOS EL GLOBALS.CSS AGREGANDO !IMPORTANT AL PADDING LATERAL 🔥 */
           .mobile-login-section { padding: 30px 24px !important; }
           .mobile-info-section { padding: 40px 24px 80px 24px !important; gap: 30px; }
+          
+          /* 🔥 EL SECRETO DE LA ESTÉTICA MÓVIL EXTREMA (EJ: 320px) 🔥 */
+          .logo-container-mobile { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 3vw, 12px); width: 100%; }
+          .logo-img-mobile { width: clamp(40px, 12vw, 55px); height: clamp(40px, 12vw, 55px); object-fit: contain; flex-shrink: 0; }
+          .title-mobile { font-size: clamp(1.4rem, 7vw, 1.8rem); line-height: 1.05; display: flex; flex-direction: column; margin: 0; font-weight: 800; text-align: left; }
           
           .login-wrapper { max-width: 340px; width: 100%; margin: 0 auto; }
           .login-box { padding: 20px 16px; gap: 14px; }
@@ -271,24 +173,24 @@ export default function AuthPage() {
           .auth-submit-btn { padding: 12px; font-size: 1rem; }
           .auth-google-btn { padding: 10px; font-size: 0.9rem; }
 
-          .responsive-title-mobile { font-size: clamp(1.8rem, 6vw, 2.4rem); }
-          .hero-subtitle { font-size: 0.95rem; }
+          .hero-subtitle { font-size: clamp(0.85rem, 4vw, 0.95rem); }
           .hero-checklist { gap: 14px; }
-          .hero-checklist li { font-size: 0.9rem; gap: 10px; }
+          .hero-checklist li { font-size: clamp(0.8rem, 4vw, 0.9rem); gap: 10px; }
           .career-box { padding: 12px; }
           .career-box-title { font-size: 0.9rem; margin-bottom: 8px; }
           .career-box-list { font-size: 0.8rem; gap: 4px; }
           .contact-text { font-size: 0.8rem; margin-top: 12px; }
         }
 
-        /* ================================================================= */
-        /* BREAKPOINT 2: TABLETS Y PANTALLAS DIVIDIDAS GRANDES (768px - 1024px) */
-        /* ================================================================= */
+        /* TABLETS (768px - 1024px) */
         @media (min-width: 768px) and (max-width: 1024px) {
-          /* 🔥 SUPERAMOS EL GLOBALS.CSS AGREGANDO !IMPORTANT AL PADDING LATERAL 🔥 */
           .mobile-login-section { padding: 40px 30px !important; }
           .mobile-info-section { padding: 60px 30px 100px 30px !important; gap: 40px; }
           
+          .logo-container-mobile { display: flex; align-items: center; justify-content: center; gap: 16px; width: 100%; }
+          .logo-img-mobile { width: 75px; height: 75px; object-fit: contain; flex-shrink: 0; }
+          .title-mobile { font-size: 2.6rem; line-height: 1.05; display: flex; flex-direction: column; margin: 0; font-weight: 800; text-align: left; }
+
           .login-wrapper { max-width: 380px; width: 100%; margin: 0 auto; } 
           .login-box { padding: 24px 20px; gap: 16px; }
           .auth-form { gap: 16px; }
@@ -297,7 +199,6 @@ export default function AuthPage() {
           .auth-submit-btn { padding: 14px; font-size: 1.05rem; }
           .auth-google-btn { padding: 12px; font-size: 0.95rem; }
 
-          .responsive-title-mobile { font-size: clamp(2.2rem, 5vw, 3rem); }
           .hero-subtitle { font-size: 1.05rem; }
           .hero-checklist { gap: 16px; }
           .hero-checklist li { font-size: 0.95rem; gap: 12px; }
@@ -307,125 +208,80 @@ export default function AuthPage() {
           .contact-text { font-size: 0.85rem; margin-top: 16px; }
         }
 
-        /* ================================================================= */
-        /* ESCRITORIO (50/50 Split Screen Fijo) (>= 1025px)                  */
-        /* ================================================================= */
+        /* 🔥 ESCRITORIO UNIFICADO (>= 1025px) 🔥
+           Se adapta fluido desde Notebooks (1366) hasta Full HD (1920) sin romperse ni separarse */
         @media (min-width: 1025px) {
           body, html { overflow: hidden !important; }
-          
           .mobile-layout { display: none !important; }
           .desktop-layout { display: flex !important; width: 100%; height: 100vh; }
-
-          /* HERO A LA IZQUIERDA (50%) */
+          
           .hero-col {
-            flex: 0 0 50%;
-            max-width: 50%;
-            height: 100vh;
+            flex: 0 0 50%; max-width: 50%; height: 100vh;
             background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.08) 0%, transparent 50%), var(--panel);
             border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly; 
-            overflow: hidden; 
-            box-sizing: border-box;
+            display: flex; flex-direction: column; 
+            justify-content: center; /* Mantiene todo agrupado en el centro */
+            gap: clamp(20px, 4vh, 40px);
+            padding: clamp(20px, 5vh, 40px) clamp(30px, 4vw, 60px);
+            overflow: hidden; box-sizing: border-box;
           }
 
-          /* FORMULARIO A LA DERECHA (50%) */
           .form-col {
-            flex: 0 0 50%;
-            max-width: 50%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg);
-            overflow: hidden; 
-            box-sizing: border-box;
+            flex: 0 0 50%; max-width: 50%; height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: var(--bg); overflow: hidden; box-sizing: border-box;
           }
-        }
 
-        /* ================================================================= */
-        /* BREAKPOINT 3: NOTEBOOKS CLÁSICAS (1025px - 1399px)                */
-        /* ================================================================= */
-        @media (min-width: 1025px) and (max-width: 1399px) {
-          .hero-col { padding: 20px 3vw; }
-          .form-col { padding: 15px; }
+          /* TÍTULO Y LOGO */
+          .logo-container-desktop { display: flex; align-items: center; gap: clamp(10px, 1.5vw, 20px); margin-bottom: 0px; }
+          .logo-img-desktop { width: clamp(55px, 5vw, 75px); height: clamp(55px, 5vw, 75px); object-fit: contain; flex-shrink: 0; }
+          .title-desktop { font-size: clamp(2.2rem, 3vw, 3rem); line-height: 1.05; display: flex; flex-direction: column; margin: 0; font-weight: 800; text-align: left; }
 
-          .responsive-title-desktop { font-size: clamp(2rem, 3.5vw, 2.6rem); line-height: 1.1; margin: 0; }
-          .hero-subtitle { font-size: 0.95rem; margin-top: 5px; max-width: 100%; line-height: 1.4; }
-          .hero-checklist { gap: 10px; }
-          .hero-checklist li { font-size: 0.85rem; gap: 10px; line-height: 1.3; }
+          .hero-subtitle { font-size: clamp(0.95rem, 1vw, 1.15rem); max-width: 90%; line-height: 1.4; margin-top: clamp(5px, 1vh, 10px); }
+          .hero-checklist { gap: clamp(12px, 1.5vh, 20px); }
+          .hero-checklist li { font-size: clamp(0.85rem, 0.9vw, 1rem); gap: 12px; line-height: 1.3; }
+          .check-icon { width: clamp(20px, 1.5vw, 24px); height: clamp(20px, 1.5vw, 24px); }
           
-          .career-box { padding: 10px; border-radius: 8px; }
-          .career-box-title { font-size: 0.85rem; margin-bottom: 6px; }
-          .career-box-list { font-size: 0.7rem; gap: 3px; }
-          .contact-text { font-size: 0.75rem; margin-top: 10px; }
+          .career-box { padding: clamp(12px, 1.5vw, 20px); border-radius: 12px; }
+          .career-box-title { font-size: clamp(0.85rem, 0.9vw, 1rem); margin-bottom: 8px; }
+          .career-box-list { font-size: clamp(0.75rem, 0.8vw, 0.9rem); gap: 4px; }
           
-          .login-wrapper { max-width: 360px; width: 100%; display: flex; flex-direction: column; }
-          .login-box { padding: 20px 24px; gap: 12px; border-radius: 16px; }
-          .auth-form { gap: 12px; }
-          .auth-label { font-size: 0.75rem; }
-          .input-field { padding: 8px 12px; font-size: 0.85rem; }
-          .auth-submit-btn { padding: 10px; font-size: 0.95rem; }
-          .auth-google-btn { padding: 8px; font-size: 0.85rem; }
+          .contact-text { font-size: clamp(0.75rem, 0.8vw, 0.9rem); margin-top: clamp(10px, 1.5vh, 20px); }
           
-          .desktop-form-title h2 { font-size: 1.5rem !important; margin-bottom: 2px !important; }
-          .desktop-form-title p { font-size: 0.85rem !important; }
-        }
-
-        /* ================================================================= */
-        /* BREAKPOINT 4: MONITORES GRANDES FULL HD (>= 1400px)               */
-        /* ================================================================= */
-        @media (min-width: 1400px) {
-          .hero-col { padding: 60px 5vw; }
-          .form-col { padding: 40px; }
-
-          .responsive-title-desktop { font-size: 3.8rem; line-height: 1.1; margin: 0; }
-          .hero-subtitle { font-size: 1.35rem; margin-top: 15px; max-width: 90%; }
-          .hero-checklist { gap: 24px; }
-          .hero-checklist li { font-size: 1.15rem; gap: 20px; }
-          .check-icon { width: 28px; height: 28px; }
-
-          .career-box { padding: 24px; border-radius: 16px; }
-          .career-box-title { font-size: 1.15rem; margin-bottom: 16px; }
-          .career-box-list { font-size: 1.05rem; gap: 10px; }
-          .contact-text { font-size: 1.05rem; margin-top: 24px; }
-
-          .login-wrapper { max-width: 480px; width: 100%; display: flex; flex-direction: column; }
-          .login-box { padding: 48px 40px; gap: 28px; border-radius: 24px; }
-          .auth-form { gap: 24px; }
-          .auth-label { font-size: 1rem; }
-          .input-field { padding: 16px 18px; font-size: 1.1rem; border-radius: 12px; }
-          .auth-submit-btn { padding: 18px; font-size: 1.25rem; border-radius: 12px; }
-          .auth-google-btn { padding: 16px; font-size: 1.15rem; border-radius: 12px; }
+          /* FORMULARIO */
+          .login-wrapper { max-width: clamp(360px, 25vw, 420px); width: 100%; display: flex; flex-direction: column; }
+          .login-box { padding: clamp(24px, 3vh, 32px) clamp(24px, 3vw, 32px); gap: clamp(16px, 2vh, 24px); border-radius: 16px; }
+          .auth-form { gap: clamp(14px, 1.5vh, 20px); }
+          .auth-label { font-size: clamp(0.75rem, 0.8vw, 0.9rem); }
+          .input-field { padding: clamp(10px, 1.5vh, 14px) 14px; font-size: clamp(0.85rem, 0.9vw, 1rem); }
+          .auth-submit-btn { padding: clamp(12px, 1.5vh, 16px); font-size: clamp(0.95rem, 1vw, 1.1rem); }
+          .auth-google-btn { padding: clamp(10px, 1.2vh, 14px); font-size: clamp(0.85rem, 0.9vw, 1rem); }
           
-          .desktop-form-title h2 { font-size: 2.6rem !important; margin-bottom: 10px !important; }
-          .desktop-form-title p { font-size: 1.15rem !important; }
+          .desktop-form-title h2 { font-size: clamp(1.8rem, 2vw, 2.2rem) !important; margin-bottom: 5px !important; }
+          .desktop-form-title p { font-size: clamp(0.95rem, 1vw, 1.05rem) !important; }
         }
       `}</style>
 
       <main id="login-main">
         
         {/* ========================================================= */}
-        {/* LAYOUT MÓVIL Y PANTALLAS CHICAS (< 1024px)                  */}
+        {/* LAYOUT MÓVIL Y TABLET (< 1024px)                            */}
         {/* ========================================================= */}
         <div className="mobile-layout">
-          
-          {/* SECCIÓN 1: FORMULARIO (Pantalla Completa) */}
           <section className="mobile-login-section">
             <div className="login-wrapper">
               
               {isLogin && (
-                <div style={{ textAlign: 'center', marginBottom: '30px', width: '100%' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px', width: '100%' }}>
-                    <img src="/icon.png" alt="Logo Mi Estado Académico" style={{ width: 'clamp(50px, 12vw, 80px)', height: 'clamp(50px, 12vw, 80px)', objectFit: 'contain', flexShrink: 0 }} />
-                    <h1 className="logo responsive-title-mobile" style={{ margin: 0, textAlign: 'left', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ color: 'white', whiteSpace: 'nowrap' }}>Mi Estado</div>
-                      <div style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>Académico</div>
+                <div style={{ textAlign: 'center', marginBottom: '35px', width: '100%' }}>
+                  {/* TÍTULO RESPONSIVO MÓVIL */}
+                  <div className="logo-container-mobile">
+                    <img src="/icon.png" alt="Logo Mi Estado Académico" className="logo-img-mobile" />
+                    <h1 className="logo title-mobile">
+                      <span style={{ color: 'white', whiteSpace: 'nowrap' }}>Mi Estado</span>
+                      <span style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>Académico</span>
                     </h1>
                   </div>
-                  <p style={{ color: 'var(--muted)', fontSize: '1.1rem', margin: '16px 0 0 0', fontWeight: 500 }}>
+                  <p style={{ color: 'var(--muted)', fontSize: 'clamp(0.9rem, 4vw, 1.05rem)', margin: '12px 0 0 0', fontWeight: 500 }}>
                     Bienvenido de vuelta
                   </p>
                 </div>
@@ -542,7 +398,6 @@ export default function AuthPage() {
             </div>
           </section>
 
-          {/* SECCIÓN 2: INFORMACIÓN DEL HERO (Se muestra al scrollear en móvil) */}
           <section id="mobile-info-section" className="mobile-info-section">
             <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px', width: '100%' }}>
               
@@ -559,11 +414,24 @@ export default function AuthPage() {
                   <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   <span><strong>Gestión de Cursada:</strong> Agendá eventos, parciales y organizá tus horarios seleccionando comisiones reales.</span>
                 </li>
+                
+                {/* 🔥 BLOG MÓVIL 🔥 */}
+                <li>
+                  <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <span><strong>Blog y Novedades:</strong> Estás invitado a leer nuestras guías universitarias y artículos técnicos sin necesidad de iniciar sesión.</span>
+                    <Link href="/blog" style={{ textDecoration: 'none' }}>
+                      <button className="btn-secondary" style={{ padding: '8px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', width: 'fit-content' }}>
+                        Ir al Blog <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                      </button>
+                    </Link>
+                  </div>
+                </li>
+
               </ul>
 
               <div style={{ width: '100%', marginTop: '10px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
-                  
                   <div className="career-box">
                     <div className="career-box-title">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
@@ -578,7 +446,6 @@ export default function AuthPage() {
                       <li>Ing. en Sistemas</li>
                     </ul>
                   </div>
-
                   <div className="career-box">
                     <div className="career-box-title">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
@@ -590,40 +457,46 @@ export default function AuthPage() {
                       <li>Licenciatura en Informática</li>
                       <li>Licenciatura en Sistemas</li>
                       <li>Lic. y Prof. de Psicología</li>
-                      <li>Tecnicatura Universitaria en Sonido y Grabación</li>
+                      <li>Téc. Univ. en Sonido y Grabación</li>
                     </ul>
                   </div>
-
                 </div>
                 
-                <p className="contact-text">
-                  Si no ves tu carrera, no dudes en escribir un mail a <strong style={{ color: 'white' }}>mateogeffroy.dev@gmail.com</strong>
-                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+                  <p className="contact-text" style={{ margin: 0 }}>
+                    Si no ves tu carrera, escribí un mail a <strong style={{ color: 'white' }}>mateogeffroy.dev@gmail.com</strong>
+                  </p>
+
+                  {/* 🔥 LINKS DE LEGALES MÓVIL 🔥 */}
+                  <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', alignItems: 'center', fontSize: '0.8rem', flexWrap: 'wrap' }}>
+                    <Link href="/terminos" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Términos y Condiciones</Link>
+                    <span style={{ color: 'var(--border)' }}>|</span>
+                    <Link href="/privacidad" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Políticas de Privacidad</Link>
+                  </div>
+                </div>
               </div>
 
             </div>
           </section>
-
         </div>
 
         {/* ========================================================= */}
-        {/* LAYOUT ESCRITORIO (50/50 Split Screen Fijo) (>= 1025px)   */}
+        {/* LAYOUT ESCRITORIO (>= 1025px)                               */}
         {/* ========================================================= */}
         <div className="desktop-layout">
           
-          {/* COLUMNA 1: HERO / INFO CARDS */}
           <section className="hero-col">
-            
             <div className="hero-logo-container">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '10px' }}>
-                <img src="/icon.png" alt="Logo Mi Estado Académico" style={{ width: 'clamp(55px, 6vw, 85px)', height: 'clamp(55px, 6vw, 85px)', objectFit: 'contain', flexShrink: 0 }} />
-                
-                {/* 🔥 TÍTULO ESCRITORIO AISLADO CON DIVS 🔥 */}
-                <div className="logo responsive-title-desktop" style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ color: 'white', whiteSpace: 'nowrap' }}>Mi Estado</div>
-                  <div style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>Académico</div>
-                </div>
+              
+              {/* TÍTULO RESPONSIVO ESCRITORIO */}
+              <div className="logo-container-desktop">
+                <img src="/icon.png" alt="Logo Mi Estado Académico" className="logo-img-desktop" />
+                <h1 className="logo title-desktop">
+                  <span style={{ color: 'white', whiteSpace: 'nowrap' }}>Mi Estado</span>
+                  <span style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>Académico</span>
+                </h1>
               </div>
+
               <p className="hero-subtitle">
                 Gestión inteligente, trazabilidad absoluta y control total de tu carrera académica.
               </p>
@@ -642,12 +515,24 @@ export default function AuthPage() {
                 <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <span><strong>Gestión de Cursada:</strong> Agendá eventos, parciales y organizá tus horarios seleccionando comisiones reales.</span>
               </li>
+
+              {/* 🔥 BLOG ESCRITORIO 🔥 */}
+              <li>
+                <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <span><strong>Blog y Novedades:</strong> Estás invitado a leer nuestras guías universitarias y artículos técnicos sin necesidad de iniciar sesión.</span>
+                  <Link href="/blog" style={{ textDecoration: 'none' }}>
+                    <button className="btn-secondary" style={{ padding: '8px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', width: 'fit-content' }}>
+                      Ir al Blog <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                  </Link>
+                </div>
+              </li>
+
             </ul>
 
             <div style={{ width: '100%' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                
-                {/* Bloque UTN */}
                 <div className="career-box">
                   <div className="career-box-title">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
@@ -662,8 +547,6 @@ export default function AuthPage() {
                     <li>Ing. en Sistemas</li>
                   </ul>
                 </div>
-
-                {/* Bloque UNLP */}
                 <div className="career-box">
                   <div className="career-box-title">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
@@ -675,23 +558,29 @@ export default function AuthPage() {
                     <li>Licenciatura en Informática</li>
                     <li>Licenciatura en Sistemas</li>
                     <li>Lic. y Prof. de Psicología</li>
-                    <li>Tecnicatura Universitaria en Sonido y Grabación</li>
+                    <li>Téc. Univ. en Sonido y Grabación</li>
                   </ul>
                 </div>
-
               </div>
               
-              <p className="contact-text">
-                Si no ves tu carrera, no dudes en escribir un mail a <strong style={{ color: 'white' }}>mateogeffroy.dev@gmail.com</strong>
-              </p>
-            </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <p className="contact-text" style={{ margin: '15px 0 0 0' }}>
+                  Si no ves tu carrera, escribí un mail a <strong style={{ color: 'white' }}>mateogeffroy.dev@gmail.com</strong>
+                </p>
+                
+                {/* 🔥 LINKS DE LEGALES ESCRITORIO 🔥 */}
+                <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', alignItems: 'center', fontSize: '0.85rem' }}>
+                  <Link href="/terminos" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>Términos y Condiciones</Link>
+                  <span style={{ color: 'var(--border)' }}>|</span>
+                  <Link href="/privacidad" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>Políticas de Privacidad</Link>
+                </div>
+              </div>
 
+            </div>
           </section>
 
-          {/* COLUMNA 2: FORMULARIO DE LOGIN */}
           <section className="form-col">
             <div className="login-wrapper">
-              
               {isLogin && (
                 <div style={{ textAlign: 'center', marginBottom: '24px', width: '100%' }}>
                   <div className="desktop-form-title" style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
@@ -712,25 +601,15 @@ export default function AuthPage() {
                 <form onSubmit={handleSubmit} className="auth-form">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label className="auth-label">Correo Electrónico</label>
-                    <input 
-                      type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                      placeholder="alumno@mail.com" className="input-field" required
-                    />
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="alumno@mail.com" className="input-field" required />
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label className="auth-label">Contraseña</label>
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                      <input 
-                        type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••" className="input-field" style={{ paddingRight: '50px' }} required
-                      />
+                      <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="input-field" style={{ paddingRight: '50px' }} required />
                       <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {showPassword ? (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                        ) : (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
-                        )}
+                        {showPassword ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>}
                       </button>
                     </div>
                   </div>
@@ -739,16 +618,9 @@ export default function AuthPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <label className="auth-label">Confirmar Contraseña</label>
                       <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                        <input 
-                          type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                          placeholder="••••••••" className="input-field" style={{ paddingRight: '50px' }} required
-                        />
+                        <input type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" className="input-field" style={{ paddingRight: '50px' }} required />
                         <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: '15px', background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {showConfirmPassword ? (
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                          ) : (
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
-                          )}
+                          {showConfirmPassword ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>}
                         </button>
                       </div>
                     </div>
@@ -771,11 +643,7 @@ export default function AuthPage() {
                     </div>
                   )}
 
-                  <button 
-                    type="submit" className="btn-primary auth-submit-btn" 
-                    disabled={loading || (!isLogin && !isPasswordValid)} 
-                    style={{ opacity: (loading || (!isLogin && !isPasswordValid)) ? 0.5 : 1, cursor: (loading || (!isLogin && !isPasswordValid)) ? 'not-allowed' : 'pointer' }}
-                  >
+                  <button type="submit" className="btn-primary auth-submit-btn" disabled={loading || (!isLogin && !isPasswordValid)} style={{ opacity: (loading || (!isLogin && !isPasswordValid)) ? 0.5 : 1, cursor: (loading || (!isLogin && !isPasswordValid)) ? 'not-allowed' : 'pointer' }}>
                     {loading ? 'Cargando...' : (isLogin ? 'Iniciar Sesión' : 'Crear Cuenta')}
                   </button>
                 </form>
@@ -808,7 +676,6 @@ export default function AuthPage() {
                 </div>
               </div>
             </div>
-
           </section>
 
         </div>
