@@ -41,7 +41,7 @@ export default function BlogIndex() {
       <style>{`
         .no-hover-card:hover {
           transform: none !important;
-          border-color: rgba(255, 255, 255, 0.1) !important;
+          border-color: var(--glass-border) !important;
           box-shadow: none !important;
         }
       `}</style>
@@ -53,7 +53,7 @@ export default function BlogIndex() {
             <div style={{ background: 'var(--bg)', borderRadius: '20px', padding: '20px' }}>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '10px' }}>
-                <h1 style={{ color: 'white', margin: 0, fontSize: '2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h1 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
                   Blog y Novedades
                 </h1>
@@ -77,13 +77,13 @@ export default function BlogIndex() {
                         <div style={{ color: post.tagColor, fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '1px' }}>
                           {post.tag}
                         </div>
-                        <h4 style={{ color: 'white', margin: '0 0 12px 0', fontSize: '1.2rem', lineHeight: '1.3' }}>
+                        <h4 style={{ color: 'var(--text-strong)', margin: '0 0 12px 0', fontSize: '1.2rem', lineHeight: '1.3' }}>
                           {post.titulo}
                         </h4>
                         <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: '1.5', margin: '0 0 20px 0', flex: 1 }}>
                           {post.descripcion}
                         </p>
-                        <div style={{ color: 'white', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ color: 'var(--text-strong)', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           Leer artículo 
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={post.iconColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                         </div>
@@ -93,13 +93,13 @@ export default function BlogIndex() {
                 ))}
               </div>
 
-              {/* 🔥 NUEVA SECCIÓN: INVITACIÓN A APORTAR 🔥 */}
-              <div style={{ marginTop: '40px', background: 'radial-gradient(circle at top left, rgba(59, 130, 246, 0.05) 0%, transparent 70%), rgba(255, 255, 255, 0.02)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '15px' }}>
+              {/* 🔥 SECCIÓN: INVITACIÓN A APORTAR 🔥 */}
+              <div style={{ marginTop: '40px', background: 'radial-gradient(circle at top left, rgba(59, 130, 246, 0.08) 0%, transparent 70%), var(--glass-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '15px' }}>
                 <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '12px', borderRadius: '50%' }}>
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
                 </div>
                 <div>
-                  <h3 style={{ color: 'white', fontSize: '1.3rem', margin: '0 0 8px 0', fontWeight: 'bold' }}>¿Tenés algo para compartir?</h3>
+                  <h3 style={{ color: 'var(--text-strong)', fontSize: '1.3rem', margin: '0 0 8px 0', fontWeight: 'bold' }}>¿Tenés algo para compartir?</h3>
                   <p style={{ color: 'var(--muted)', fontSize: '0.95rem', margin: 0, maxWidth: '500px', lineHeight: '1.5' }}>
                     Si escribiste un apunte útil, un tutorial de código o tenés tips para alguna materia en particular, podés publicarlo acá.
                   </p>

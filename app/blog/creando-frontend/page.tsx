@@ -11,30 +11,31 @@ export default function CreandoFrontendPost() {
   return (
     <>
       <style>{`
-        .blog-content h2 { color: white; margin-top: 40px; font-size: 1.5rem; font-weight: 800; }
-        .blog-content h3 { color: white; margin-top: 30px; font-size: 1.25rem; font-weight: 700; }
-        .blog-content h4 { color: var(--text); margin-top: 25px; font-size: 1.1rem; font-weight: 700; }
+        .blog-content h2 { color: var(--text-strong); margin-top: 40px; font-size: 1.5rem; font-weight: 800; }
+        .blog-content h3 { color: var(--text-strong); margin-top: 30px; font-size: 1.25rem; font-weight: 700; }
+        .blog-content h4 { color: var(--text-strong); margin-top: 25px; font-size: 1.1rem; font-weight: 700; }
         .blog-content p { margin-bottom: 20px; }
         .blog-content ul { margin-bottom: 20px; padding-left: 20px; }
         .blog-content li { margin-bottom: 10px; }
-        .blog-content strong { color: white; }
+        .blog-content strong { color: var(--text-strong); }
         .blog-content a { color: var(--cursando); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
         .blog-content a:hover { border-color: var(--cursando); }
         
         .code-snippet { 
-          background: rgba(0,0,0,0.3); 
+          background: var(--glass-bg); 
           padding: 15px; 
           border-radius: 8px; 
           font-family: 'Space Mono', monospace; 
           font-size: 0.9rem; 
-          border: 1px solid var(--border);
+          border: 1px solid var(--glass-border);
           margin: 20px 0;
           overflow-x: auto;
-          color: var(--text);
+          color: var(--text-strong);
         }
 
         .code-inline {
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
           color: #ef4444;
           padding: 2px 6px;
           border-radius: 4px;
@@ -44,12 +45,12 @@ export default function CreandoFrontendPost() {
 
         .quote-box {
           border-left: 4px solid var(--cursando);
-          background: rgba(59, 130, 246, 0.05);
+          background: var(--glass-bg);
           padding: 20px 24px;
           border-radius: 0 12px 12px 0;
           margin: 30px 0;
           font-style: italic;
-          color: var(--text);
+          color: var(--text-strong);
         }
 
         /* 🔥 NUEVOS ESTILOS PARA VIDEOS PREMIUM 🔥 */
@@ -60,7 +61,7 @@ export default function CreandoFrontendPost() {
           overflow: hidden; /* Esto asegura que las esquinas redondeadas apliquen al video */
           background: var(--panel);
           border: 1px solid var(--border);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Sombra elegante */
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Sombra elegante adaptada */
         }
         
         .video-player {
@@ -81,10 +82,15 @@ export default function CreandoFrontendPost() {
           flex: 1;
           min-width: 300px;
           padding: 25px;
-          background: rgba(0, 229, 255, 0.05);
+          background: var(--glass-bg);
           border-radius: 16px;
           border-left: 4px solid var(--cursando);
+          border-top: 1px solid var(--glass-border);
+          border-right: 1px solid var(--glass-border);
+          border-bottom: 1px solid var(--glass-border);
+          transition: transform 0.2s;
         }
+        .collab-box:hover { transform: translateY(-5px); }
 
         .repo-buttons {
           display: flex;
@@ -117,45 +123,9 @@ export default function CreandoFrontendPost() {
 
       <main style={{ paddingBottom: '80px', display: 'flex', flexDirection: 'column', gap: '40px', minHeight: '100vh', paddingTop: '20px' }}>
         
-        {/* ANUNCIO TOP (Móvil) (COMENTADO TEMPORALMENTE)
-        <div className="mobile-ad-container">
-          <AdBanner dataAdSlot="BLOG_MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
-        </div>
-        */}
-
         {/* CONTENEDOR RELATIVO (Ancla para los anuncios absolutos) */}
         <div style={{ position: 'relative', width: '100%', maxWidth: '1000px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'center' }}>
           
-          {/* ==========================================
-              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS (COMENTADOS)
-              ========================================== */}
-          {/* Lado Izquierdo
-          <div className="scatter-ad-left" style={{ top: '2%' }}>
-            <AdBanner dataAdSlot="BLOG_L_1" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-left" style={{ top: '40%' }}>
-            <AdBanner dataAdSlot="BLOG_L_2" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-left" style={{ top: '75%' }}>
-            <AdBanner dataAdSlot="BLOG_L_3" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          */}
-
-          {/* Lado Derecho
-          <div className="scatter-ad-right" style={{ top: '2%' }}>
-            <AdBanner dataAdSlot="BLOG_R_1" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-right" style={{ top: '40%' }}>
-            <AdBanner dataAdSlot="BLOG_R_2" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-right" style={{ top: '75%' }}>
-            <AdBanner dataAdSlot="BLOG_R_3" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          */}
-
-          {/* ==========================================
-              CONTENIDO CENTRAL DEL ARTÍCULO
-              ========================================== */}
           <article style={{ maxWidth: '800px', width: '100%' }}>
             
             {/* ENCABEZADO DE PÁGINA */}
@@ -166,7 +136,7 @@ export default function CreandoFrontendPost() {
               <div style={{ flex: 1, minWidth: '300px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                   <span style={{ 
-                    background: 'rgba(255,255,255,0.05)', color: 'var(--cursando)', 
+                    background: 'var(--glass-bg)', color: 'var(--cursando)', 
                     padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', 
                     fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px',
                     border: `1px solid var(--cursando)`
@@ -175,7 +145,7 @@ export default function CreandoFrontendPost() {
                   </span>
                   <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>30 de Marzo, 2026</span>
                 </div>
-                <h1 style={{ color: 'white', fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', fontWeight: 900, lineHeight: 1.1, margin: 0 }}>
+                <h1 style={{ color: 'var(--text-strong)', fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', fontWeight: 900, lineHeight: 1.1, margin: 0 }}>
                   Creando Frontends Premium con <span style={{ color: 'var(--cursando)' }}>Antigravity + Skills</span>
                 </h1>
               </div>
@@ -198,12 +168,6 @@ export default function CreandoFrontendPost() {
               <p>
                 Pero… ¿qué son exactamente las skills? Son instrucciones en un archivo de texto (generalmente markdown) que estandarizan conocimientos, procedimientos y capacidades de un dominio específico, actuando como “know-how” para tu agente. Estos archivos portables potencian el desarrollo agéntico de maneras espectaculares, otorgándole una suerte de (no joke) superpoder en cualquiera de las áreas o etapas de creación de un proyecto: frontend, backend, APIs, planificación, y muchísimo más.
               </p>
-              
-              {/* ANUNCIO IN-ARTICLE 1 (COMENTADO TEMPORALMENTE)
-              <div className="mobile-ad-container" style={{ margin: '30px auto', display: 'block' }}>
-                <AdBanner dataAdSlot="BLOG_INSIDE_1" dataAdFormat="fluid" style={{ minHeight: '100px' }} />
-              </div>
-              */}
 
               <p>
                 A continuación, voy a presentar tres casos sencillos, directos y replicables, para que puedas imitar y sacarle el máximo provecho a tus proyectos de desarrollo.
@@ -240,12 +204,6 @@ export default function CreandoFrontendPost() {
               <p>
                 A la derecha, vamos a ver abierto a nuestro chat agéntico, donde podemos seleccionar el modo de conversación, el modelo de AI, e incluso vamos a poder añadir imágenes o mencionar archivos existentes en nuestro proyecto.
               </p>
-
-              {/* ANUNCIO IN-ARTICLE 2 (COMENTADO TEMPORALMENTE)
-              <div className="mobile-ad-container" style={{ margin: '30px auto', display: 'block' }}>
-                <AdBanner dataAdSlot="BLOG_INSIDE_2" dataAdFormat="rectangle" style={{ minHeight: '100px' }} />
-              </div>
-              */}
 
               <h3>Paso 2: Instalando skills</h3>
               <p>
@@ -391,12 +349,12 @@ export default function CreandoFrontendPost() {
               {/* SECCIÓN DE COLABORACIÓN EN FILA */}
               <div className="collab-container">
                 <div className="collab-box">
-                  <strong style={{ display: 'block', marginBottom: '10px' }}>¿Querés colaborar?</strong>
+                  <strong style={{ display: 'block', marginBottom: '10px', color: 'var(--cursando)', fontSize: '1.1rem' }}>¿Querés colaborar?</strong>
                   Si sos estudiante y tenés ideas para mejorar el sistema de horarios o el contenido del blog, ¡tu feedback es bienvenido! Este espacio lo construimos entre todos.
                 </div>
 
                 <div className="collab-box">
-                  <strong style={{ display: 'block', marginBottom: '10px' }}>¿Te interesa elaborar un artículo?</strong>
+                  <strong style={{ display: 'block', marginBottom: '10px', color: 'var(--cursando)', fontSize: '1.1rem' }}>¿Te interesa elaborar un artículo?</strong>
                   ¡Escribime! Cualquier dinámica relacionada al ámbito del desarrollo y de la enseñanza es bienvenido.
                 </div>
               </div>
@@ -409,24 +367,18 @@ export default function CreandoFrontendPost() {
             }}>
               <div style={{ 
                 width: '56px', height: '56px', borderRadius: '50%', background: 'var(--cursando)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', fontWeight: 'bold', fontSize: '1.4rem'
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111', fontWeight: 'bold', fontSize: '1.4rem'
               }}>
                 SO
               </div>
               <div>
-                <div style={{ color: 'white', fontWeight: 'bold', fontSize: '1.1rem' }}>Simón Ocampo</div>
+                <div style={{ color: 'var(--text-strong)', fontWeight: 'bold', fontSize: '1.1rem' }}>Simón Ocampo</div>
                 <div style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Analista en Sistemas, Desarrollador Full-Stack y Estudiante de Ing. en Sistemas (UTN-FRLP)</div>
               </div>
             </div>
 
           </article>
         </div>
-
-        {/* ANUNCIO BOT (Móvil) (COMENTADO TEMPORALMENTE)
-        <div className="mobile-ad-container" style={{ marginTop: '20px' }}>
-          <AdBanner dataAdSlot="BLOG_MOB_BOT" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
-        </div>
-        */}
 
       </main>
     </>

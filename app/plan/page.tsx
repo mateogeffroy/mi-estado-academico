@@ -271,7 +271,6 @@ export default function PlanDeEstudios() {
 
     let displayHours = subject.hours;
     
-    // Vaciamos etiquetas redundantes en planes UNLP
     const isUnlp = careerData.careerInfo.id.includes('unlp');
     if (isUnlp && ['1S', '2S', 'Ingreso'].includes(displayHours)) {
       displayHours = '';
@@ -365,21 +364,20 @@ export default function PlanDeEstudios() {
           <div style={{ marginTop: '6px', marginBottom: '8px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {duracionesUnicas.sort().map(dur => {
               let label = 'Anual';
-              let pillBg = 'rgba(59, 130, 246, 0.85)'; // Azul para Anual
+              let pillBg = 'rgba(59, 130, 246, 0.85)'; 
               let pillColor = '#ffffff'; 
               
-              // 🔥 ACÁ ESTÁ LA REGLA ACTUALIZADA PARA INCLUIR "SONIDO"
               const usaCuatrimestres = careerData.careerInfo.id.includes('psicologia') || careerData.careerInfo.id.includes('sonido');
 
               if (dur === '1') {
                 label = (isUnlp && !usaCuatrimestres) ? '1S' : '1C';
-                pillBg = 'rgba(34, 197, 94, 0.85)'; // Verde
+                pillBg = 'rgba(34, 197, 94, 0.85)'; 
               } else if (dur === '2') {
                 label = (isUnlp && !usaCuatrimestres) ? '2S' : '2C';
-                pillBg = 'rgba(244, 63, 94, 0.85)'; // Rojo
+                pillBg = 'rgba(244, 63, 94, 0.85)'; 
               } else if (dur === 'Ingreso') {
                 label = 'Ingreso';
-                pillBg = 'rgba(168, 85, 247, 0.85)'; // Violeta
+                pillBg = 'rgba(168, 85, 247, 0.85)'; 
               }
 
               const finalBg = isCardColored ? 'rgba(0, 0, 0, 0.6)' : pillBg;
@@ -404,7 +402,7 @@ export default function PlanDeEstudios() {
             {subject.isApu && (
               <span key="apu" style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                background: isCardColored ? 'rgba(0, 0, 0, 0.6)' : 'rgba(6, 182, 212, 0.85)', // Cyan
+                background: isCardColored ? 'rgba(0, 0, 0, 0.6)' : 'rgba(6, 182, 212, 0.85)', 
                 color: isCardColored ? 'rgba(255, 255, 255, 0.95)' : '#ffffff', 
                 padding: '4px 12px',
                 borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', 
@@ -420,7 +418,7 @@ export default function PlanDeEstudios() {
             {subject.isProfesorado && (
               <span key="prof" style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                background: isCardColored ? 'rgba(0, 0, 0, 0.6)' : 'rgba(245, 158, 11, 0.85)', // Ámbar
+                background: isCardColored ? 'rgba(0, 0, 0, 0.6)' : 'rgba(245, 158, 11, 0.85)', 
                 color: isCardColored ? 'rgba(255, 255, 255, 0.95)' : '#ffffff', 
                 padding: '4px 12px',
                 borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', 
@@ -469,9 +467,9 @@ export default function PlanDeEstudios() {
           30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
           40%, 60% { transform: translate3d(4px, 0, 0); }
         }
-        .action-menu { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 6px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); min-width: 140px; animation: fadeIn 0.2s ease-out; flex-direction: column; gap: 4px; }
-        .action-btn { background: transparent; color: var(--text); border: none; padding: 10px 12px; text-align: left; border-radius: 4px; font-family: 'Syne', sans-serif; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; width: 100%; }
-        .action-btn:hover { background: var(--border); }
+        .action-menu { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 6px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); min-width: 140px; animation: fadeIn 0.2s ease-out; flex-direction: column; gap: 4px; }
+        .action-btn { background: transparent; color: var(--text-strong); border: none; padding: 10px 12px; text-align: left; border-radius: 4px; font-family: 'Syne', sans-serif; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; width: 100%; }
+        .action-btn:hover { background: var(--glass-hover); }
         .subject-status-icon { position: absolute; bottom: 10px; right: 10px; opacity: 0.8; }
         
         .mobile-ad-container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 16px; }
@@ -509,10 +507,10 @@ export default function PlanDeEstudios() {
           display: flex;
           align-items: center;
           gap: 16px;
-          flex: 1; /* Hace que este bloque ocupe el resto del espacio */
+          flex: 1; 
         }
         .stats-progress-wrapper {
-          flex: 1; /* Estira la barra de progreso para eliminar el espacio vacío */
+          flex: 1; 
           display: flex;
           align-items: center;
           width: 100%;
@@ -537,11 +535,9 @@ export default function PlanDeEstudios() {
             justify-content: space-between !important;
             gap: 12px !important;
           }
-          /* Forzamos a mostrar el Total de Materias en celulares */
           .plan-stats-bar-override .stat:nth-child(4) {
             display: flex !important;
           }
-          /* Ajustamos textos para que entren 4 stats en la misma línea */
           .stats-row-1 .stat-val { font-size: 0.95rem !important; }
           .stats-row-1 .stat-label { font-size: 0.6rem !important; letter-spacing: -0.5px; }
         }
@@ -615,7 +611,7 @@ export default function PlanDeEstudios() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> Cursando
             </button>
             <button className="action-btn" onClick={(e) => handleMenuAction(e, 'set_available')}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Desmarcar
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Desmarcar
             </button>
           </div>
         )}
@@ -633,7 +629,6 @@ export default function PlanDeEstudios() {
           <div className="tooltip show" style={{ left: tooltip.x, top: tooltip.y, textAlign: 'left', zIndex: 9999 }}>{tooltip.content}</div>
         )}
 
-        {/* 🔥 STATS BAR REFORMULADA 🔥 */}
         <div id="stat-bar-container" className="stats-bar plan-stats-bar-override" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 900, background: 'var(--bg)', borderTop: '1px solid var(--border)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           
           <div className="stats-row-1">
@@ -658,7 +653,7 @@ export default function PlanDeEstudios() {
           </div>
 
           <div className="stats-row-2">
-            <span style={{ color: 'var(--text)', fontSize: '0.85rem', fontWeight: 'bold', flexShrink: 0 }}>{stats.porcentaje}%</span>
+            <span style={{ color: 'var(--text-strong)', fontSize: '0.85rem', fontWeight: 'bold', flexShrink: 0 }}>{stats.porcentaje}%</span>
             
             <div className="stats-progress-wrapper">
               <div className="progress-bar" style={{ width: '100%', height: '6px' }}>

@@ -116,20 +116,20 @@ export default function OnboardingPage() {
           width: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(0,0,0,0.1);
+          background: var(--glass-bg);
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.2);
+          background: var(--border);
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255,255,255,0.3);
+          background: var(--muted);
         }
       `}</style>
       <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div className="login-card" style={{ maxWidth: '450px', width: '100%', padding: '40px', background: 'var(--panel)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+        <div className="login-card" style={{ maxWidth: '450px', width: '100%', padding: '40px', background: 'var(--panel)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <h1 style={{ color: 'white', fontSize: '2rem', fontWeight: 900, marginBottom: '10px' }}>
+            <h1 style={{ color: 'var(--text-strong)', fontSize: '2rem', fontWeight: 900, marginBottom: '10px' }}>
               ¡Ya casi estamos!
             </h1>
             <p style={{ color: 'var(--muted)' }}>Completá tu perfil para empezar a trackear tu cursada.</p>
@@ -144,7 +144,7 @@ export default function OnboardingPage() {
                 placeholder="Tu nombre o apodo" 
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '1rem' }}
+                style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--glass-bg)', color: 'var(--text-strong)', fontSize: '1rem', outline: 'none' }}
               />
             </div>
 
@@ -153,10 +153,10 @@ export default function OnboardingPage() {
               <select 
                 value={universidad}
                 onChange={(e) => setUniversidad(e.target.value)}
-                style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '1rem', cursor: 'pointer' }}
+                style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--glass-bg)', color: 'var(--text-strong)', fontSize: '1rem', cursor: 'pointer', outline: 'none' }}
               >
                 {UNIVERSIDADES.map(uni => (
-                  <option key={uni.id} value={uni.id} style={{ background: 'var(--panel)' }}>
+                  <option key={uni.id} value={uni.id} style={{ background: 'var(--panel)', color: 'var(--text-strong)' }}>
                     {uni.name}
                   </option>
                 ))}
@@ -175,16 +175,16 @@ export default function OnboardingPage() {
                   style={{
                     padding: '15px 18px',
                     borderRadius: '12px',
-                    border: `1px solid ${isDropdownOpen ? '#3b82f6' : 'var(--border)'}`,
-                    background: 'rgba(0,0,0,0.2)',
-                    color: carreraSeleccionada ? '#ffffff' : 'var(--muted)',
+                    border: `1px solid ${isDropdownOpen ? 'var(--cursando)' : 'var(--border)'}`,
+                    background: 'var(--glass-bg)',
+                    color: carreraSeleccionada ? 'var(--text-strong)' : 'var(--muted)',
                     fontSize: '1rem',
                     cursor: 'pointer',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     transition: 'all 0.2s ease',
-                    boxShadow: isDropdownOpen ? '0 0 0 3px rgba(59, 130, 246, 0.2)' : 'none'
+                    boxShadow: isDropdownOpen ? '0 0 0 3px rgba(59, 130, 246, 0.15)' : 'none'
                   }}
                 >
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -212,7 +212,7 @@ export default function OnboardingPage() {
                       borderRadius: '12px',
                       overflow: 'hidden',
                       zIndex: 50,
-                      boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                      boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
                       animation: 'fadeInDown 0.2s ease-out'
                     }}
                   >
@@ -226,15 +226,15 @@ export default function OnboardingPage() {
                           }}
                           style={{
                             padding: '12px 18px',
-                            color: carreraId === carrera.id ? '#3b82f6' : 'var(--text)',
-                            background: carreraId === carrera.id ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                            color: carreraId === carrera.id ? 'var(--cursando)' : 'var(--text)',
+                            background: carreraId === carrera.id ? 'var(--glass-bg)' : 'transparent',
                             cursor: 'pointer',
                             transition: 'background 0.15s ease',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px'
                           }}
-                          onMouseEnter={(e) => { if (carreraId !== carrera.id) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                          onMouseEnter={(e) => { if (carreraId !== carrera.id) e.currentTarget.style.background = 'var(--glass-hover)' }}
                           onMouseLeave={(e) => { if (carreraId !== carrera.id) e.currentTarget.style.background = 'transparent' }}
                         >
                           {/* Ícono de check si está seleccionada */}

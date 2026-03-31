@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 import { supabase } from '../../src/lib/supabase';
 
 export default function AuthPage() {
@@ -18,6 +19,14 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  // 🔥 HOOKS DEL TEMA 🔥
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const requirements = [
     { test: (p: string) => p.length >= 8 && p.length <= 16, label: 'Entre 8 y 16 caracteres' },
@@ -91,6 +100,7 @@ export default function AuthPage() {
           width: 100% !important;
           overflow-x: hidden !important; 
           box-sizing: border-box !important;
+          position: relative;
         }
 
         @keyframes bounce {
@@ -109,7 +119,7 @@ export default function AuthPage() {
           background: var(--panel);
           border: 1px solid var(--border);
           border-radius: 20px;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
           display: flex;
           flex-direction: column;
         }
@@ -119,29 +129,31 @@ export default function AuthPage() {
 
         .input-field {
           width: 100%; box-sizing: border-box; border-radius: 10px;
-          border: 1px solid var(--border); background: rgba(255, 255, 255, 0.02);
-          color: white; outline: none; transition: border-color 0.2s ease, background 0.2s ease;
+          border: 1px solid var(--border); background: var(--glass-bg);
+          color: var(--text-strong); outline: none; transition: border-color 0.2s ease, background 0.2s ease;
         }
-        .input-field:focus { border-color: var(--cursando); background: rgba(255, 255, 255, 0.05); }
+        .input-field:focus { border-color: var(--cursando); background: var(--glass-hover); }
 
         .auth-submit-btn { border-radius: 10px; font-weight: bold; width: 100%; box-sizing: border-box; cursor: pointer; border: none; }
+        
         .auth-google-btn {
           display: flex; align-items: center; justify-content: center; gap: 12px;
-          border-radius: 10px; background: white; color: black; font-weight: bold;
-          border: none; cursor: pointer; transition: transform 0.2s; width: 100%; box-sizing: border-box;
+          border-radius: 10px; background: var(--panel); color: var(--text-strong); font-weight: bold;
+          border: 1px solid var(--border); cursor: pointer; transition: transform 0.2s, background 0.2s; 
+          width: 100%; box-sizing: border-box;
         }
-        .auth-google-btn:hover { transform: scale(1.02); }
+        .auth-google-btn:hover { transform: scale(1.02); background: var(--glass-hover); }
 
         .arrow-container { cursor: pointer; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 30px; transition: color 0.2s ease; }
-        .arrow-container:hover { color: white; }
+        .arrow-container:hover { color: var(--text-strong); }
 
         .hero-subtitle { color: var(--text); line-height: 1.6; }
         .hero-checklist { list-style: none; display: flex; flex-direction: column; padding: 0; margin: 0; }
         .hero-checklist li { display: flex; align-items: flex-start; gap: 16px; color: var(--text); line-height: 1.5; }
         .check-icon { color: var(--cursando); flex-shrink: 0; margin-top: 2px; }
         
-        .career-box { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px; box-sizing: border-box; }
-        .career-box-title { color: white; font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .career-box { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 16px; box-sizing: border-box; }
+        .career-box-title { color: var(--text-strong); font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
         .career-box-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; color: var(--muted); }
         .contact-text { color: var(--muted); text-align: center; width: 100%; }
 
@@ -150,6 +162,30 @@ export default function AuthPage() {
         .mobile-info-section { background: var(--panel); border-top: 1px solid var(--border); display: flex; flex-direction: column; box-sizing: border-box; }
 
         .desktop-layout { display: none !important; }
+
+        /* 🔥 BOTÓN DE TEMA FLOTANTE 🔥 */
+        .floating-theme-btn {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: var(--panel);
+          border: 1px solid var(--border);
+          color: var(--text-strong);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          z-index: 9999;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          transition: transform 0.2s ease, background 0.2s ease;
+        }
+        .floating-theme-btn:hover {
+          transform: scale(1.1);
+          background: var(--glass-hover);
+        }
 
         /* ================================================================= */
         /* RESPONSIVIDAD DINÁMICA                                            */
@@ -160,7 +196,6 @@ export default function AuthPage() {
           .mobile-login-section { padding: 30px 24px !important; }
           .mobile-info-section { padding: 40px 24px 80px 24px !important; gap: 30px; }
           
-          /* 🔥 EL SECRETO DE LA ESTÉTICA MÓVIL EXTREMA (EJ: 320px) 🔥 */
           .logo-container-mobile { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 3vw, 12px); width: 100%; }
           .logo-img-mobile { width: clamp(40px, 12vw, 55px); height: clamp(40px, 12vw, 55px); object-fit: contain; flex-shrink: 0; }
           .title-mobile { font-size: clamp(1.4rem, 7vw, 1.8rem); line-height: 1.05; display: flex; flex-direction: column; margin: 0; font-weight: 800; text-align: left; }
@@ -208,8 +243,7 @@ export default function AuthPage() {
           .contact-text { font-size: 0.85rem; margin-top: 16px; }
         }
 
-        /* 🔥 ESCRITORIO UNIFICADO (>= 1025px) 🔥
-           Se adapta fluido desde Notebooks (1366) hasta Full HD (1920) sin romperse ni separarse */
+        /* ESCRITORIO UNIFICADO (>= 1025px) */
         @media (min-width: 1025px) {
           body, html { overflow: hidden !important; }
           .mobile-layout { display: none !important; }
@@ -220,7 +254,7 @@ export default function AuthPage() {
             background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.08) 0%, transparent 50%), var(--panel);
             border-right: 1px solid var(--border);
             display: flex; flex-direction: column; 
-            justify-content: center; /* Mantiene todo agrupado en el centro */
+            justify-content: center; 
             gap: clamp(20px, 4vh, 40px);
             padding: clamp(20px, 5vh, 40px) clamp(30px, 4vw, 60px);
             overflow: hidden; box-sizing: border-box;
@@ -232,7 +266,6 @@ export default function AuthPage() {
             background: var(--bg); overflow: hidden; box-sizing: border-box;
           }
 
-          /* TÍTULO Y LOGO */
           .logo-container-desktop { display: flex; align-items: center; gap: clamp(10px, 1.5vw, 20px); margin-bottom: 0px; }
           .logo-img-desktop { width: clamp(55px, 5vw, 75px); height: clamp(55px, 5vw, 75px); object-fit: contain; flex-shrink: 0; }
           .title-desktop { font-size: clamp(2.2rem, 3vw, 3rem); line-height: 1.05; display: flex; flex-direction: column; margin: 0; font-weight: 800; text-align: left; }
@@ -248,7 +281,6 @@ export default function AuthPage() {
           
           .contact-text { font-size: clamp(0.75rem, 0.8vw, 0.9rem); margin-top: clamp(10px, 1.5vh, 20px); }
           
-          /* FORMULARIO */
           .login-wrapper { max-width: clamp(360px, 25vw, 420px); width: 100%; display: flex; flex-direction: column; }
           .login-box { padding: clamp(24px, 3vh, 32px) clamp(24px, 3vw, 32px); gap: clamp(16px, 2vh, 24px); border-radius: 16px; }
           .auth-form { gap: clamp(14px, 1.5vh, 20px); }
@@ -264,6 +296,23 @@ export default function AuthPage() {
 
       <main id="login-main">
         
+        {/* 🔥 BOTÓN FLOTANTE TEMA 🔥 */}
+        <button 
+          className="floating-theme-btn" 
+          title="Alternar tema"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {mounted && theme === 'dark' ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '22px', height: '22px' }}>
+              <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '22px', height: '22px' }}>
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            </svg>
+          )}
+        </button>
+
         {/* ========================================================= */}
         {/* LAYOUT MÓVIL Y TABLET (< 1024px)                            */}
         {/* ========================================================= */}
@@ -273,11 +322,10 @@ export default function AuthPage() {
               
               {isLogin && (
                 <div style={{ textAlign: 'center', marginBottom: '35px', width: '100%' }}>
-                  {/* TÍTULO RESPONSIVO MÓVIL */}
                   <div className="logo-container-mobile">
                     <img src="/icon.png" alt="Logo Mi Estado Académico" className="logo-img-mobile" />
                     <h1 className="logo title-mobile">
-                      <span style={{ color: 'white', whiteSpace: 'nowrap' }}>Mi Estado</span>
+                      <span style={{ color: 'var(--text-strong)', whiteSpace: 'nowrap' }}>Mi Estado</span>
                       <span style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>Académico</span>
                     </h1>
                   </div>
@@ -337,12 +385,12 @@ export default function AuthPage() {
                   )}
 
                   {!isLogin && (
-                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ background: 'var(--glass-bg)', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <span style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '2px', fontWeight: 'bold' }}>Requisitos de tu contraseña:</span>
                       {requirements.map((req, idx) => {
                         const isMet = req.test(password, confirmPassword);
                         return (
-                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: isMet ? 'white' : 'var(--muted)' }}>
+                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: isMet ? 'var(--text-strong)' : 'var(--muted)' }}>
                             <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: isMet ? '#10b981' : 'transparent', border: `1px solid ${isMet ? '#10b981' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                               {isMet && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                             </div>
@@ -415,7 +463,6 @@ export default function AuthPage() {
                   <span><strong>Gestión de Cursada:</strong> Agendá eventos, parciales y organizá tus horarios seleccionando comisiones reales.</span>
                 </li>
                 
-                {/* 🔥 BLOG MÓVIL 🔥 */}
                 <li>
                   <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -464,10 +511,9 @@ export default function AuthPage() {
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
                   <p className="contact-text" style={{ margin: 0 }}>
-                    Si no ves tu carrera, escribí un mail a <strong style={{ color: 'white' }}>mateogeffroy.dev@gmail.com</strong>
+                    Si no ves tu carrera, escribí un mail a <strong style={{ color: 'var(--text-strong)' }}>mateogeffroy.dev@gmail.com</strong>
                   </p>
 
-                  {/* 🔥 LINKS DE LEGALES MÓVIL 🔥 */}
                   <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', alignItems: 'center', fontSize: '0.8rem', flexWrap: 'wrap' }}>
                     <Link href="/terminos" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Términos y Condiciones</Link>
                     <span style={{ color: 'var(--border)' }}>|</span>
@@ -488,11 +534,10 @@ export default function AuthPage() {
           <section className="hero-col">
             <div className="hero-logo-container">
               
-              {/* TÍTULO RESPONSIVO ESCRITORIO */}
               <div className="logo-container-desktop">
                 <img src="/icon.png" alt="Logo Mi Estado Académico" className="logo-img-desktop" />
                 <h1 className="logo title-desktop">
-                  <span style={{ color: 'white', whiteSpace: 'nowrap' }}>Mi Estado</span>
+                  <span style={{ color: 'var(--text-strong)', whiteSpace: 'nowrap' }}>Mi Estado</span>
                   <span style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>Académico</span>
                 </h1>
               </div>
@@ -516,7 +561,6 @@ export default function AuthPage() {
                 <span><strong>Gestión de Cursada:</strong> Agendá eventos, parciales y organizá tus horarios seleccionando comisiones reales.</span>
               </li>
 
-              {/* 🔥 BLOG ESCRITORIO 🔥 */}
               <li>
                 <svg className="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -565,14 +609,13 @@ export default function AuthPage() {
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <p className="contact-text" style={{ margin: '15px 0 0 0' }}>
-                  Si no ves tu carrera, escribí un mail a <strong style={{ color: 'white' }}>mateogeffroy.dev@gmail.com</strong>
+                  Si no ves tu carrera, escribí un mail a <strong style={{ color: 'var(--text-strong)' }}>mateogeffroy.dev@gmail.com</strong>
                 </p>
                 
-                {/* 🔥 LINKS DE LEGALES ESCRITORIO 🔥 */}
                 <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', alignItems: 'center', fontSize: '0.85rem' }}>
-                  <Link href="/terminos" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>Términos y Condiciones</Link>
+                  <Link href="/terminos" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-strong)'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>Términos y Condiciones</Link>
                   <span style={{ color: 'var(--border)' }}>|</span>
-                  <Link href="/privacidad" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>Políticas de Privacidad</Link>
+                  <Link href="/privacidad" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-strong)'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>Políticas de Privacidad</Link>
                 </div>
               </div>
 
@@ -584,7 +627,7 @@ export default function AuthPage() {
               {isLogin && (
                 <div style={{ textAlign: 'center', marginBottom: '24px', width: '100%' }}>
                   <div className="desktop-form-title" style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                    <h2 style={{ color: 'white', fontSize: '2rem', marginBottom: '8px', fontWeight: 'bold' }}>
+                    <h2 style={{ color: 'var(--text-strong)', fontSize: '2rem', marginBottom: '8px', fontWeight: 'bold' }}>
                       ¡Bienvenido!
                     </h2>
                     <p style={{ color: 'var(--muted)', fontSize: '1.05rem', margin: 0 }}>
@@ -627,12 +670,12 @@ export default function AuthPage() {
                   )}
 
                   {!isLogin && (
-                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ background: 'var(--glass-bg)', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <span style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '2px', fontWeight: 'bold' }}>Requisitos de tu contraseña:</span>
                       {requirements.map((req, idx) => {
                         const isMet = req.test(password, confirmPassword);
                         return (
-                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: isMet ? 'white' : 'var(--muted)' }}>
+                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: isMet ? 'var(--text-strong)' : 'var(--muted)' }}>
                             <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: isMet ? '#10b981' : 'transparent', border: `1px solid ${isMet ? '#10b981' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                               {isMet && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                             </div>

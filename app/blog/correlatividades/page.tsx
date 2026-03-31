@@ -11,16 +11,16 @@ export default function CorrelatividadesPost() {
   return (
     <>
       <style>{`
-        .blog-content h2 { color: white; margin-top: 40px; font-size: 1.6rem; font-weight: 800; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .blog-content h2 { color: var(--text-strong); margin-top: 40px; font-size: 1.6rem; font-weight: 800; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .blog-content h3 { color: var(--cursando); margin-top: 30px; font-size: 1.3rem; font-weight: 700; }
         .blog-content p { margin-bottom: 20px; color: var(--muted); font-size: 1.1rem; line-height: 1.8; }
         .blog-content ul { margin-bottom: 20px; padding-left: 20px; color: var(--muted); }
         .blog-content li { margin-bottom: 12px; font-size: 1.05rem; }
-        .blog-content strong { color: white; }
+        .blog-content strong { color: var(--text-strong); }
         
         .highlight-box {
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid var(--border);
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
           border-left: 4px solid var(--aprobada);
           padding: 20px;
           border-radius: 12px;
@@ -33,14 +33,20 @@ export default function CorrelatividadesPost() {
           margin: 40px 0;
           flex-wrap: wrap;
         }
+        
         .collab-box {
           flex: 1;
           min-width: 300px;
           padding: 25px;
-          background: rgba(0, 229, 255, 0.05);
+          background: var(--glass-bg);
           border-radius: 16px;
           border-left: 4px solid var(--cursando);
+          border-top: 1px solid var(--glass-border);
+          border-right: 1px solid var(--glass-border);
+          border-bottom: 1px solid var(--glass-border);
+          transition: transform 0.2s;
         }
+        .collab-box:hover { transform: translateY(-5px); }
 
         @media (max-width: 600px) {
           .collab-box { min-width: 100%; }
@@ -115,7 +121,7 @@ export default function CorrelatividadesPost() {
               <div style={{ flex: 1, minWidth: '300px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                   <span style={{ 
-                    background: 'rgba(255,255,255,0.05)', color: 'var(--aprobada)', 
+                    background: 'var(--glass-bg)', color: 'var(--aprobada)', 
                     padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', 
                     fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px',
                     border: `1px solid var(--aprobada)`
@@ -124,13 +130,13 @@ export default function CorrelatividadesPost() {
                   </span>
                   <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>17 de Marzo, 2026</span>
                 </div>
-                <h1 style={{ color: 'white', fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', fontWeight: 900, lineHeight: 1.1, margin: 0 }}>
+                <h1 style={{ color: 'var(--text-strong)', fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', fontWeight: 900, lineHeight: 1.1, margin: 0 }}>
                   Correlatividades UTN: El mapa para <span style={{ color: 'var(--aprobada)' }}>no trabarte</span>
                 </h1>
               </div>
               
-              <Link href="/#blog">
-                <button className="btn-secondary">← Volver al Dashboard</button>
+              <Link href="/blog">
+                <button className="btn-secondary">← Volver al Blog</button>
               </Link>
             </div>
 
@@ -185,11 +191,11 @@ export default function CorrelatividadesPost() {
 
             <div className="collab-row">
               <div className="collab-box">
-                <strong style={{ color: 'white', display: 'block', marginBottom: '10px' }}>¿Dudas con el Plan?</strong>
+                <strong style={{ color: 'var(--cursando)', fontSize: '1.1rem', display: 'block', marginBottom: '10px' }}>¿Dudas con el Plan?</strong>
                 <span style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>Si encontrás algún error en las correlativas del Plan 2023, ¡avisame para corregirlo en el motor!</span>
               </div>
               <div className="collab-box">
-                <strong style={{ color: 'white', display: 'block', marginBottom: '10px' }}>Sumá tu experiencia</strong>
+                <strong style={{ color: 'var(--cursando)', fontSize: '1.1rem', display: 'block', marginBottom: '10px' }}>Sumá tu experiencia</strong>
                 <span style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>¿Te trabó alguna otra materia? Escribime para agregar tu caso a esta guía.</span>
               </div>
             </div>
@@ -201,12 +207,12 @@ export default function CorrelatividadesPost() {
             }}>
               <div style={{ 
                 width: '56px', height: '56px', borderRadius: '50%', background: 'var(--cursando)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', fontWeight: 'bold', fontSize: '1.4rem'
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111', fontWeight: 'bold', fontSize: '1.4rem'
               }}>
                 MG
               </div>
               <div>
-                <div style={{ color: 'white', fontWeight: 'bold', fontSize: '1.1rem' }}>Mateo Arturo Geffroy</div>
+                <div style={{ color: 'var(--text-strong)', fontWeight: 'bold', fontSize: '1.1rem' }}>Mateo Arturo Geffroy</div>
                 <div style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Analista de Sistemas y Estudiante de Ing. en Sistemas (UTN-FRLP)</div>
               </div>
             </div>

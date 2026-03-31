@@ -29,7 +29,7 @@ export default function MateriaPage() {
 
   if (!materia) {
     return (
-      <div style={{ textAlign: 'center', paddingTop: '150px', paddingBottom: '100px', color: 'white' }}>
+      <div style={{ textAlign: 'center', paddingTop: '150px', paddingBottom: '100px', color: 'var(--text-strong)' }}>
         <h2>Materia no encontrada</h2>
         <button className="btn-secondary" onClick={() => router.push('/cursada')} style={{ marginTop: '20px', whiteSpace: 'nowrap' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -101,8 +101,8 @@ export default function MateriaPage() {
           padding: 12px;
           border-radius: 8px;
           border: 1px solid var(--border);
-          background: rgba(0,0,0,0.2);
-          color: white;
+          background: var(--glass-bg);
+          color: var(--text-strong);
           outline: none;
           font-family: inherit;
         }
@@ -115,8 +115,8 @@ export default function MateriaPage() {
           padding: 12px;
           border-radius: 8px;
           border: 1px solid var(--border);
-          background: rgba(0,0,0,0.2);
-          color: white;
+          background: var(--glass-bg);
+          color: var(--text-strong);
           outline: none;
           cursor: pointer;
           font-family: inherit;
@@ -144,7 +144,7 @@ export default function MateriaPage() {
           
           <div style={{ flex: '1 1 0%', minWidth: '250px' }}>
             <h1 className="logo" style={{ fontSize: 'clamp(1.4rem, 6vw, 2.8rem)', marginBottom: '10px', textTransform: 'uppercase', lineHeight: '1.1' }}>
-              <span style={{ color: 'white' }}>{primerPalabra}</span> {restoNombre && <span style={{ color: 'var(--cursando)' }}>{restoNombre}</span>}
+              <span style={{ color: 'var(--text-strong)' }}>{primerPalabra}</span> {restoNombre && <span style={{ color: 'var(--cursando)' }}>{restoNombre}</span>}
             </h1>
             <p style={{ color: 'var(--muted)', fontSize: '1.1rem', margin: 0 }}>
               Nivel: {materia.level || 'Electiva'} • Carga horaria: {materia.hours}
@@ -170,7 +170,7 @@ export default function MateriaPage() {
             
             {/* Contenedor de Formulario Centrado y Responsivo */}
             <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-              <h2 style={{ color: 'white', fontSize: '1.2rem', marginBottom: '25px', fontWeight: 'bold' }}>+ Agendar Nuevo Evento</h2>
+              <h2 style={{ color: 'var(--text-strong)', fontSize: '1.2rem', marginBottom: '25px', fontWeight: 'bold' }}>+ Agendar Nuevo Evento</h2>
               
               <form onSubmit={handleAgregarEvento} className="event-form">
                 <input 
@@ -221,7 +221,7 @@ export default function MateriaPage() {
                   {eventosGuardados.map((ev: any) => (
                     <div key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--panel)', border: '1px solid var(--border)', padding: '20px', borderRadius: '16px', transition: 'transform 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={(e) => e.currentTarget.style.transform = 'translateX(5px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateX(0)'}>
                       <div>
-                        <div style={{ fontWeight: 'bold', color: 'white', fontSize: '1.1rem' }}>{ev.nombre}</div>
+                        <div style={{ fontWeight: 'bold', color: 'var(--text-strong)', fontSize: '1.1rem' }}>{ev.nombre}</div>
                         <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: '6px' }}>{ev.tipo}</div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -251,7 +251,7 @@ export default function MateriaPage() {
 
             {tieneComisiones && (
               <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-                <h2 style={{ color: 'white', fontSize: '1.2rem', marginBottom: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 style={{ color: 'var(--text-strong)', fontSize: '1.2rem', marginBottom: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                   Horarios de Cursada
                 </h2>
@@ -286,8 +286,8 @@ export default function MateriaPage() {
                             padding: '16px',
                             borderRadius: '12px',
                             border: comisionGuardada === comision.id ? '2px solid var(--cursando)' : '1px solid var(--border)',
-                            background: comisionGuardada === comision.id ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0,0,0,0.2)',
-                            color: 'white',
+                            background: comisionGuardada === comision.id ? 'rgba(59, 130, 246, 0.1)' : 'var(--glass-bg)',
+                            color: 'var(--text-strong)',
                             cursor: 'pointer',
                             display: 'flex',
                             flexDirection: 'column',
@@ -297,7 +297,7 @@ export default function MateriaPage() {
                         >
                           {/* Contenedor del Título y el Badge */}
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '12px' }}>
-                            <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: comisionGuardada === comision.id ? 'var(--cursando)' : 'white' }}>
+                            <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: comisionGuardada === comision.id ? 'var(--cursando)' : 'var(--text-strong)' }}>
                               Comisión {comision.id}
                             </span>
                             
@@ -319,7 +319,7 @@ export default function MateriaPage() {
 
                           {comision.dias.map((dia: any, index: number) => (
                             <div key={index} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px' }}>
-                              <span style={{ color: 'white' }}>{dia.nombre}</span>
+                              <span style={{ color: 'var(--text-strong)' }}>{dia.nombre}</span>
                               <span>{dia.inicio} - {dia.fin}</span>
                             </div>
                           ))}

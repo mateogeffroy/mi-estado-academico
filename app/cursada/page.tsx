@@ -173,7 +173,7 @@ export default function CursadaPage() {
     <>
       <style>{`
         .calendar-nav-btn {
-          background: transparent; border: none; color: white; display: flex;
+          background: transparent; border: none; color: var(--text-strong); display: flex;
           align-items: center; justify-content: center; cursor: pointer;
           padding: 8px; opacity: 0.6; transition: transform 0.2s ease, opacity 0.2s ease;
         }
@@ -221,43 +221,8 @@ export default function CursadaPage() {
       
       <main style={{ paddingBottom: '80px', display: 'flex', flexDirection: 'column', gap: '40px', minHeight: '100vh' }}>
         
-        {/* ANUNCIO TOP (Móvil) (COMENTADO TEMPORALMENTE)
-        <div className="mobile-ad-container">
-          <AdBanner dataAdSlot="CURS_MOB_TOP" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
-        </div>
-        */}
-
-        {/* CONTENEDOR RELATIVO (Ancla para los anuncios absolutos) */}
         <div style={{ position: 'relative', width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           
-          {/* ==========================================
-              LOS 6 ANUNCIOS ESTRATÉGICAMENTE REPARTIDOS (COMENTADOS)
-              ========================================== */}
-          {/*
-          <div className="scatter-ad-left" style={{ top: '2%' }}>
-            <AdBanner dataAdSlot="CURS_L_1" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-left" style={{ top: '40%' }}>
-            <AdBanner dataAdSlot="CURS_L_2" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-left" style={{ top: '75%' }}>
-            <AdBanner dataAdSlot="CURS_L_3" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-
-          <div className="scatter-ad-right" style={{ top: '2%' }}>
-            <AdBanner dataAdSlot="CURS_R_1" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-right" style={{ top: '40%' }}>
-            <AdBanner dataAdSlot="CURS_R_2" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          <div className="scatter-ad-right" style={{ top: '75%' }}>
-            <AdBanner dataAdSlot="CURS_R_3" dataAdFormat="vertical" style={{ height: '100%' }} />
-          </div>
-          */}
-
-          {/* ==========================================
-              CONTENIDO CENTRAL
-              ========================================== */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}>
             
             {/* --- ENCABEZADO --- */}
@@ -297,7 +262,7 @@ export default function CursadaPage() {
                         }}
                         style={{
                           padding: '8px 16px', fontSize: '0.85rem', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease',
-                          color: filtroCuatri === opcion ? 'white' : 'var(--muted)',
+                          color: filtroCuatri === opcion ? '#fff' : 'var(--muted)',
                           background: filtroCuatri === opcion ? 'var(--cursando)' : 'transparent',
                           boxShadow: filtroCuatri === opcion ? '0 2px 10px rgba(0,0,0,0.2)' : 'none'
                         }}
@@ -316,21 +281,21 @@ export default function CursadaPage() {
                   <div className="horario-grid">
                     {diasMostrar.map((dia) => (
                       <div key={dia} style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
-                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', textAlign: 'center', fontWeight: 'bold', color: 'white', borderBottom: '1px solid var(--border)' }}>
+                        <div style={{ background: 'var(--glass-bg)', padding: '15px', textAlign: 'center', fontWeight: 'bold', color: 'var(--text-strong)', borderBottom: '1px solid var(--border)' }}>
                           {dia}
                         </div>
                         <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '15px', minHeight: '120px' }}>
                           {horariosSemanales[dia].map((clase: any) => (
-                            <div key={clase.id} style={{ background: clase.colorFondo, padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.03)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                            <div key={clase.id} style={{ background: clase.colorFondo, padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
                               <div style={{ display: 'grid', gridTemplateColumns: '45px 3px 1fr', gap: '12px', alignItems: 'stretch' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', fontFamily: 'Space Mono, monospace', fontSize: '0.8rem', color: 'var(--muted)', padding: '2px 0' }}>
-                                  <span style={{ color: 'white', fontWeight: 'bold' }}>{clase.inicio}</span>
+                                  <span style={{ color: 'var(--text-strong)', fontWeight: 'bold' }}>{clase.inicio}</span>
                                   <span style={{ fontSize: '0.7rem', opacity: 0.6, margin: 'auto 0' }}>a</span>
-                                  <span style={{ color: 'white', fontWeight: 'bold' }}>{clase.fin}</span>
+                                  <span style={{ color: 'var(--text-strong)', fontWeight: 'bold' }}>{clase.fin}</span>
                                 </div>
                                 <div style={{ background: clase.colorBorde, borderRadius: '4px', width: '100%', opacity: 0.9 }}></div>
                                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2px 0' }}>
-                                  <div style={{ fontWeight: 'bold', color: 'white', fontSize: '0.95rem', lineHeight: 1.2 }}>
+                                  <div style={{ fontWeight: 'bold', color: 'var(--text-strong)', fontSize: '0.95rem', lineHeight: 1.2 }}>
                                     {clase.materiaLimpia} <span style={{ fontSize: '0.75rem', color: clase.colorBorde, whiteSpace: 'nowrap' }}>{clase.cuatrimestre}</span>
                                   </div>
                                   <div style={{ color: 'var(--muted)', fontSize: '0.85rem', fontFamily: 'Space Mono, monospace', marginTop: '6px' }}>
@@ -348,18 +313,12 @@ export default function CursadaPage() {
               </div>
             ) : (
               <div style={{ padding: '30px', textAlign: 'center', background: 'var(--panel)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                <h3 style={{ color: 'white', fontSize: '1.2rem', marginBottom: '10px' }}>Horario Semanal</h3>
+                <h3 style={{ color: 'var(--text-strong)', fontSize: '1.2rem', marginBottom: '10px' }}>Horario Semanal</h3>
                 <p style={{ color: 'var(--muted)', margin: 0 }}>
                   Las comisiones y horarios oficiales para tu carrera se agregarán próximamente. ¡Podés seguir esta seccion para agendar tus parciales!
                 </p>
               </div>
             )}
-
-            {/* ANUNCIO MID 1 (Móvil) (COMENTADO TEMPORALMENTE)
-            <div className="mobile-ad-container">
-              <AdBanner dataAdSlot="CURS_MOB_MID_1" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
-            </div>
-            */}
 
             {/* --- AGENDA Y CALENDARIO --- */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '40px', alignItems: 'flex-start' }}>
@@ -378,10 +337,10 @@ export default function CursadaPage() {
                       <Link href={`/materia/${evento.materiaId}`} key={evento.id} style={{ textDecoration: 'none' }}>
                         <div className="event-card-modern">
                           <div>
-                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: 'white' }}>{evento.materia}</div>
+                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: 'var(--text-strong)' }}>{evento.materia}</div>
                             <div style={{ fontSize: '0.85rem', color: getEventColor(evento.tipo), marginTop: '4px', fontWeight: 'bold' }}>{evento.tipo}: {evento.nombre}</div>
                           </div>
-                          <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '10px 15px', borderRadius: '8px', fontFamily: 'Space Mono', fontSize: '1.1rem', color: 'white', fontWeight: 'bold' }}>
+                          <div style={{ background: 'var(--glass-bg)', padding: '10px 15px', borderRadius: '8px', fontFamily: 'Space Mono', fontSize: '1.1rem', color: 'var(--text-strong)', fontWeight: 'bold' }}>
                             {formatearFecha(evento.fecha)}
                           </div>
                         </div>
@@ -391,12 +350,12 @@ export default function CursadaPage() {
                 </div>
               </div>
 
-              <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '24px', padding: 'clamp(15px, 5vw, 30px)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+              <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '24px', padding: 'clamp(15px, 5vw, 30px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
                   <button onClick={handlePrevMonth} className="calendar-nav-btn" title="Mes anterior">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                   </button>
-                  <h2 style={{ color: 'white', fontSize: '1.3rem', margin: 0, fontWeight: 'bold', textTransform: 'capitalize' }}>
+                  <h2 style={{ color: 'var(--text-strong)', fontSize: '1.3rem', margin: 0, fontWeight: 'bold', textTransform: 'capitalize' }}>
                     {nombreMesActual}
                   </h2>
                   <button onClick={handleNextMonth} className="calendar-nav-btn" title="Mes siguiente">
@@ -432,8 +391,8 @@ export default function CursadaPage() {
                         style={{ 
                           position: 'relative', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 'clamp(0.85rem, 3vw, 1rem)', borderRadius: '12px',
-                          background: esHoy ? 'var(--cursando)' : (tieneEvento ? 'rgba(255,255,255,0.03)' : 'transparent'), 
-                          color: esHoy ? 'black' : 'var(--text)', fontWeight: esHoy || tieneEvento ? 'bold' : 'normal',
+                          background: esHoy ? 'var(--cursando)' : (tieneEvento ? 'var(--glass-bg)' : 'transparent'), 
+                          color: esHoy ? '#fff' : 'var(--text-strong)', fontWeight: esHoy || tieneEvento ? 'bold' : 'normal',
                           border: tieneEvento && !esHoy ? '1px solid var(--cursando)' : '1px solid transparent',
                           cursor: tieneEvento ? 'pointer' : 'default', transition: 'all 0.2s ease'
                         }}
@@ -441,7 +400,7 @@ export default function CursadaPage() {
                         {dia}
                         {isHovered && tieneEvento && (
                           <div className="calendar-tooltip-card">
-                            <div style={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '8px', fontSize: '0.95rem' }}>
+                            <div style={{ color: 'var(--text-strong)', borderBottom: '1px solid var(--border)', paddingBottom: '6px', marginBottom: '8px', fontSize: '0.95rem' }}>
                               {`${nombreMesActual.split(' ')[0]} ${dia}`}
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -449,7 +408,7 @@ export default function CursadaPage() {
                                 const [mName, eType, eName] = evStr.split('|');
                                 return (
                                   <div key={idx} style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <div style={{ fontSize: '0.9rem', color: 'white', lineHeight: 1.2 }}>{mName}</div>
+                                    <div style={{ fontSize: '0.9rem', color: 'var(--text-strong)', lineHeight: 1.2 }}>{mName}</div>
                                     <div style={{ fontSize: '0.8rem', color: getEventColor(eType), fontWeight: 'bold' }}>{eType}: {eName}</div>
                                   </div>
                                 );
@@ -464,13 +423,6 @@ export default function CursadaPage() {
               </div>
             </div>
 
-            {/* ANUNCIO MID 2 (Móvil) (COMENTADO TEMPORALMENTE)
-            <div className="mobile-ad-container">
-              <AdBanner dataAdSlot="CURS_MOB_MID_2" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
-            </div>
-            */}
-
-            {/* --- MATERIAS EN CURSO --- */}
             {/* --- MATERIAS EN CURSO --- */}
             <div id="gestionar-materias" style={{ scrollMarginTop: '120px' }}>
               <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', marginBottom: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -484,9 +436,7 @@ export default function CursadaPage() {
                    </div>
                 ) : (
                   cursando.map((m: any) => {
-                    // Verificamos si la materia tiene comisiones en su plan
                     const tieneComisiones = m.comisiones && m.comisiones.length > 0;
-                    // Buscamos si el usuario ya seleccionó una comisión para esta materia
                     const comisionSeleccionada = detalles[m.id]?.comision;
 
                     return (
@@ -496,7 +446,7 @@ export default function CursadaPage() {
                             {m.level ? `Nivel ${m.level}` : 'Electiva'}
                           </div>
                           
-                          <div style={{ fontWeight: '700', color: 'white', marginTop: '10px', fontSize: '1.25rem', lineHeight: 1.3, flexGrow: 1, fontFamily: 'Syne, sans-serif' }}>
+                          <div style={{ fontWeight: '700', color: 'var(--text-strong)', marginTop: '10px', fontSize: '1.25rem', lineHeight: 1.3, flexGrow: 1, fontFamily: 'Syne, sans-serif' }}>
                             {m.name}
                           </div>
                           
@@ -508,7 +458,6 @@ export default function CursadaPage() {
                                 <span style={{ color: '#ef4444' }}>No hay comisión seleccionada</span>
                               )
                             ) : (
-                              /* Guión invisible para mantener la altura exacta de la tarjeta */
                               <span style={{ visibility: 'hidden' }}>-</span>
                             )}
                           </div>
@@ -522,12 +471,6 @@ export default function CursadaPage() {
 
           </div>
         </div>
-
-        {/* ANUNCIO BOT (Móvil) (COMENTADO TEMPORALMENTE)
-        <div className="mobile-ad-container">
-          <AdBanner dataAdSlot="CURS_MOB_BOT" dataAdFormat="horizontal" style={{ minHeight: '100px' }} />
-        </div>
-        */}
 
       </main>
     </>

@@ -11,22 +11,22 @@ export default function ComoSeHizoPost() {
   return (
     <>
       <style>{`
-        .blog-content h2 { color: white; margin-top: 45px; font-size: 1.6rem; font-weight: 800; line-height: 1.3; }
-        .blog-content h3 { color: white; margin-top: 35px; font-size: 1.3rem; font-weight: 700; }
+        .blog-content h2 { color: var(--text-strong); margin-top: 45px; font-size: 1.6rem; font-weight: 800; line-height: 1.3; }
+        .blog-content h3 { color: var(--text-strong); margin-top: 35px; font-size: 1.3rem; font-weight: 700; }
         .blog-content p { margin-bottom: 24px; font-size: 1.05rem; }
         .blog-content ul { margin-bottom: 24px; padding-left: 20px; }
         .blog-content li { margin-bottom: 12px; line-height: 1.6; }
-        .blog-content strong { color: white; }
+        .blog-content strong { color: var(--text-strong); }
         
         .code-snippet { 
-          background: rgba(0,0,0,0.4); 
+          background: var(--glass-bg); 
           padding: 20px; 
           border-radius: 12px; 
           font-family: 'Space Mono', monospace; 
           font-size: 0.9rem; 
-          border: 1px solid var(--border);
+          border: 1px solid var(--glass-border);
           margin: 25px 0;
-          color: #a78bfa;
+          color: var(--accent);
           overflow-x: auto;
         }
 
@@ -41,9 +41,12 @@ export default function ComoSeHizoPost() {
           flex: 1;
           min-width: 300px;
           padding: 25px;
-          background: rgba(0, 229, 255, 0.05);
+          background: var(--glass-bg);
           border-radius: 16px;
           border-left: 4px solid var(--cursando);
+          border-top: 1px solid var(--glass-border);
+          border-right: 1px solid var(--glass-border);
+          border-bottom: 1px solid var(--glass-border);
           transition: transform 0.2s;
         }
         .collab-box:hover { transform: translateY(-5px); }
@@ -122,7 +125,7 @@ export default function ComoSeHizoPost() {
               <div style={{ flex: 1, minWidth: '300px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                   <span style={{ 
-                    background: 'rgba(255,255,255,0.05)', color: 'var(--cursando)', 
+                    background: 'var(--glass-bg)', color: 'var(--cursando)', 
                     padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', 
                     fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px',
                     border: `1px solid var(--cursando)`
@@ -131,7 +134,7 @@ export default function ComoSeHizoPost() {
                   </span>
                   <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>16 de Marzo, 2026</span>
                 </div>
-                <h1 style={{ color: 'white', fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, lineHeight: 1.1, margin: 0 }}>
+                <h1 style={{ color: 'var(--text-strong)', fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, lineHeight: 1.1, margin: 0 }}>
                   Detrás del código: La evolución de <span style={{ color: 'var(--cursando)' }}>Mi Estado Académico</span>
                 </h1>
               </div>
@@ -214,7 +217,7 @@ export default function ComoSeHizoPost() {
 
               {/* SECCIÓN DE LINKS A REPOSITORIOS */}
               <div style={{ marginTop: '50px', padding: '30px', background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px' }}>
-                <h3 style={{ margin: 0, fontSize: '1.2rem' }}>🔗 Links a los repositorios</h3>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text-strong)' }}>🔗 Links a los repositorios</h3>
                 <p style={{ fontSize: '0.95rem', marginTop: '10px' }}>
                   Si te interesa revisar el código fuente o auditar cómo evolucionó la arquitectura del proyecto, podés acceder a los repositorios oficiales en GitHub:
                 </p>
@@ -249,12 +252,12 @@ export default function ComoSeHizoPost() {
             }}>
               <div style={{ 
                 width: '64px', height: '64px', borderRadius: '50%', background: 'var(--cursando)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', fontWeight: 'bold', fontSize: '1.5rem', flexShrink: 0
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111', fontWeight: 'bold', fontSize: '1.5rem', flexShrink: 0
               }}>
                 MG
               </div>
               <div>
-                <div style={{ color: 'white', fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '4px' }}>Mateo Arturo Geffroy</div>
+                <div style={{ color: 'var(--text-strong)', fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '4px' }}>Mateo Arturo Geffroy</div>
                 <div style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: '1.4' }}>Desarrollador Full-Stack y Creador de Mi Estado Académico. Estudiante de Ingeniería en Sistemas de Información (UTN-FRLP).</div>
               </div>
             </div>

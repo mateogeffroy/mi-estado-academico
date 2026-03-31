@@ -138,7 +138,7 @@ export default function Dashboard() {
 
         .no-hover-card:hover {
           transform: none !important;
-          border-color: rgba(255, 255, 255, 0.1) !important;
+          border-color: var(--glass-border) !important;
           box-shadow: none !important;
         }
 
@@ -152,7 +152,7 @@ export default function Dashboard() {
         .tour-overlay {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0, 0, 0, 0.85);
+          background: var(--overlay-bg);
           z-index: 9998;
           backdrop-filter: blur(3px);
           transition: opacity 0.3s ease;
@@ -178,7 +178,7 @@ export default function Dashboard() {
           border-radius: 16px;
           padding: 24px;
           z-index: 10000;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
           display: flex;
           flex-direction: column;
           gap: 16px;
@@ -199,7 +199,7 @@ export default function Dashboard() {
           <div className="tour-dialog">
             {tourStep === 1 && (
               <>
-                <h3 style={{ color: 'white', margin: 0, fontSize: '1.3rem' }}>¡Bienvenido/a!</h3>
+                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.3rem' }}>¡Bienvenido/a!</h3>
                 <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
                   Te preparamos un recorrido rápido para que sepas cómo sacarle el máximo provecho a la plataforma.
                 </p>
@@ -212,7 +212,7 @@ export default function Dashboard() {
 
             {tourStep === 2 && (
               <>
-                <h3 style={{ color: 'white', margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
                   Plan de Estudios
                 </h3>
@@ -228,7 +228,7 @@ export default function Dashboard() {
 
             {tourStep === 3 && (
               <>
-                <h3 style={{ color: 'white', margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   Mi Cursada
                 </h3>
@@ -244,7 +244,7 @@ export default function Dashboard() {
 
             {tourStep === 4 && (
               <>
-                <h3 style={{ color: 'white', margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aprobada)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   Materias Aprobadas
                 </h3>
@@ -260,7 +260,7 @@ export default function Dashboard() {
 
             {tourStep === 5 && (
               <>
-                <h3 style={{ color: 'white', margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
                   Blog y Novedades
                 </h3>
@@ -276,7 +276,7 @@ export default function Dashboard() {
 
             {tourStep === 6 && (
               <>
-                <h3 style={{ color: 'white', margin: 0, fontSize: '1.3rem' }}>¡Gracias por registrarte!</h3>
+                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.3rem' }}>¡Gracias por registrarte!</h3>
                 <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
                   Si la plataforma te resulta útil, podés apoyar el proyecto invitándome un Cafecito. ¡Éxitos!
                 </p>
@@ -299,13 +299,13 @@ export default function Dashboard() {
           <section id="progreso" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '30px', marginBottom: '40px', width: '100%' }}>
             <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px', padding: '0 16px' }}>
               <div style={{ textAlign: 'center' }}>
-                <h2 style={{ fontSize: 'clamp(1rem, 4vw, 1.6rem)', color: 'white', margin: '0 0 8px 0', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <h2 style={{ fontSize: 'clamp(1rem, 4vw, 1.6rem)', color: 'var(--text-strong)', margin: '0 0 8px 0', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   ¡Hola, <span style={{ color: 'var(--cursando)' }}>{primerNombre}</span>! <span className="wave">👋</span>
                 </h2>
                 
                 {/* TÍTULO APILADO EN DOS RENGLONES */}
                 <h1 className="logo-landing" style={{ fontWeight: 900, marginBottom: '10px', lineHeight: 1.1, letterSpacing: '-1px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ color: 'white', whiteSpace: 'nowrap' }}>MI ESTADO</span>
+                  <span style={{ color: 'var(--text-strong)', whiteSpace: 'nowrap' }}>MI ESTADO</span>
                   <span style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>ACADÉMICO</span>
                 </h1>
                 
@@ -314,7 +314,7 @@ export default function Dashboard() {
 
               <div className="premium-card no-hover-card" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '24px', padding: 'clamp(16px, 5vw, 36px)' }}>
                 <div style={{ textAlign: 'center', flex: '1 1 160px' }}>
-                  <div style={{ fontSize: 'clamp(3rem, 14vw, 6rem)', fontWeight: 900, color: 'white', lineHeight: 0.9, display: 'flex', alignItems: 'baseline', justifyContent: 'center', fontVariantNumeric: 'tabular-nums' }}>
+                  <div style={{ fontSize: 'clamp(3rem, 14vw, 6rem)', fontWeight: 900, color: 'var(--text-strong)', lineHeight: 0.9, display: 'flex', alignItems: 'baseline', justifyContent: 'center', fontVariantNumeric: 'tabular-nums' }}>
                     <CountUp from={0} to={stats.porcentaje} duration={0.2} />
                     <span style={{ fontSize: 'clamp(1.5rem, 6vw, 3rem)', marginLeft: '5px', color: 'var(--muted)' }}>%</span>
                   </div>
@@ -335,12 +335,10 @@ export default function Dashboard() {
 
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link href="/plan" style={{ textDecoration: 'none', flex: '1 1 160px', maxWidth: '280px' }}>
-                  {/* 🔥 IDENTIFICADOR DEL TOUR 🔥 */}
                   <button id="tour-btn-plan" className={`btn-primary ${tourStep === 2 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold' }}>Plan de Estudios</button>
                 </Link>
                 <Link href="/cursada" style={{ textDecoration: 'none', flex: '1 1 160px', maxWidth: '280px' }}>
-                  {/* 🔥 IDENTIFICADOR DEL TOUR 🔥 */}
-                  <button id="tour-btn-cursada" className={`${tourStep === 3 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold', background: 'var(--panel)', border: '1px solid var(--border)', color: 'white', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>Mi Cursada</button>
+                  <button id="tour-btn-cursada" className={`${tourStep === 3 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold', background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text-strong)', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>Mi Cursada</button>
                 </Link>
               </div>
             </div>
@@ -354,7 +352,6 @@ export default function Dashboard() {
         <div className="section-row">
 
           <section style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
-            {/* 🔥 IDENTIFICADOR DEL TOUR (A LA CAJA CON FONDO) 🔥 */}
             <div id="tour-sec-aprobadas" className={`${tourStep === 4 ? 'tour-highlighted' : ''}`} style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)' }}>
               <h3 style={{ color: 'var(--aprobada)', marginBottom: '16px', fontSize: '1.1rem', fontWeight: 700 }}>Materias aprobadas</h3>
               {aprobadasOrdenadas.length === 0 ? (
@@ -363,7 +360,7 @@ export default function Dashboard() {
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                   <AnimatedList items={aprobadasOrdenadas} renderItem={(m) => (
                     <div className="list-row" style={{ cursor: 'pointer', padding: '12px', marginBottom: '8px' }} onClick={() => { setSelectedMateria({ id: m.id, name: m.name }); setIsGradeModalOpen(true); }}>
-                      <span style={{ flex: 1, fontSize: '0.92rem', fontWeight: 600 }}>{m.name}</span>
+                      <span style={{ flex: 1, fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-strong)' }}>{m.name}</span>
                       <span style={{ color: detalles[m.id]?.notaFinal ? 'var(--aprobada)' : 'var(--muted)', fontWeight: 'bold', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
                         {detalles[m.id]?.notaFinal ? `Nota: ${detalles[m.id].notaFinal}` : '—'}
                       </span>
@@ -373,7 +370,7 @@ export default function Dashboard() {
               )}
               <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: 'var(--muted)', fontSize: '1rem', fontWeight: 'bold' }}>Promedio</span>
-                <span style={{ color: 'white', fontSize: '2rem', fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{stats.promedio}</span>
+                <span style={{ color: 'var(--text-strong)', fontSize: '2rem', fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{stats.promedio}</span>
               </div>
             </div>
           </section>
@@ -387,9 +384,8 @@ export default function Dashboard() {
           <div className="section-row">
 
             <section style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
-              {/* 🔥 IDENTIFICADOR DEL TOUR (A LA CAJA CON FONDO PARA QUE DESTAQUE) 🔥 */}
               <div id="tour-sec-blog" className={`${tourStep === 5 ? 'tour-highlighted' : ''}`} style={{ background: 'var(--bg)', borderRadius: '20px', padding: tourStep === 5 ? '20px' : '0' }}>
-                <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h3 style={{ color: 'var(--text-strong)', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
                   Blog y Novedades
                 </h3>
@@ -402,13 +398,13 @@ export default function Dashboard() {
                           <div style={{ color: post.tagColor, fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '1px' }}>
                             {post.tag}
                           </div>
-                          <h4 style={{ color: 'white', margin: '0 0 12px 0', fontSize: '1.1rem', lineHeight: '1.3' }}>
+                          <h4 style={{ color: 'var(--text-strong)', margin: '0 0 12px 0', fontSize: '1.1rem', lineHeight: '1.3' }}>
                             {post.titulo}
                           </h4>
                           <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: '1.5', margin: '0 0 20px 0', flex: 1 }}>
                             {post.descripcion}
                           </p>
-                          <div style={{ color: 'white', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <div style={{ color: 'var(--text-strong)', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             Leer artículo 
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={post.iconColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                           </div>

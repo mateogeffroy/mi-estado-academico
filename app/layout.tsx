@@ -4,6 +4,7 @@ import { PlanProvider } from '../src/context/PlanContext';
 import LayoutClient from '../src/components/LayoutClient';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/react';
+import { ThemeProvider } from '../src/components/ThemeProvider';
 
 // 🔥 METADATOS SEO OPTIMIZADOS PARA GOOGLE, BING Y REDES SOCIALES
 export const metadata: Metadata = {
@@ -36,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body style={{ position: 'relative' }}>
         
         {/* 🔥 SCRIPT DE ADSENSE: Activo para que Google pueda verificar el sitio 🔥 */}
@@ -46,12 +47,13 @@ export default function RootLayout({
           crossOrigin="anonymous"
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3038983835600086"
         />
-
-        <PlanProvider>
-          <LayoutClient>
-            {children}
-          </LayoutClient>
-        </PlanProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <PlanProvider>
+            <LayoutClient>
+              {children}
+            </LayoutClient>
+          </PlanProvider>
+        </ThemeProvider>
 
         <Analytics /> 
       </body>
