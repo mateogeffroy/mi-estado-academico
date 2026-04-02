@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
 import ConfirmModal from '../../src/components/ConfirmModal';
+import SimuladorModal from '../../src/components/SimuladorModal';
 import AdBanner from '../../src/components/AdBanner'; 
 
 export default function PlanDeEstudios() {
@@ -17,6 +18,8 @@ export default function PlanDeEstudios() {
   const [tooltip, setTooltip] = useState({ visible: false, content: null as React.ReactNode, x: 0, y: 0 });
   const [menu, setMenu] = useState({ isOpen: false, x: 0, y: 0, subjectId: null as string | null });
   const [blockedShake, setBlockedShake] = useState<string | null>(null);
+
+  const [isSimuladorOpen, setIsSimuladorOpen] = useState(false);
 
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
@@ -546,19 +549,52 @@ export default function PlanDeEstudios() {
       <main id="main-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '130px', gap: '40px' }}>
         
         <div style={{ maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '0 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '15px' }}>
+            
             <div className="header-titles">
               <h1 className="logo">Plan de <span>estudios</span></h1>
             </div>
-            <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
-              <button className="btn-secondary" style={{ whiteSpace: 'nowrap' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m12 19-7-7 7-7"/>
-                  <path d="M19 12H5"/>
-                </svg>
-                Volver al inicio
+            
+            {/* 🔥 BOTONES AGRUPADOS PARA QUE ESTÉN JUNTOS EN MOBILE 🔥 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button 
+                onClick={() => setIsSimuladorOpen(true)}
+                style={{ 
+                  background: 'rgba(59, 130, 246, 0.1)', 
+                  border: '1px solid rgba(59, 130, 246, 0.3)', 
+                  color: 'var(--cursando)', 
+                  padding: '8px 12px', 
+                  borderRadius: '8px', 
+                  fontSize: '0.85rem', 
+                  fontWeight: 'bold', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = 'var(--cursando)'; e.currentTarget.style.color = '#fff'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; e.currentTarget.style.color = 'var(--cursando)'; }}
+                title="Proyectá qué materias destrabás"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m12 16 4-4-4-4"/><path d="M8 12h8"/></svg>
+                Simulador
               </button>
-            </Link>
+
+              <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
+                <button className="btn-secondary" style={{ whiteSpace: 'nowrap', padding: '8px 12px' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m12 19-7-7 7-7"/>
+                    <path d="M19 12H5"/>
+                  </svg>
+                  {/* Para que no ocupe tanto en celular, en móvil le podemos dejar "Volver" */}
+                  <span className="desktop-only" style={{ display: 'inline' }}>Volver al inicio</span>
+                  <span className="mobile-only" style={{ display: 'inline' }}>Volver</span>
+                </button>
+              </Link>
+            </div>
+            
           </div>
         </div>
 
@@ -683,6 +719,14 @@ export default function PlanDeEstudios() {
           isDanger={modalConfig.isDanger}
           onConfirm={modalConfig.onConfirm}
           onCancel={closeModal}
+        />
+
+        {/* 🔥 COMPONENTE SIMULADOR 🔥 */}
+        <SimuladorModal 
+          isOpen={isSimuladorOpen}
+          onClose={() => setIsSimuladorOpen(false)}
+          materias={materias}
+          ALL={ALL}
         />
 
       </main>

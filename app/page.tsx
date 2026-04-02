@@ -3,17 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../src/context/PlanContext';
-import AnimatedList from '../src/components/AnimatedList';
 import CountUp from '../src/components/CountUp';
-import GradeModal from '../src/components/GradeModal';
 import { supabase } from '../src/lib/supabase';
 import AdBanner from '../src/components/AdBanner'; 
 
 export default function Dashboard() {
-  const { materias, stats, detalles, actualizarDetalleMateria, user, careerData, careerId } = usePlan();
-  const { ALL, careerInfo } = careerData;
-  const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
-  const [selectedMateria, setSelectedMateria] = useState<{ id: string; name: string } | null>(null);
+  // 🔥 Limpiamos lo que ya no usamos acá porque se mudó al Perfil 🔥
+  const { stats, user, careerData, careerId } = usePlan();
   
   const [nombreDinamico, setNombreDinamico] = useState('');
   
@@ -55,7 +51,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (tourStep === 2) document.getElementById('tour-btn-plan')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     if (tourStep === 3) document.getElementById('tour-btn-cursada')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    if (tourStep === 4) document.getElementById('tour-sec-aprobadas')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (tourStep === 4) document.getElementById('tour-btn-perfil')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 🔥 Modificado al Perfil 🔥
     if (tourStep === 5) document.getElementById('tour-sec-blog')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     if (tourStep === 6 || tourStep === 1) window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [tourStep]);
@@ -70,13 +66,6 @@ export default function Dashboard() {
   };
 
   const primerNombre = nombreDinamico || user?.user_metadata?.full_name?.split(' ')[0] || 'Estudiante';
-
-  const aprobadasOrdenadas = ALL.filter((s: any) =>
-    materias[s.id] === 'aprobada' &&
-    !s.isElectivePlaceholder &&
-    s.id !== 'SEM' &&
-    s.id !== 'PPS'
-  ).sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
   const NOVEDADES = [
     {
@@ -107,7 +96,7 @@ export default function Dashboard() {
       titulo: 'Creando Frontends Premium con Antigravity + Skills',
       descripcion: 'Una guía metodológica para transformar los diseños aburridos de IA en interfaces estéticas y originales utilizando skills de desarrollo.',
       iconColor: 'var(--cursando)',
-      targetCareers: ['utn-sistemas-2023'] // O las carreras que quieras
+      targetCareers: ['utn-sistemas-2023'] 
     },
   ];
 
@@ -185,7 +174,6 @@ export default function Dashboard() {
           text-align: center;
         }
 
-        /* En resoluciones altas, acercamos el popup un poco más al centro para que no quede tan lejos */
         @media (min-width: 1024px) {
           .tour-dialog { bottom: 15%; }
         }
@@ -217,7 +205,7 @@ export default function Dashboard() {
                   Plan de Estudios
                 </h3>
                 <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
-                  Acá podés visualizar tu plan de estudios completo, ver las correlatividades claras y marcar tus materias como <strong>aprobadas</strong>, <strong>cursadas</strong> o <strong>cursando</strong>. Esta última opción habilita funcionalidades exclusivas para organizar tu cursada.
+                  Acá podés visualizar tu plan de estudios completo, ver las correlatividades claras y marcar tus materias como <strong>aprobadas</strong>, <strong>cursadas</strong> o <strong>cursando</strong>.
                 </p>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                   <button onClick={skipTour} style={{ flex: 1, padding: '12px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: '10px', fontWeight: 'bold' }}>Omitir</button>
@@ -233,7 +221,7 @@ export default function Dashboard() {
                   Mi Cursada
                 </h3>
                 <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
-                  En esta sección podés seleccionar las comisiones de las materias que marcaste como <strong>cursando</strong>, registrar eventos como examenes o exposiciones y ver tu horario semanal armarse solo.
+                  Las materias que marcaste como <strong>cursando</strong> vienen acá. Podés seleccionar sus comisiones, registrar eventos (parciales/TPs) y tu horario semanal se arma solo.
                 </p>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                   <button onClick={skipTour} style={{ flex: 1, padding: '12px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: '10px', fontWeight: 'bold' }}>Omitir</button>
@@ -242,14 +230,15 @@ export default function Dashboard() {
               </>
             )}
 
+            {/* 🔥 PASO 4 ACTUALIZADO PARA HABLAR DEL PERFIL 🔥 */}
             {tourStep === 4 && (
               <>
                 <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aprobada)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  Materias Aprobadas
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aprobada)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Mi Perfil
                 </h3>
                 <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
-                  Acá vas a ver tu progreso. Podés ingresar las notas finales de las materias marcadas como <strong>aprobadas</strong> para ver tu promedio general.
+                  Así como las cursadas tienen su espacio, en tu <strong>Perfil</strong> vas a gestionar las materias <strong>Aprobadas</strong>. Ahí podés cargar las notas de tus finales para ver tu promedio y cambiar la configuración de tu carrera.
                 </p>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                   <button onClick={skipTour} style={{ flex: 1, padding: '12px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: '10px', fontWeight: 'bold' }}>Omitir</button>
@@ -265,7 +254,7 @@ export default function Dashboard() {
                   Blog y Novedades
                 </h3>
                 <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
-                  En este espacio voy a publicar blogs y novedades sobre la plataforma. ¡Próximamente la comunidad va a poder subir sus propios posteos!
+                  En este espacio publico artículos, guías y novedades sobre la plataforma para tu carrera. ¡Próximamente la comunidad va a poder subir sus propios posteos!
                 </p>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                   <button onClick={skipTour} style={{ flex: 1, padding: '12px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: '10px', fontWeight: 'bold' }}>Omitir</button>
@@ -333,6 +322,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              {/* 🔥 TRES BOTONES DE ACCESO RÁPIDO 🔥 */}
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link href="/plan" style={{ textDecoration: 'none', flex: '1 1 160px', maxWidth: '280px' }}>
                   <button id="tour-btn-plan" className={`btn-primary ${tourStep === 2 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold' }}>Plan de Estudios</button>
@@ -343,38 +333,6 @@ export default function Dashboard() {
               </div>
             </div>
           </section>
-
-        </div>
-
-        {/* ============================================================
-            SECCIÓN 2: HISTORIAL DE APROBADAS
-            ============================================================ */}
-        <div className="section-row">
-
-          <section style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
-            <div id="tour-sec-aprobadas" className={`${tourStep === 4 ? 'tour-highlighted' : ''}`} style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)' }}>
-              <h3 style={{ color: 'var(--aprobada)', marginBottom: '16px', fontSize: '1.1rem', fontWeight: 700 }}>Materias aprobadas</h3>
-              {aprobadasOrdenadas.length === 0 ? (
-                <p style={{ color: 'var(--muted)', textAlign: 'center', fontStyle: 'italic', padding: '20px' }}>Todavía no tenés materias aprobadas.</p>
-              ) : (
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  <AnimatedList items={aprobadasOrdenadas} renderItem={(m) => (
-                    <div className="list-row" style={{ cursor: 'pointer', padding: '12px', marginBottom: '8px' }} onClick={() => { setSelectedMateria({ id: m.id, name: m.name }); setIsGradeModalOpen(true); }}>
-                      <span style={{ flex: 1, fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-strong)' }}>{m.name}</span>
-                      <span style={{ color: detalles[m.id]?.notaFinal ? 'var(--aprobada)' : 'var(--muted)', fontWeight: 'bold', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
-                        {detalles[m.id]?.notaFinal ? `Nota: ${detalles[m.id].notaFinal}` : '—'}
-                      </span>
-                    </div>
-                  )} />
-                </div>
-              )}
-              <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--muted)', fontSize: '1rem', fontWeight: 'bold' }}>Promedio</span>
-                <span style={{ color: 'var(--text-strong)', fontSize: '2rem', fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{stats.promedio}</span>
-              </div>
-            </div>
-          </section>
-
         </div>
 
         {/* ============================================================
@@ -419,8 +377,6 @@ export default function Dashboard() {
 
           </div>
         )}
-
-        <GradeModal isOpen={isGradeModalOpen} onClose={() => setIsGradeModalOpen(false)} materiaName={selectedMateria?.name || ''} onSubmit={(nota) => { if (selectedMateria) { actualizarDetalleMateria(selectedMateria.id, { ...detalles[selectedMateria.id], notaFinal: nota }); } }} />
       </main>
     </>
   );

@@ -8,7 +8,7 @@ import SpotlightCard from '../../src/components/SpotlightCard';
 export default function CursadaPage() {
   const { materias, detalles, careerData } = usePlan();
   const { ALL } = careerData;
-  const soportaHorarios = ALL.some((m: any) => m.comisiones && m.comisiones.length > 0);
+  
   const [hoveredDayData, setHoveredDayData] = useState<{ day: number, events: string[] } | null>(null);
   const [viewDate, setViewDate] = useState(new Date());  
   const [filtroCuatri, setFiltroCuatri] = useState('Ambos');
@@ -117,42 +117,83 @@ export default function CursadaPage() {
   const horariosSemanales: Record<string, any[]> = { 'Lunes': [], 'Martes': [], 'Miércoles': [], 'Jueves': [], 'Viernes': [], 'Sábado': [] };
   
   cursando.forEach((m: any) => {
-    const comisionId = detalles[m.id]?.comision;
-    if (comisionId && m.comisiones) {
-      const comisionData = m.comisiones.find((c: any) => c.id === comisionId);
-      if (comisionData && comisionData.dias) {
-        
-        const duracion = comisionData.duration || 'A';
+    const tieneComisiones = m.comisiones && m.comisiones.length > 0;
+    const nombreMateriaLimpio = m.name.replace(/\s*\([^)]*\)/g, '').trim();
 
-        if (filtroCuatri === '1' && duracion === '2') return; 
-        if (filtroCuatri === '2' && duracion === '1') return; 
+    if (tieneComisiones) {
+      const comisionId = detalles[m.id]?.comision;
+      if (comisionId) {
+        const comisionData = m.comisiones.find((c: any) => c.id === comisionId);
+        if (comisionData && comisionData.dias) {
+          const duracion = comisionData.duration || 'A';
 
-        let cuatrimestre = '(Anual)';
-        let colorFondo = 'rgba(30, 58, 138, 0.3)'; 
-        let colorBorde = '#3b82f6'; 
-        
-        if (duracion === '1') {
-          cuatrimestre = '(1° Cuatr.)';
-          colorFondo = 'rgba(20, 83, 45, 0.4)'; 
-          colorBorde = '#22c55e'; 
-        } else if (duracion === '2') {
-          cuatrimestre = '(2° Cuatr.)';
-          colorFondo = 'rgba(136, 19, 55, 0.4)'; 
-          colorBorde = '#f43f5e'; 
+          if (filtroCuatri === '1' && duracion === '2') return; 
+          if (filtroCuatri === '2' && duracion === '1') return; 
+
+          let cuatrimestre = '(Anual)';
+          let colorFondo = 'rgba(30, 58, 138, 0.3)'; 
+          let colorBorde = '#3b82f6'; 
+          
+          if (duracion === '1') {
+            cuatrimestre = '(1° Cuatr.)'; colorFondo = 'rgba(34, 197, 94, 0.15)'; colorBorde = '#22c55e'; 
+          } else if (duracion === '2') {
+            cuatrimestre = '(2° Cuatr.)'; colorFondo = 'rgba(244, 63, 94, 0.15)'; colorBorde = '#f43f5e'; 
+          }
+
+          comisionData.dias.forEach((dia: any) => {
+            let nombreDiaLimpio = dia.nombre.split(' ')[0]; 
+            if (horariosSemanales[nombreDiaLimpio]) {
+              horariosSemanales[nombreDiaLimpio].push({
+                id: `${m.id}-${dia.nombre}`,
+                materiaLimpia: nombreMateriaLimpio,
+                cuatrimestre: cuatrimestre,
+                inicio: dia.inicio,
+                fin: dia.fin,
+                comision: comisionId,
+                colorFondo,
+                colorBorde
+              });
+            }
+          });
         }
+      }
+    } else {
+      // 🔥 HORARIOS CUSTOMIZADOS RESPETANDO LOS COLORES GLOBALES 🔥
+      const horariosCustom = detalles[m.id]?.horariosCustom;
+      if (horariosCustom && horariosCustom.length > 0) {
+        horariosCustom.forEach((horario: any) => {
+          const hDur = horario.duracion || 'Anual';
+          
+          let dCode = 'A';
+          if (hDur.includes('1º')) dCode = '1';
+          if (hDur.includes('2º')) dCode = '2';
 
-        const nombreMateriaLimpio = m.name.replace(/\s*\([^)]*\)/g, '').trim();
+          if (filtroCuatri === '1' && dCode === '2') return; 
+          if (filtroCuatri === '2' && dCode === '1') return; 
 
-        comisionData.dias.forEach((dia: any) => {
-          let nombreDiaLimpio = dia.nombre.split(' ')[0]; 
+          let cuatrimestre = '(Anual)';
+          let colorFondo = 'rgba(30, 58, 138, 0.3)'; 
+          let colorBorde = '#3b82f6'; 
+
+          if (dCode === '1') {
+            cuatrimestre = '(1º Cuatr.)';
+            colorFondo = 'rgba(34, 197, 94, 0.15)'; 
+            colorBorde = '#22c55e'; 
+          } else if (dCode === '2') {
+            cuatrimestre = '(2º Cuatr.)';
+            colorFondo = 'rgba(244, 63, 94, 0.15)'; 
+            colorBorde = '#f43f5e'; 
+          }
+
+          let nombreDiaLimpio = horario.dia.split(' ')[0]; 
           if (horariosSemanales[nombreDiaLimpio]) {
             horariosSemanales[nombreDiaLimpio].push({
-              id: `${m.id}-${dia.nombre}`,
+              id: `${m.id}-${horario.id}`,
               materiaLimpia: nombreMateriaLimpio,
               cuatrimestre: cuatrimestre,
-              inicio: dia.inicio,
-              fin: dia.fin,
-              comision: comisionId,
+              inicio: horario.inicio,
+              fin: horario.fin,
+              comision: 'Pers.', // Etiqueta sutil para Comisión Personalizada
               colorFondo,
               colorBorde
             });
@@ -203,15 +244,9 @@ export default function CursadaPage() {
         .mobile-ad-container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 16px; }
         @media (min-width: 1600px) { .mobile-ad-container { display: none; } }
 
-        /* 🔥 MAGIA ABSOLUTA: 3 anuncios por lado 🔥 */
         .scatter-ad-left, .scatter-ad-right {
-          position: absolute;
-          width: 160px;
-          height: 600px;
-          display: none;
-          z-index: 10;
+          position: absolute; width: 160px; height: 600px; display: none; z-index: 10;
         }
-        /* Requiere 1600px para que entren 1200px centro + 320px ads + padding */
         @media (min-width: 1600px) {
           .scatter-ad-left, .scatter-ad-right { display: block; }
         }
@@ -225,7 +260,6 @@ export default function CursadaPage() {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}>
             
-            {/* --- ENCABEZADO --- */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="header-titles">
                 <h1 className="logo" style={{ lineHeight: '1.1' }}>
@@ -243,84 +277,73 @@ export default function CursadaPage() {
               </Link>
             </div>
 
-            {/* --- HORARIO SEMANAL CON FILTRO (Condicional) --- */}
-            {soportaHorarios ? (
-              <div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
-                  <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Horario Semanal
-                  </h3>
+            <div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+                <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Horario Semanal
+                </h3>
 
-                  <div style={{ display: 'flex', background: 'var(--panel)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)', width: 'fit-content' }}>
-                    {['1', 'Ambos', '2'].map((opcion) => (
-                      <div
-                        key={opcion}
-                        onClick={() => {
-                          setFiltroCuatri(opcion);
-                          localStorage.setItem('filtroCuatrimestre', opcion);
-                        }}
-                        style={{
-                          padding: '8px 16px', fontSize: '0.85rem', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease',
-                          color: filtroCuatri === opcion ? '#fff' : 'var(--muted)',
-                          background: filtroCuatri === opcion ? 'var(--cursando)' : 'transparent',
-                          boxShadow: filtroCuatri === opcion ? '0 2px 10px rgba(0,0,0,0.2)' : 'none'
-                        }}
-                      >
-                        {opcion === '1' ? '1º Cuatri' : opcion === '2' ? '2º Cuatri' : 'Ambos'}
-                      </div>
-                    ))}
-                  </div>
+                <div style={{ display: 'flex', background: 'var(--panel)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)', width: 'fit-content' }}>
+                  {['1', 'Ambos', '2'].map((opcion) => (
+                    <div
+                      key={opcion}
+                      onClick={() => {
+                        setFiltroCuatri(opcion);
+                        localStorage.setItem('filtroCuatrimestre', opcion);
+                      }}
+                      style={{
+                        padding: '8px 16px', fontSize: '0.85rem', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease',
+                        color: filtroCuatri === opcion ? '#fff' : 'var(--muted)',
+                        background: filtroCuatri === opcion ? 'var(--cursando)' : 'transparent',
+                        boxShadow: filtroCuatri === opcion ? '0 2px 10px rgba(0,0,0,0.2)' : 'none'
+                      }}
+                    >
+                      {opcion === '1' ? '1º Cuatri' : opcion === '2' ? '2º Cuatri' : 'Ambos'}
+                    </div>
+                  ))}
                 </div>
-                
-                {diasMostrar.length === 0 ? (
-                  <div style={{ padding: '30px', textAlign: 'center', color: 'var(--muted)', background: 'var(--panel)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-                    No tenés horarios guardados para este filtro.
-                  </div>
-                ) : (
-                  <div className="horario-grid">
-                    {diasMostrar.map((dia) => (
-                      <div key={dia} style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
-                        <div style={{ background: 'var(--glass-bg)', padding: '15px', textAlign: 'center', fontWeight: 'bold', color: 'var(--text-strong)', borderBottom: '1px solid var(--border)' }}>
-                          {dia}
-                        </div>
-                        <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '15px', minHeight: '120px' }}>
-                          {horariosSemanales[dia].map((clase: any) => (
-                            <div key={clase.id} style={{ background: clase.colorFondo, padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
-                              <div style={{ display: 'grid', gridTemplateColumns: '45px 3px 1fr', gap: '12px', alignItems: 'stretch' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', fontFamily: 'Space Mono, monospace', fontSize: '0.8rem', color: 'var(--muted)', padding: '2px 0' }}>
-                                  <span style={{ color: 'var(--text-strong)', fontWeight: 'bold' }}>{clase.inicio}</span>
-                                  <span style={{ fontSize: '0.7rem', opacity: 0.6, margin: 'auto 0' }}>a</span>
-                                  <span style={{ color: 'var(--text-strong)', fontWeight: 'bold' }}>{clase.fin}</span>
+              </div>
+              
+              {diasMostrar.length === 0 ? (
+                <div style={{ padding: '30px', textAlign: 'center', color: 'var(--muted)', background: 'var(--panel)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                  No tenés horarios asignados para este filtro. Ingresá a tus materias en curso para agregar tu cursada.
+                </div>
+              ) : (
+                <div className="horario-grid">
+                  {diasMostrar.map((dia) => (
+                    <div key={dia} style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
+                      <div style={{ background: 'var(--glass-bg)', padding: '15px', textAlign: 'center', fontWeight: 'bold', color: 'var(--text-strong)', borderBottom: '1px solid var(--border)' }}>
+                        {dia}
+                      </div>
+                      <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '15px', minHeight: '120px' }}>
+                        {horariosSemanales[dia].map((clase: any) => (
+                          <div key={clase.id} style={{ background: clase.colorFondo, padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '45px 3px 1fr', gap: '12px', alignItems: 'stretch' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', fontFamily: 'Space Mono, monospace', fontSize: '0.8rem', color: 'var(--muted)', padding: '2px 0' }}>
+                                <span style={{ color: 'var(--text-strong)', fontWeight: 'bold' }}>{clase.inicio}</span>
+                                <span style={{ fontSize: '0.7rem', opacity: 0.6, margin: 'auto 0' }}>a</span>
+                                <span style={{ color: 'var(--text-strong)', fontWeight: 'bold' }}>{clase.fin}</span>
+                              </div>
+                              <div style={{ background: clase.colorBorde, borderRadius: '4px', width: '100%', opacity: 0.9 }}></div>
+                              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2px 0' }}>
+                                <div style={{ fontWeight: 'bold', color: 'var(--text-strong)', fontSize: '0.95rem', lineHeight: 1.2 }}>
+                                  {clase.materiaLimpia} <span style={{ fontSize: '0.75rem', color: clase.colorBorde, whiteSpace: 'nowrap' }}>{clase.cuatrimestre}</span>
                                 </div>
-                                <div style={{ background: clase.colorBorde, borderRadius: '4px', width: '100%', opacity: 0.9 }}></div>
-                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2px 0' }}>
-                                  <div style={{ fontWeight: 'bold', color: 'var(--text-strong)', fontSize: '0.95rem', lineHeight: 1.2 }}>
-                                    {clase.materiaLimpia} <span style={{ fontSize: '0.75rem', color: clase.colorBorde, whiteSpace: 'nowrap' }}>{clase.cuatrimestre}</span>
-                                  </div>
-                                  <div style={{ color: 'var(--muted)', fontSize: '0.85rem', fontFamily: 'Space Mono, monospace', marginTop: '6px' }}>
-                                    Com. {clase.comision}
-                                  </div>
+                                <div style={{ color: 'var(--muted)', fontSize: '0.85rem', fontFamily: 'Space Mono, monospace', marginTop: '6px' }}>
+                                  Com. {clase.comision}
                                 </div>
                               </div>
                             </div>
-                          ))}
-                        </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div style={{ padding: '30px', textAlign: 'center', background: 'var(--panel)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                <h3 style={{ color: 'var(--text-strong)', fontSize: '1.2rem', marginBottom: '10px' }}>Horario Semanal</h3>
-                <p style={{ color: 'var(--muted)', margin: 0 }}>
-                  Las comisiones y horarios oficiales para tu carrera se agregarán próximamente. ¡Podés seguir esta seccion para agendar tus parciales!
-                </p>
-              </div>
-            )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-            {/* --- AGENDA Y CALENDARIO --- */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '40px', alignItems: 'flex-start' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -423,7 +446,6 @@ export default function CursadaPage() {
               </div>
             </div>
 
-            {/* --- MATERIAS EN CURSO --- */}
             <div id="gestionar-materias" style={{ scrollMarginTop: '120px' }}>
               <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', marginBottom: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
@@ -438,6 +460,7 @@ export default function CursadaPage() {
                   cursando.map((m: any) => {
                     const tieneComisiones = m.comisiones && m.comisiones.length > 0;
                     const comisionSeleccionada = detalles[m.id]?.comision;
+                    const horariosCustom = detalles[m.id]?.horariosCustom;
 
                     return (
                       <Link href={`/materia/${m.id}`} key={m.id} style={{ textDecoration: 'none', height: '100%' }}>
@@ -458,7 +481,11 @@ export default function CursadaPage() {
                                 <span style={{ color: '#ef4444' }}>No hay comisión seleccionada</span>
                               )
                             ) : (
-                              <span style={{ visibility: 'hidden' }}>-</span>
+                              horariosCustom && horariosCustom.length > 0 ? (
+                                <span style={{ color: '#f59e0b' }}>Horario Personalizado</span>
+                              ) : (
+                                <span style={{ color: '#ef4444' }}>Sin horario asignado</span>
+                              )
                             )}
                           </div>
                         </SpotlightCard>

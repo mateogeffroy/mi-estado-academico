@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -11,23 +11,37 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(true); 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
   const [hasSession, setHasSession] = useState(false);
 
-  // 🔥 HOOKS PARA EL TEMA (DARK/LIGHT) 🔥
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState({ name: '', avatarUrl: '', initials: '' });
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false); 
 
   const pathname = usePathname();
   const router = useRouter(); 
 
+  const isCursadaActive = pathname === '/cursada' || pathname?.startsWith('/materia/');
+
   useEffect(() => {
     setIsSidebarOpen(false);
+    setIsProfileMenuOpen(false);
   }, [pathname]);
 
-  // Evita errores de hidratación con next-themes
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -39,6 +53,24 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       }
     }
   }, [pathname]);
+
+  const fetchUserData = async () => {
+    const { data } = await supabase.auth.getUser();
+    if (data.user) {
+      const fullName = data.user.user_metadata?.full_name || data.user.email || 'Usuario';
+      const avatarUrl = data.user.user_metadata?.avatar_url || '';
+      
+      const nameParts = fullName.split(' ');
+      let initials = '';
+      if (nameParts.length >= 2) {
+        initials = (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+      } else {
+        initials = fullName.substring(0, 2).toUpperCase();
+      }
+
+      setUserProfile({ name: fullName, avatarUrl, initials });
+    }
+  };
 
   useEffect(() => {
     let isMounted = true; 
@@ -69,6 +101,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             setIsChecking(false); 
           }
         } else {
+          fetchUserData(); 
           if (pathname === '/login') {
             router.replace('/');
           } else {
@@ -91,8 +124,10 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         if (!session && !isPublicRoute) {
            router.replace('/login');
         } else if (session && pathname === '/login') {
+           fetchUserData();
            router.replace('/');
         } else {
+           if (session) fetchUserData();
            setIsChecking(false);
         }
       }
@@ -129,7 +164,8 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     fontWeight: 'bold',
     borderRadius: '10px',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    // 🔥 MAGIA DE ANIMACIÓN: 0.4 segundos de transición suave 🔥
+    transition: 'all 0.4s ease',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
@@ -142,20 +178,25 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       <style>{`
         .nav-full-menu { display: flex; }
         .nav-burger-btn { display: none; }
-        .sidebar-action-btn-custom { padding: 12px 14px !important; }
+        
+        /* 🔥 ANIMACIÓN TAMBIÉN PARA LOS BOTONES DEL SIDEBAR MÓVIL 🔥 */
+        .sidebar-action-btn-custom { 
+          padding: 12px 14px !important; 
+          transition: all 0.4s ease !important;
+        }
 
         .theme-toggle-btn {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 48px;
-          height: 48px;
+          width: 40px;
+          height: 40px;
           border-radius: 10px;
           background: transparent;
           border: none;
           color: var(--muted);
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.4s ease;
         }
         .theme-toggle-btn:hover {
           color: var(--text-strong);
@@ -166,6 +207,45 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           color: var(--text-strong) !important;
           background: var(--glass-hover) !important;
         }
+
+        .avatar-btn {
+          width: 40px; height: 40px; border-radius: 50%;
+          background: var(--glass-bg); 
+          color: var(--text-strong);
+          display: flex; align-items: center; justify-content: center;
+          font-weight: 800; font-size: 1rem; cursor: pointer;
+          border: 2px solid transparent; 
+          /* 🔥 ANIMACIÓN MÁS LENTA PARA EL PERFIL 🔥 */
+          transition: all 0.4s ease;
+          overflow: hidden; flex-shrink: 0; padding: 0;
+        }
+        .avatar-btn:hover { 
+          transform: scale(1.05); 
+          background: var(--glass-hover); 
+        }
+        .avatar-btn.active-profile {
+          border-color: var(--cursando); 
+        }
+        .avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
+
+        .profile-dropdown-menu {
+          position: absolute; top: calc(100% + 10px); right: 0;
+          background: var(--panel); border: 1px solid var(--border);
+          border-radius: 12px; padding: 8px; min-width: 180px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+          display: flex; flex-direction: column; gap: 4px;
+          animation: fadeIn 0.2s ease-out; z-index: 1500;
+        }
+        .profile-dropdown-item {
+          display: flex; align-items: center; gap: 10px;
+          padding: 10px 14px; border-radius: 8px; font-weight: 600;
+          font-size: 0.9rem; color: var(--text-strong); cursor: pointer;
+          text-decoration: none; transition: background 0.2s ease;
+          background: transparent; border: none; width: 100%; text-align: left;
+        }
+        .profile-dropdown-item:hover { background: var(--glass-hover); }
+        .profile-dropdown-item.danger { color: #ef4444; }
+        .profile-dropdown-item.danger:hover { background: rgba(239, 68, 68, 0.1); }
 
         @media (max-width: 1150px) {
           .nav-full-menu { display: none !important; }
@@ -240,12 +320,10 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               >
                 {mounted && theme === 'dark' ? (
-                  // SOL
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '32px', height: '32px' }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '24px', height: '24px' }}>
                     <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
                   </svg>
                 ) : (
-                  // LUNA
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '24px', height: '24px' }}>
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
                   </svg>
@@ -271,7 +349,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                   </Link>
                   
                   <Link href="/cursada" style={{ textDecoration: 'none' }}>
-                    <button style={{ ...navBtnBase, background: pathname === '/cursada' ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname === '/cursada' ? 'black' : 'var(--text-strong)', border: pathname === '/cursada' ? 'none' : '1px solid var(--border)' }}>
+                    <button style={{ ...navBtnBase, background: isCursadaActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isCursadaActive ? 'black' : 'var(--text-strong)', border: isCursadaActive ? 'none' : '1px solid var(--border)' }}>
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                       Mi Cursada
                     </button>
@@ -279,9 +357,33 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
                   <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
 
-                  <button className="btn-danger" onClick={handleLogout} style={{ ...navBtnBase, background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.1)' }} onMouseOver={(e) => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#ef4444'; }}>
-                    Cerrar sesión
-                  </button>
+                  <div style={{ position: 'relative' }} ref={profileMenuRef}>
+                    <button 
+                      onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                      className={`avatar-btn ${pathname === '/perfil' ? 'active-profile' : ''}`}
+                      title="Mi Perfil"
+                    >
+                      {userProfile.avatarUrl ? (
+                        <img src={userProfile.avatarUrl} alt="Avatar" />
+                      ) : (
+                        <span>{userProfile.initials}</span>
+                      )}
+                    </button>
+
+                    {isProfileMenuOpen && (
+                      <div className="profile-dropdown-menu">
+                        <Link href="/perfil" className="profile-dropdown-item">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                          Mi Perfil
+                        </Link>
+                        <div style={{ height: '1px', background: 'var(--border)', margin: '2px 0' }}></div>
+                        <button onClick={handleLogout} className="profile-dropdown-item danger">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                          Cerrar Sesión
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </>
               ) : (
                 <>
@@ -333,9 +435,14 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
                   Plan de Estudios
                 </Link>
-                <Link href="/cursada" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname === '/cursada' ? 'active-route' : ''}`}>
+                <Link href="/cursada" className={`sidebar-action-btn sidebar-action-btn-custom ${isCursadaActive ? 'active-route' : ''}`}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   Mi Cursada
+                </Link>
+
+                <Link href="/perfil" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname === '/perfil' ? 'active-route' : ''}`}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Mi Perfil
                 </Link>
 
                 {pathname === '/' && (
