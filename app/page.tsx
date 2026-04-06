@@ -5,15 +5,12 @@ import Link from 'next/link';
 import { usePlan } from '../src/context/PlanContext';
 import CountUp from '../src/components/CountUp';
 import { supabase } from '../src/lib/supabase';
-import AdBanner from '../src/components/AdBanner'; 
 
 export default function Dashboard() {
-  // 🔥 Limpiamos lo que ya no usamos acá porque se mudó al Perfil 🔥
   const { stats, user, careerData, careerId } = usePlan();
   
   const [nombreDinamico, setNombreDinamico] = useState('');
   
-  // 🔥 LÓGICA DEL TUTORIAL DE INICIO
   const [tourStep, setTourStep] = useState(0);
 
   useEffect(() => {
@@ -27,17 +24,15 @@ export default function Dashboard() {
     fetchDirectName();
   }, []);
 
-  // Verifica si es la primera vez que entra para lanzar el tutorial
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const hasViewedTour = localStorage.getItem('mea_tutorial_home_v1');
       if (!hasViewedTour) {
-        setTimeout(() => setTourStep(1), 600); // Pequeño delay para que cargue la UI
+        setTimeout(() => setTourStep(1), 600); 
       }
     }
   }, []);
 
-  // Escucha el botón "?" del LayoutClient para reiniciar el tutorial manualmente
   useEffect(() => {
     const handleStartTour = () => {
       setTourStep(1);
@@ -47,13 +42,17 @@ export default function Dashboard() {
     return () => window.removeEventListener('start-home-tour', handleStartTour);
   }, []);
 
-  // Maneja el scroll automático hacia los elementos resaltados
   useEffect(() => {
-    if (tourStep === 2) document.getElementById('tour-btn-plan')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    if (tourStep === 3) document.getElementById('tour-btn-cursada')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    if (tourStep === 4) document.getElementById('tour-btn-perfil')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 🔥 Modificado al Perfil 🔥
-    if (tourStep === 5) document.getElementById('tour-sec-blog')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    if (tourStep === 6 || tourStep === 1) window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 🔥 LÓGICA DE AUTO-SCROLL ACTUALIZADA 🔥
+    // Eliminamos el auto-scroll de los pasos 2, 3 y 4 (botones de navegación rápida)
+    
+    if (tourStep === 5) {
+      // Mantenemos el scroll al blog para ver el resaltado mentre el diálogo está centrado
+      document.getElementById('tour-sec-blog')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    if (tourStep === 6 || tourStep === 1) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, [tourStep]);
 
   const closeTour = () => {
@@ -62,7 +61,7 @@ export default function Dashboard() {
   };
 
   const skipTour = () => {
-    setTourStep(6); // Va directo al mensaje final
+    setTourStep(6); 
   };
 
   const primerNombre = nombreDinamico || user?.user_metadata?.full_name?.split(' ')[0] || 'Estudiante';
@@ -137,7 +136,6 @@ export default function Dashboard() {
           }
         }
 
-        /* 🔥 ESTILOS DEL TUTORIAL (SPOTLIGHT) 🔥 */
         .tour-overlay {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
@@ -151,15 +149,17 @@ export default function Dashboard() {
           position: relative !important;
           z-index: 9999 !important;
           box-shadow: 0 0 0 6px var(--bg), 0 0 0 10px var(--cursando) !important;
-          pointer-events: none !important; /* Evita clics accidentales durante el tour */
+          pointer-events: none !important; 
           border-radius: inherit;
         }
 
+        /* 🔥 CSS DEL TOUR ACTUALIZADO PARA POSICIONAMIENTO CONDICIONAL 🔥 */
+        /* Estilo base centrado para pasos 1, 5, 6 */
         .tour-dialog {
           position: fixed;
-          bottom: 8%;
+          top: 50%;
           left: 50%;
-          transform: translateX(-50%);
+          transform: translate(-50%, -50%);
           width: 90%;
           max-width: 420px;
           background: var(--panel);
@@ -172,19 +172,28 @@ export default function Dashboard() {
           flex-direction: column;
           gap: 16px;
           text-align: center;
+          bottom: auto; /* Nos aseguramos que no interfiera el bottom viejo */
         }
 
+        /* Clase para pasos 2, 3, 4: Modal arriba de la página, sin autoscroll */
+        .tour-dialog-top {
+          top: 30px; /* Posicionamiento alto en la ventana */
+          transform: translateX(-50%); /* Solo centrado horizontal */
+          bottom: auto;
+        }
+
+        /* Eliminamos el override viejo que forzaba el bottom en mobile/desktop */
         @media (min-width: 1024px) {
-          .tour-dialog { bottom: 15%; }
+          /* No longer used for dialog positioning, default is centered */
         }
       `}</style>
 
-      {/* OVERLAY Y CUADRO DE DIÁLOGO DEL TUTORIAL */}
       {tourStep > 0 && (
         <>
           <div className="tour-overlay" />
           
-          <div className="tour-dialog">
+          {/* 🔥 JSX DEL TOUR ACTUALIZADO PARA APLICAR CLASES CONDICIONALES 🔥 */}
+          <div className={`tour-dialog ${[2, 3, 4].includes(tourStep) ? 'tour-dialog-top' : ''}`}>
             {tourStep === 1 && (
               <>
                 <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.3rem' }}>¡Bienvenido/a!</h3>
@@ -230,15 +239,16 @@ export default function Dashboard() {
               </>
             )}
 
-            {/* 🔥 PASO 4 ACTUALIZADO PARA HABLAR DEL PERFIL 🔥 */}
             {tourStep === 4 && (
               <>
                 <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aprobada)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   Mi Perfil
                 </h3>
+                {/* 🔥 TEXTO EXPLICATIVO DEL PERFIL ACTUALIZADO 🔥 */}
                 <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
-                  Así como las cursadas tienen su espacio, en tu <strong>Perfil</strong> vas a gestionar las materias <strong>Aprobadas</strong>. Ahí podés cargar las notas de tus finales para ver tu promedio y cambiar la configuración de tu carrera.
+                  En tu <strong>Perfil</strong> vas a encontrar el listado completo de tus materias <strong>Aprobadas</strong>, donde podés usar el sistema de <strong>estrellas</strong> para calificar el nivel de dificultad de cada una.<br /><br />
+                  Además, desde acá tenés la posibilidad de modificar tu nombre y cambiar de carrera en cualquier momento.
                 </p>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                   <button onClick={skipTour} style={{ flex: 1, padding: '12px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: '10px', fontWeight: 'bold' }}>Omitir</button>
@@ -278,12 +288,8 @@ export default function Dashboard() {
         </>
       )}
 
-
       <main style={{ display: 'flex', flexDirection: 'column', gap: '40px', paddingBottom: '80px' }}>
         
-        {/* ============================================================
-            SECCIÓN 1: HERO
-            ============================================================ */}
         <div className="section-row">
           <section id="progreso" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '30px', marginBottom: '40px', width: '100%' }}>
             <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px', padding: '0 16px' }}>
@@ -291,23 +297,14 @@ export default function Dashboard() {
                 <h2 style={{ fontSize: 'clamp(1rem, 4vw, 1.6rem)', color: 'var(--text-strong)', margin: '0 0 8px 0', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   ¡Hola, <span style={{ color: 'var(--cursando)' }}>{primerNombre}</span>! <span className="wave">👋</span>
                 </h2>
-                
-                {/* TÍTULO APILADO EN DOS RENGLONES */}
-                <h1 className="logo-landing" style={{ fontWeight: 900, marginBottom: '10px', lineHeight: 1.1, letterSpacing: '-1px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--text-strong)', whiteSpace: 'nowrap' }}>MI ESTADO</span>
-                  <span style={{ color: 'var(--cursando)', whiteSpace: 'nowrap' }}>ACADÉMICO</span>
-                </h1>
-                
-                <p style={{ color: 'var(--muted)', fontSize: 'clamp(0.85rem, 2.5vw, 1.05rem)' }}>Tu herramienta para gestionar tu cursada.</p>
               </div>
 
-              <div className="premium-card no-hover-card" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '24px', padding: 'clamp(16px, 5vw, 36px)' }}>
+              <div className="premium-card no-hover-card" style={{ position: 'relative', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '24px', padding: 'clamp(5px, 5vw, 25px)', paddingTop: 'clamp(20px, 8vw, 20px)' }}>
                 <div style={{ textAlign: 'center', flex: '1 1 160px' }}>
                   <div style={{ fontSize: 'clamp(3rem, 14vw, 6rem)', fontWeight: 900, color: 'var(--text-strong)', lineHeight: 0.9, display: 'flex', alignItems: 'baseline', justifyContent: 'center', fontVariantNumeric: 'tabular-nums' }}>
                     <CountUp from={0} to={stats.porcentaje} duration={0.2} />
                     <span style={{ fontSize: 'clamp(1.5rem, 6vw, 3rem)', marginLeft: '5px', color: 'var(--muted)' }}>%</span>
                   </div>
-                  <div style={{ color: 'var(--cursando)', fontSize: '0.8rem', marginTop: '10px', fontWeight: 'bold', letterSpacing: '2px', textTransform: 'uppercase' }}>Completado</div>
                 </div>
 
                 <div className="desktop-only" style={{ width: '1px', height: '120px', background: 'var(--border)', flexShrink: 0 }} />
@@ -322,25 +319,32 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* 🔥 TRES BOTONES DE ACCESO RÁPIDO 🔥 */}
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <Link href="/plan" style={{ textDecoration: 'none', flex: '1 1 160px', maxWidth: '280px' }}>
-                  <button id="tour-btn-plan" className={`btn-primary ${tourStep === 2 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold' }}>Plan de Estudios</button>
-                </Link>
-                <Link href="/cursada" style={{ textDecoration: 'none', flex: '1 1 160px', maxWidth: '280px' }}>
-                  <button id="tour-btn-cursada" className={`${tourStep === 3 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold', background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text-strong)', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>Mi Cursada</button>
-                </Link>
+              {/* 🔥 BOTONES CON IDs ÚNICOS CORREGIDOS 🔥 */}
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10px' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '20px', textAlign: 'center' }}>
+                  <span style={{ color: 'var(--text-strong)' }}>Navegación</span> <span style={{ color: 'var(--cursando)' }}>Rápida</span>
+                </h3>
+                
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', width: '100%' }}>
+                  <Link href="/plan" style={{ textDecoration: 'none', flex: '1 1 160px', maxWidth: '280px' }}>
+                    <button id="tour-btn-cursada" className={`${tourStep === 2 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold', background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text-strong)', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>Plan de estudio</button>
+                  </Link>
+                  <Link href="/cursada" style={{ textDecoration: 'none', flex: '1 1 160px', maxWidth: '280px' }}>
+                    <button id="tour-btn-cursada" className={`${tourStep === 3 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold', background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text-strong)', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>Mi Cursada</button>
+                  </Link>
+                  <Link href="/perfil" style={{ textDecoration: 'none', flex: '1 1 160px', maxWidth: '280px' }}>
+                    {/* 🔥 ID CORREGIDO AQUÍ (era tour-btn-cursada) 🔥 */}
+                    <button id="tour-btn-perfil" className={`${tourStep === 4 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold', background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text-strong)', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>Mi Perfil</button>
+                  </Link>
+                </div>
               </div>
+
             </div>
           </section>
         </div>
 
-        {/* ============================================================
-            SECCIÓN 3: BLOG (Condicional)
-            ============================================================ */}
         {novedadesFiltradas.length > 0 && (
           <div className="section-row">
-
             <section style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
               <div id="tour-sec-blog" className={`${tourStep === 5 ? 'tour-highlighted' : ''}`} style={{ background: 'var(--bg)', borderRadius: '20px', padding: tourStep === 5 ? '20px' : '0' }}>
                 <h3 style={{ color: 'var(--text-strong)', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -374,7 +378,6 @@ export default function Dashboard() {
                 </div>
               </div>
             </section>
-
           </div>
         )}
       </main>
