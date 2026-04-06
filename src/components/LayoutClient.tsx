@@ -164,7 +164,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     fontWeight: 'bold',
     borderRadius: '10px',
     cursor: 'pointer',
-    // 🔥 MAGIA DE ANIMACIÓN: 0.4 segundos de transición suave 🔥
     transition: 'all 0.4s ease',
     display: 'flex',
     alignItems: 'center',
@@ -179,7 +178,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         .nav-full-menu { display: flex; }
         .nav-burger-btn { display: none; }
         
-        /* 🔥 ANIMACIÓN TAMBIÉN PARA LOS BOTONES DEL SIDEBAR MÓVIL 🔥 */
         .sidebar-action-btn-custom { 
           padding: 12px 14px !important; 
           transition: all 0.4s ease !important;
@@ -197,6 +195,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           color: var(--muted);
           cursor: pointer;
           transition: all 0.4s ease;
+          padding: 0; /* 🔥 RELLENO ELIMINADO PARA DARLE ESPACIO AL ICONO 🔥 */
         }
         .theme-toggle-btn:hover {
           color: var(--text-strong);
@@ -215,7 +214,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           display: flex; align-items: center; justify-content: center;
           font-weight: 800; font-size: 1rem; cursor: pointer;
           border: 2px solid transparent; 
-          /* 🔥 ANIMACIÓN MÁS LENTA PARA EL PERFIL 🔥 */
           transition: all 0.4s ease;
           overflow: hidden; flex-shrink: 0; padding: 0;
         }

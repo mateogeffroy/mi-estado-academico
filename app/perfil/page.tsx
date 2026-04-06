@@ -235,9 +235,9 @@ export default function PerfilPage() {
                   <button onClick={() => { setIsEditingName(false); setTempNombre(nombre); }} className="btn-secondary" style={{ padding: '8px 16px' }}>Cancelar</button>
                 </div>
               ) : (
-                <h1 style={{ color: 'var(--text-strong)', margin: 0, fontSize: 'clamp(2rem, 5vw, 2.5rem)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <h1 style={{ color: 'var(--text-strong)', margin: 0, fontSize: 'clamp(2rem, 5vw, 2.5rem)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '15px' }}>
                   {nombre}
-                  <button onClick={() => setIsEditingName(true)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--border)', color: 'var(--muted)', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e => { e.currentTarget.style.color = 'var(--text-strong)'; e.currentTarget.style.borderColor = 'var(--text-strong)' }} onMouseOut={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}>
+                  <button onClick={() => setIsEditingName(true)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--border)', color: 'var(--muted)', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', padding: 0 /* 🔥 FIX DEL PADDING AQUÍ 🔥 */ }} onMouseOver={e => { e.currentTarget.style.color = 'var(--text-strong)'; e.currentTarget.style.borderColor = 'var(--text-strong)' }} onMouseOut={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                   </button>
                 </h1>
@@ -245,7 +245,13 @@ export default function PerfilPage() {
             </div>
 
             <Link href="/" style={{ textDecoration: 'none' }}>
-              <button className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>Volver al inicio</button>
+              <button className="btn-secondary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m12 19-7-7 7-7"/>
+                  <path d="M19 12H5"/>
+                </svg>
+                Volver al Inicio
+              </button>
             </Link>
           </div>
 
