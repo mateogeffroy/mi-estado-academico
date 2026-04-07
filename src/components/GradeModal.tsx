@@ -39,7 +39,7 @@ export default function GradeModal({ isOpen, onClose, onSubmit, materiaName, ini
     }
   };
 
-  const textosDificultad = ['Un paseo', 'Fácil', 'Intermedia', 'Difícil', 'Un infierno'];
+  const textosDificultad = ['Sencilla', 'Fácil', 'Intermedia', 'Difícil', 'Compleja'];
   const valorActual = hoveredStar || dificultad;
 
   return (

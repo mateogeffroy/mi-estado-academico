@@ -101,15 +101,10 @@ export default function BlogIndex() {
                 <div>
                   <h3 style={{ color: 'var(--text-strong)', fontSize: '1.3rem', margin: '0 0 8px 0', fontWeight: 'bold' }}>¿Tenés algo para compartir?</h3>
                   <p style={{ color: 'var(--muted)', fontSize: '0.95rem', margin: 0, maxWidth: '500px', lineHeight: '1.5' }}>
-                    Si escribiste un apunte útil, un tutorial de código o tenés tips para alguna materia en particular, podés publicarlo acá.
+                    Si escribiste un apunte útil, un tutorial de código o tenés tips para alguna materia en particular, podés enviarlo a: 
                   </p>
                 </div>
-                <a href="mailto:mateogeffroy.dev@gmail.com?subject=Aporte%20para%20el%20Blog%20-%20Mi%20Estado%20Académico" style={{ textDecoration: 'none', marginTop: '5px' }}>
-                  <button className="btn-primary" style={{ padding: '10px 20px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', borderRadius: '10px' }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                    Enviar artículo por Mail
-                  </button>
-                </a>
+                <span style={{ color: 'white', fontSize: '0.95rem', fontWeight: 'bold'}}>mateogeffroy.dev@gmail.com</span>
               </div>
 
             </div>

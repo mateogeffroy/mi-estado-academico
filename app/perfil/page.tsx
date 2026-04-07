@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePlan } from '../../src/context/PlanContext';
 import { supabase } from '../../src/lib/supabase';
-import AnimatedList from '../../src/components/AnimatedList';
 import GradeModal from '../../src/components/GradeModal';
 import ConfirmModal from '../../src/components/ConfirmModal';
 
@@ -115,20 +114,18 @@ export default function PerfilPage() {
             return;
           }
 
-          // 1. Actualizamos la carrera en la sesión del usuario
           await supabase.auth.updateUser({ 
             data: { carrera_id: nuevaCarreraId } 
           });
 
-          // 2. Usamos UPDATE estricto con los nombres exactos de tu BD
           const { error: dbError } = await supabase
             .from('progreso_usuarios')
             .update({ 
               carrera_id: nuevaCarreraId,
-              estado_materias: {},   // Reseteamos el progreso de la carrera vieja
-              detalles_materias: {}  // Reseteamos las notas/eventos de la carrera vieja
+              estado_materias: {},   
+              detalles_materias: {}  
             })
-            .eq('id_usuario', userData.user.id); // Apuntamos solo a este usuario
+            .eq('id_usuario', userData.user.id); 
 
           if (dbError) {
             console.error("❌ Error DB Update:", dbError);
@@ -136,14 +133,12 @@ export default function PerfilPage() {
             return; 
           }
 
-          // 3. Limpiamos el almacenamiento local para borrar rastros del plan viejo
           Object.keys(localStorage).forEach(key => {
             if (!key.startsWith('sb-')) { 
               localStorage.removeItem(key);
             }
           });
 
-          // 4. Recargamos la página (te va a dejar en el perfil con la carrera nueva)
           window.location.reload(); 
 
         } catch (err) {
@@ -212,6 +207,11 @@ export default function PerfilPage() {
         .recharts-wrapper, .recharts-surface {
           outline: none !important;
         }
+        @media (max-width: 600px) {
+          .stars-container {
+            display: none !important;
+          }
+        }
       `}</style>
 
       <main style={{ paddingBottom: '80px', display: 'flex', flexDirection: 'column', gap: '40px', minHeight: '100vh', paddingTop: '40px' }}>
@@ -237,7 +237,7 @@ export default function PerfilPage() {
               ) : (
                 <h1 style={{ color: 'var(--text-strong)', margin: 0, fontSize: 'clamp(2rem, 5vw, 2.5rem)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '15px' }}>
                   {nombre}
-                  <button onClick={() => setIsEditingName(true)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--border)', color: 'var(--muted)', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', padding: 0 /* 🔥 FIX DEL PADDING AQUÍ 🔥 */ }} onMouseOver={e => { e.currentTarget.style.color = 'var(--text-strong)'; e.currentTarget.style.borderColor = 'var(--text-strong)' }} onMouseOut={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}>
+                  <button onClick={() => setIsEditingName(true)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--border)', color: 'var(--muted)', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', padding: 0 }} onMouseOver={e => { e.currentTarget.style.color = 'var(--text-strong)'; e.currentTarget.style.borderColor = 'var(--text-strong)' }} onMouseOut={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                   </button>
                 </h1>
@@ -255,93 +255,60 @@ export default function PerfilPage() {
             </Link>
           </div>
 
+          {/* 🔥 AHORA TODO ES UNA COLUMNA VERTICAL CON GAP 🔥 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px', alignItems: 'start' }}>
+            {/* SECCIÓN 1: MATERIAS APROBADAS */}
+            <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+              <h3 style={{ color: 'var(--aprobada)', marginBottom: '16px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Materias Aprobadas
+              </h3>
               
-              <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ color: 'var(--aprobada)', marginBottom: '16px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  Materias Aprobadas
-                </h3>
-                
-                {aprobadasOrdenadas.length === 0 ? (
-                  <p style={{ color: 'var(--muted)', textAlign: 'center', fontStyle: 'italic', padding: '20px' }}>Todavía no tenés materias aprobadas.</p>
-                ) : (
-                  <div style={{ maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }} className="custom-scrollbar">
-                    <AnimatedList items={aprobadasOrdenadas} renderItem={(m) => (
-                      <div className="list-row" style={{ cursor: 'pointer', padding: '12px', marginBottom: '8px' }} onClick={() => { setSelectedMateria({ id: m.id, name: m.name }); setIsGradeModalOpen(true); }}>
-                        <span style={{ flex: 1, fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-strong)' }}>
-                          <span style={{ color: 'var(--muted)', fontSize: '0.75rem', marginRight: '8px', fontFamily: 'Space Mono' }}>N{m.level || '-'}</span>
-                          {m.name}
+              {aprobadasOrdenadas.length === 0 ? (
+                <p style={{ color: 'var(--muted)', textAlign: 'center', fontStyle: 'italic', padding: '20px' }}>Todavía no tenés materias aprobadas.</p>
+              ) : (
+                <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }} className="custom-scrollbar">
+                  {aprobadasOrdenadas.map(m => (
+                    <div key={m.id} className="list-row" style={{ cursor: 'pointer', padding: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={() => { setSelectedMateria({ id: m.id, name: m.name }); setIsGradeModalOpen(true); }}>
+                      
+                      {/* GRUPO IZQUIERDA: Nivel, Nombre y Nota */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                        <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontFamily: 'Space Mono', whiteSpace: 'nowrap' }}>
+                          Nivel {m.level || '-'}
                         </span>
                         
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                          {detalles[m.id]?.dificultad && (
-                            <div style={{ display: 'flex', gap: '2px' }}>
-                              {[...Array(5)].map((_, i) => (
-                                <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill={i < detalles[m.id].dificultad ? "var(--cursada)" : "none"} stroke={i < detalles[m.id].dificultad ? "var(--cursada)" : "var(--muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                </svg>
-                              ))}
-                            </div>
-                          )}
-                          <span style={{ color: detalles[m.id]?.notaFinal ? 'var(--aprobada)' : 'var(--muted)', fontWeight: 'bold', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
-                            {detalles[m.id]?.notaFinal ? `Nota: ${detalles[m.id].notaFinal}` : 'Sin nota'}
-                          </span>
-                        </div>
+                        <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {m.name}
+                        </span>
+
+                        <span style={{ color: detalles[m.id]?.notaFinal ? 'var(--aprobada)' : 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold', flexShrink: 0, fontVariantNumeric: 'tabular-nums', paddingLeft: '4px' }}>
+                          {detalles[m.id]?.notaFinal ? `Nota: ${detalles[m.id].notaFinal}` : 'Sin nota'}
+                        </span>
                       </div>
-                    )} />
-                  </div>
-                )}
-
-                <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--muted)', fontSize: '1.1rem', fontWeight: 'bold' }}>Promedio Total</span>
-                  <span style={{ color: 'var(--text-strong)', fontSize: '2.2rem', fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{stats.promedio}</span>
-                </div>
-              </section>
-
-              <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ color: 'var(--text-strong)', marginBottom: '16px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 22v-2"/><path d="m17 20.66-1-1.73"/><path d="M11 10.27 7 3.34"/><path d="m20.66 17-1.73-1"/><path d="m3.34 7 1.73 1"/><path d="M14 12h8"/><path d="M2 12h2"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m17 3.34-1 1.73"/><path d="m11 13.73-4 6.93"/></svg>
-                  Configuración Académica
-                </h3>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <select 
-                    value={universidad}
-                    onChange={(e) => setUniversidad(e.target.value)}
-                    style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--glass-bg)', color: 'var(--text-strong)', fontSize: '0.95rem', outline: 'none' }}
-                  >
-                    {UNIVERSIDADES.map(uni => <option key={uni.id} value={uni.id} style={{ background: 'var(--panel)', color: 'var(--text-strong)' }}>{uni.name}</option>)}
-                  </select>
-
-                  <select 
-                    value={nuevaCarreraId}
-                    onChange={(e) => setNuevaCarreraId(e.target.value)}
-                    style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--glass-bg)', color: 'var(--text-strong)', fontSize: '0.95rem', outline: 'none' }}
-                  >
-                    {CARRERAS_POR_UNI[universidad]?.map(c => <option key={c.id} value={c.id} style={{ background: 'var(--panel)', color: 'var(--text-strong)' }}>{c.name}</option>)}
-                  </select>
-
-                  {nuevaCarreraId !== careerId && (
-                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '12px', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid rgba(239, 68, 68, 0.2)', fontWeight: 'bold' }}>
-                      ⚠️ Atención: Cambiar de carrera reiniciará por completo tu progreso actual.
+                      
+                      {/* GRUPO DERECHA: Estrellas (se ocultan en celular) */}
+                      {detalles[m.id]?.dificultad && (
+                        <div className="stars-container" style={{ display: 'flex', gap: '2px', marginLeft: '15px', flexShrink: 0 }}>
+                          {[...Array(5)].map((_, i) => (
+                            <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < detalles[m.id].dificultad ? "var(--cursada)" : "none"} stroke={i < detalles[m.id].dificultad ? "var(--cursada)" : "var(--muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
-
-                  <button 
-                    onClick={handleSaveCareer} 
-                    className="btn-danger" 
-                    disabled={nuevaCarreraId === careerId}
-                    style={{ opacity: nuevaCarreraId === careerId ? 0.5 : 1, cursor: nuevaCarreraId === careerId ? 'not-allowed' : 'pointer' }}
-                  >
-                    Cambiar Carrera
-                  </button>
+                  ))}
                 </div>
-              </section>
-            </div>
+              )}
 
+              <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: 'var(--muted)', fontSize: '1.1rem', fontWeight: 'bold' }}>Promedio Total</span>
+                <span style={{ color: 'var(--text-strong)', fontSize: '2.2rem', fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{stats.promedio}</span>
+              </div>
+            </section>
+
+            {/* SECCIÓN 2: GRÁFICO DE EVOLUCIÓN */}
             <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'block' }}>
               <h3 style={{ color: 'var(--text-strong)', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
@@ -391,6 +358,47 @@ export default function PerfilPage() {
                   )}
                 </div>
               )}
+            </section>
+
+            {/* SECCIÓN 3: CONFIGURACIÓN ACADÉMICA (AHORA AL FINAL) */}
+            <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+              <h3 style={{ color: 'var(--text-strong)', marginBottom: '16px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 22v-2"/><path d="m17 20.66-1-1.73"/><path d="M11 10.27 7 3.34"/><path d="m20.66 17-1.73-1"/><path d="m3.34 7 1.73 1"/><path d="M14 12h8"/><path d="M2 12h2"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m17 3.34-1 1.73"/><path d="m11 13.73-4 6.93"/></svg>
+                Configuración Académica
+              </h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <select 
+                  value={universidad}
+                  onChange={(e) => setUniversidad(e.target.value)}
+                  style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--glass-bg)', color: 'var(--text-strong)', fontSize: '0.95rem', outline: 'none' }}
+                >
+                  {UNIVERSIDADES.map(uni => <option key={uni.id} value={uni.id} style={{ background: 'var(--panel)', color: 'var(--text-strong)' }}>{uni.name}</option>)}
+                </select>
+
+                <select 
+                  value={nuevaCarreraId}
+                  onChange={(e) => setNuevaCarreraId(e.target.value)}
+                  style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--glass-bg)', color: 'var(--text-strong)', fontSize: '0.95rem', outline: 'none' }}
+                >
+                  {CARRERAS_POR_UNI[universidad]?.map(c => <option key={c.id} value={c.id} style={{ background: 'var(--panel)', color: 'var(--text-strong)' }}>{c.name}</option>)}
+                </select>
+
+                {nuevaCarreraId !== careerId && (
+                  <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '12px', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid rgba(239, 68, 68, 0.2)', fontWeight: 'bold' }}>
+                    ⚠️ Atención: Cambiar de carrera reiniciará por completo tu progreso actual.
+                  </div>
+                )}
+
+                <button 
+                  onClick={handleSaveCareer} 
+                  className="btn-danger" 
+                  disabled={nuevaCarreraId === careerId}
+                  style={{ opacity: nuevaCarreraId === careerId ? 0.5 : 1, cursor: nuevaCarreraId === careerId ? 'not-allowed' : 'pointer' }}
+                >
+                  Cambiar Carrera
+                </button>
+              </div>
             </section>
 
           </div>

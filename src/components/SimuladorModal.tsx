@@ -18,14 +18,17 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
 
   const [activeRightId, setActiveRightId] = useState<string | null>(null);
 
-  // Inicialización al abrir
+  // 🔥 NUEVOS ESTADOS PARA EL MODO DE SIMULACIÓN 🔥
+  const [simMode, setSimMode] = useState<'todas' | 'individual'>('todas');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedSingleId, setSelectedSingleId] = useState<string | null>(null);
+
   useEffect(() => {
     if (isOpen) {
       const estadoInicial: Record<string, 'aprobada' | 'cursada'> = {};
       ALL.forEach(m => {
-        // 🔥 AHORA INCLUIMOS CURSANDO Y CURSADAS (Finales pendientes) 🔥
         if (materias[m.id] === 'cursando' || materias[m.id] === 'cursada') {
-          estadoInicial[m.id] = 'aprobada'; // Por defecto simulamos que las aprobas
+          estadoInicial[m.id] = 'aprobada';
         }
       });
       setSimulacion(estadoInicial);
@@ -33,10 +36,12 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
       setPinnedId(null);
       setActiveRightId(null);
       setMobileMenu({ isOpen: false, x: 0, y: 0, subjectId: null });
+      setSimMode('todas');
+      setDropdownOpen(false);
+      setSelectedSingleId(null);
     }
   }, [isOpen, materias, ALL]);
 
-  // Cierre del menú móvil al hacer clic afuera o scrollear (Con corrección de closest)
   useEffect(() => {
     const handleOutsideInteraction = (e: MouseEvent | TouchEvent | Event) => {
       const target = e.target as HTMLElement;
@@ -46,30 +51,39 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
           setMobileMenu(prev => ({ ...prev, isOpen: false }));
           setActiveRightId(null); 
         }
+        // Cerrar el dropdown custom si se hace click afuera
+        if (!target.closest('.custom-select-wrapper')) {
+          setDropdownOpen(false);
+        }
       } else {
         setMobileMenu(prev => ({ ...prev, isOpen: false }));
         setActiveRightId(null); 
+        setDropdownOpen(false);
       }
     };
 
-    if (mobileMenu.isOpen || activeRightId) {
+    if (mobileMenu.isOpen || activeRightId || dropdownOpen) {
       window.addEventListener('click', handleOutsideInteraction);
       window.addEventListener('touchstart', handleOutsideInteraction, { passive: true });
-      window.addEventListener('scroll', handleOutsideInteraction, true); 
     }
 
     return () => {
       window.removeEventListener('click', handleOutsideInteraction);
       window.removeEventListener('touchstart', handleOutsideInteraction);
-      window.removeEventListener('scroll', handleOutsideInteraction, true);
     };
-  }, [mobileMenu.isOpen, activeRightId]);
+  }, [mobileMenu.isOpen, activeRightId, dropdownOpen]);
 
   if (!isOpen) return null;
 
-  // 🔥 NUEVO FILTRO: Incluye Cursando y Cursadas 🔥
   const materiasSimulables = ALL.filter(m => materias[m.id] === 'cursando' || materias[m.id] === 'cursada');
-  const estadoCombinado = { ...materias, ...simulacion };
+  
+  // 🔥 LÓGICA DE ESTADO COMBINADO INTELIGENTE 🔥
+  const estadoCombinado = simMode === 'todas' 
+    ? { ...materias, ...simulacion }
+    : { 
+        ...materias, 
+        ...(selectedSingleId ? { [selectedSingleId]: simulacion[selectedSingleId] || 'aprobada' } : {}) 
+      };
 
   const evaluarDisponibilidad = (subject: any, mapaEstados: Record<string, string>) => {
     if (!subject.correlCursada?.length && !subject.correlAprobada?.length) return true;
@@ -101,7 +115,6 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
     }));
   };
 
-  // MANEJADORES COLUMNA IZQUIERDA
   const handleLeftClick = (e: React.MouseEvent, m: any) => {
     e.stopPropagation();
     if (window.innerWidth <= 900) {
@@ -127,7 +140,6 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
     }
   };
 
-  // MANEJADORES COLUMNA DERECHA
   const handleUnlockedClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (window.innerWidth <= 900) {
@@ -136,6 +148,11 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
   };
 
   const activeLeftId = pinnedId || hoveredId;
+
+  // Filtrar qué materias mostramos en la columna izquierda
+  const materiasParaMostrar = simMode === 'todas' 
+    ? materiasSimulables 
+    : materiasSimulables.filter(m => m.id === selectedSingleId);
 
   return (
     <>
@@ -149,6 +166,8 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
         .simulador-modal {
           background: var(--bg); border: 1px solid var(--border);
           border-radius: 24px; width: 100%; max-width: 900px;
+          height: 80vh; 
+          min-height: 600px;
           max-height: 90vh; display: flex; flex-direction: column;
           box-shadow: 0 25px 50px rgba(0,0,0,0.3); overflow: hidden;
         }
@@ -159,7 +178,7 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
         }
         .simulador-body {
           display: grid; grid-template-columns: 1fr 1fr; gap: 30px;
-          padding: 30px; overflow-y: auto; flex: 1; position: relative;
+          padding: 30px 50px; overflow-y: auto; flex: 1; position: relative;
         }
         .simulador-columna { display: flex; flex-direction: column; gap: 15px; }
         
@@ -200,6 +219,21 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
           opacity: 1; padding-top: 10px; border-top-color: var(--border);
         }
 
+        .sim-dropdown {
+          position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+          background: var(--panel); border: 1px solid var(--border);
+          border-radius: 12px; max-height: 250px; overflow-y: auto;
+          z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+          display: flex; flex-direction: column;
+        }
+        .sim-dropdown-item {
+          padding: 12px 16px; border-bottom: 1px solid var(--border);
+          cursor: pointer; transition: background 0.2s;
+          font-weight: 600; color: var(--text-strong); font-size: 0.9rem;
+        }
+        .sim-dropdown-item:hover { background: var(--glass-hover); }
+        .sim-dropdown-item:last-child { border-bottom: none; }
+
         .sim-mobile-menu {
           position: fixed; background: var(--panel); border: 1px solid var(--border);
           border-radius: 12px; padding: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -220,6 +254,7 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
         @media (max-width: 900px) {
+          .simulador-modal { height: 90vh; min-height: auto; }
           .simulador-body { grid-template-columns: 1fr; gap: 40px; padding: 20px; }
           .simulador-columna { border-bottom: 1px dashed var(--border); padding-bottom: 20px; }
           .simulador-columna:last-child { border-bottom: none; padding-bottom: 0; }
@@ -234,7 +269,8 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
             <div>
               <h2 style={{ color: 'var(--text-strong)', margin: '0 0 4px 0', fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m12 16 4-4-4-4"/><path d="M8 12h8"/></svg>
-                Simulador
+                {/* 🔥 TITULO ACTUALIZADO 🔥 */}
+                ¿Qué destrabo?
               </h2>
               <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>
                 Descubrí qué materias destrabás al rendir tus finales y cursadas.
@@ -250,22 +286,91 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
             {/* COLUMNA IZQUIERDA: A SIMULAR */}
             <div className="simulador-columna">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--cursando)' }}></div>
-                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.1rem' }}>Materias a Simular</h3>
+                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.1rem' }}>Materias cursadas/cursando</h3>
               </div>
-              <p style={{ color: 'var(--muted)', fontSize: '0.8rem', margin: '-10px 0 10px 0' }}>
-                <span className="desktop-only">Click izq: Fijar. Click der: Cambiar estado.</span>
-                <span className="mobile-only">Tocá una materia para ver opciones.</span>
-              </p>
+              
+              <div style={{ display: 'flex', background: 'var(--glass-bg)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)', width: 'fit-content', marginBottom: '10px' }}>
+                {['todas', 'individual'].map((mode) => (
+                  <div
+                    key={mode}
+                    onClick={() => {
+                      setSimMode(mode as 'todas' | 'individual');
+                      setHoveredId(null);
+                      setPinnedId(null);
+                    }}
+                    style={{
+                      padding: '8px 16px', fontSize: '0.85rem', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease',
+                      color: simMode === mode ? '#fff' : 'var(--muted)',
+                      background: simMode === mode ? 'var(--cursando)' : 'transparent',
+                      boxShadow: simMode === mode ? '0 2px 10px rgba(0,0,0,0.2)' : 'none'
+                    }}
+                  >
+                    {mode === 'todas' ? 'Todas' : 'Elegir materia'}
+                  </div>
+                ))}
+              </div>
 
+              {/* 🔥 CUSTOM SELECT (Solo en modo individual) 🔥 */}
+              {simMode === 'individual' && (
+                <div className="custom-select-wrapper" style={{ position: 'relative', marginBottom: '10px' }}>
+                  <div 
+                     onClick={() => setDropdownOpen(!dropdownOpen)}
+                     style={{ padding: '14px 16px', background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold', color: 'var(--text-strong)' }}
+                  >
+                    <span>{selectedSingleId ? materiasSimulables.find(m => m.id === selectedSingleId)?.name : 'Seleccioná una materia...'}</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
+
+                  {dropdownOpen && (
+                     <div className="sim-dropdown custom-scrollbar">
+                        {materiasSimulables.length === 0 ? (
+                           <div style={{ padding: '16px', color: 'var(--muted)', textAlign: 'center', fontSize: '0.9rem' }}>No hay materias disponibles para simular.</div>
+                        ) : (
+                           materiasSimulables.map(m => (
+                              <div key={m.id} className="sim-dropdown-item" onClick={() => { setSelectedSingleId(m.id); setDropdownOpen(false); }}>
+                                 <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginRight: '8px', fontFamily: 'Space Mono' }}>N{m.level || '-'}</span>
+                                 {m.name}
+                              </div>
+                           ))
+                        )}
+                     </div>
+                  )}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
+                {simMode === 'todas' ? (
+                  <>
+                    <span className="desktop-only" style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                      <b style={{ color: 'var(--cursando)' }}>Click izquierdo:</b> Fijar.
+                    </span>
+                    <span className="desktop-only" style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                      <b style={{ color: 'var(--cursando)' }}>Click derecho:</b> Cambiar estado.
+                    </span>
+                    <span className="mobile-only" style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                      Tocá para fijar o cambiar de estado una materia.
+                    </span>
+                  </>
+                ) : (
+                  <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                    <b>Click derecho:</b> Cambiar estado simulado.
+                  </span>
+                )}
+              </div>
+
+              {/* RENDERIZADO DE TARJETAS */}
               {materiasSimulables.length === 0 ? (
                 <div style={{ padding: '20px', textAlign: 'center', color: 'var(--muted)', border: '1px dashed var(--border)', borderRadius: '12px' }}>
                   No tenés materias en curso ni finales pendientes.
                 </div>
+              ) : materiasParaMostrar.length === 0 && simMode === 'individual' ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--muted)', border: '1px dashed var(--border)', borderRadius: '12px' }}>
+                  Seleccioná una materia del menú para empezar.
+                </div>
               ) : (
-                materiasSimulables.map(m => {
+                materiasParaMostrar.map(m => {
                   const estSimulado = simulacion[m.id] || 'aprobada';
-                  const estReal = materias[m.id]; // 'cursando' o 'cursada'
+                  const estReal = materias[m.id]; 
                   
                   const isPinned = pinnedId === m.id;
                   const isHovered = !pinnedId && hoveredId === m.id;
@@ -273,20 +378,25 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
                   let isHighlighted = isPinned || isHovered;
                   let isDimmed = false;
                   
-                  if (pinnedId && !isPinned) isDimmed = true;
-                  if (!pinnedId && hoveredId && !isHovered) isDimmed = true;
+                  // En modo individual no hay "dimming" ni necesidad de "fijar" vistas
+                  if (simMode === 'todas') {
+                    if (pinnedId && !isPinned) isDimmed = true;
+                    if (!pinnedId && hoveredId && !isHovered) isDimmed = true;
+                  }
                   
                   return (
                     <div 
                       key={m.id}
                       className={`sim-card estado-${estSimulado} ${isHighlighted ? 'highlighted' : (isDimmed ? 'dimmed' : '')}`}
-                      onClick={(e) => handleLeftClick(e, m)} 
+                      onClick={(e) => {
+                        if (simMode === 'todas') handleLeftClick(e, m);
+                      }} 
                       onContextMenu={(e) => handleRightClick(e, m)} 
-                      onMouseEnter={() => { if (!pinnedId && window.innerWidth > 900) setHoveredId(m.id); }}
-                      onMouseLeave={() => { if (!pinnedId && window.innerWidth > 900) setHoveredId(null); }}
-                      style={{ cursor: 'pointer' }}
+                      onMouseEnter={() => { if (simMode === 'todas' && !pinnedId && window.innerWidth > 900) setHoveredId(m.id); }}
+                      onMouseLeave={() => { if (simMode === 'todas' && !pinnedId && window.innerWidth > 900) setHoveredId(null); }}
+                      style={{ cursor: simMode === 'todas' ? 'pointer' : 'default' }}
                     >
-                      {isPinned && (
+                      {isPinned && simMode === 'todas' && (
                         <svg className="pin-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>
                         </svg>
@@ -297,13 +407,13 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
                           {m.level ? `Nivel ${m.level}` : 'Electiva'}
                         </span>
                         <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: estReal === 'cursada' ? 'var(--cursada)' : 'var(--cursando)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          Real: {estReal}
+                          Estado: {estReal}
                         </span>
                       </div>
                       
                       <div style={{ color: 'var(--text-strong)', fontWeight: 'bold', fontSize: '1.05rem', paddingRight: '20px' }}>{m.name}</div>
                       <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: estSimulado === 'aprobada' ? 'var(--aprobada)' : 'var(--cursada)' }}>
-                        Simulando: {estSimulado === 'aprobada' ? 'Final Aprobado' : 'Cursada Firmada'}
+                        Estado de prueba: {estSimulado === 'aprobada' ? 'Aprobada' : 'Cursada'}
                       </div>
                     </div>
                   );
@@ -314,12 +424,11 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
             {/* COLUMNA DERECHA: DESBLOQUEADAS */}
             <div className="simulador-columna">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--available-border)' }}></div>
-                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.1rem' }}>Nuevas Desbloqueadas</h3>
+                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.1rem' }}>Materias a desbloquear</h3>
               </div>
               <p style={{ color: 'var(--muted)', fontSize: '0.8rem', margin: '-10px 0 10px 0' }}>
-                <span className="desktop-only">Pasá el mouse para ver qué las destraba.</span>
-                <span className="mobile-only">Tocá una materia para ver qué la destraba.</span>
+                <span className="desktop-only">Pasa el mouse por encima para ver que materias la destraba.</span>
+                <span className="mobile-only">Toca una materia para ver que materias la destraba.</span>
               </p>
 
               {materiasDesbloqueadas.length === 0 ? (

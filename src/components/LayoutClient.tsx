@@ -385,12 +385,14 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                 </>
               ) : (
                 <>
-                  <Link href="/blog" style={{ textDecoration: 'none' }}>
-                    <button style={{ ...navBtnBase, background: pathname.startsWith('/blog') ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname.startsWith('/blog') ? 'black' : 'var(--text-strong)', border: pathname.startsWith('/blog') ? 'none' : '1px solid var(--border)' }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
-                      Blog y Novedades
-                    </button>
-                  </Link>
+                  {pathname !== '/blog' && (
+                    <Link href="/blog" style={{ textDecoration: 'none' }}>
+                      <button style={{ ...navBtnBase, background: pathname.startsWith('/blog') ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname.startsWith('/blog') ? 'black' : 'var(--text-strong)', border: pathname.startsWith('/blog') ? 'none' : '1px solid var(--border)' }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                        Blog y Novedades
+                      </button>
+                    </Link>
+                  )}
                   
                   <Link href="/login" style={{ textDecoration: 'none' }}>
                     <button style={{ ...navBtnBase, background: 'var(--cursando)', color: 'black', border: 'none' }}>
@@ -483,12 +485,16 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               </>
             ) : (
               <>
-                <Link href="/blog" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname.startsWith('/blog') ? 'active-route' : ''}`}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
-                  Blog y Novedades
-                </Link>
+                {pathname !== '/blog' && (
+                  <>
+                    <Link href="/blog" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname.startsWith('/blog') ? 'active-route' : ''}`}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                      Blog y Novedades
+                    </Link>
 
-                <div className="sidebar-divider" style={{ margin: '10px 0' }}></div>
+                    <div className="sidebar-divider" style={{ margin: '10px 0' }}></div>
+                  </>
+                )}
 
                 <Link href="/login" className="sidebar-action-btn sidebar-action-btn-custom" style={{ background: 'var(--cursando)', color: 'black', justifyContent: 'center' }}>
                   Iniciar Sesión / Registrarse

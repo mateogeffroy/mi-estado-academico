@@ -327,7 +327,7 @@ export default function Dashboard() {
                 
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', width: '100%' }}>
                   <Link href="/plan" style={{ textDecoration: 'none', flex: '1 1 160px', maxWidth: '280px' }}>
-                    <button id="tour-btn-cursada" className={`${tourStep === 2 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold', background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text-strong)', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>Plan de estudio</button>
+                    <button id="tour-btn-plan" className={`${tourStep === 2 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold', background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text-strong)', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>Plan de Estudios</button>
                   </Link>
                   <Link href="/cursada" style={{ textDecoration: 'none', flex: '1 1 160px', maxWidth: '280px' }}>
                     <button id="tour-btn-cursada" className={`${tourStep === 3 ? 'tour-highlighted' : ''}`} style={{ width: '100%', padding: '14px', fontSize: '0.95rem', borderRadius: '12px', fontWeight: 'bold', background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text-strong)', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>Mi Cursada</button>

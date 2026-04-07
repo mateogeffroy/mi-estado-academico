@@ -163,7 +163,6 @@ export default function AuthPage() {
 
         .desktop-layout { display: none !important; }
 
-        /* 🔥 BOTÓN DE TEMA FLOTANTE 🔥 */
         .floating-theme-btn {
           position: absolute;
           top: 20px;
@@ -181,6 +180,7 @@ export default function AuthPage() {
           z-index: 9999;
           box-shadow: 0 4px 12px rgba(0,0,0,0.1);
           transition: transform 0.2s ease, background 0.2s ease;
+          padding: 0;
         }
         .floating-theme-btn:hover {
           transform: scale(1.1);
@@ -303,11 +303,11 @@ export default function AuthPage() {
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         >
           {mounted && theme === 'dark' ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '22px', height: '22px' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '24px', height: '24px' }}>
               <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
             </svg>
           ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '22px', height: '22px' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '24px', height: '24px' }}>
               <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
             </svg>
           )}
@@ -699,7 +699,7 @@ export default function AuthPage() {
                       <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
                     </div>
 
-                    <button onClick={handleGoogleLogin} type="button" className="auth-google-btn">
+                    <button style={{ color: 'BLACK', backgroundColor: 'white'}} onClick={handleGoogleLogin} type="button" className="auth-google-btn">
                       <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
