@@ -10,7 +10,9 @@ export default function Dashboard() {
   const { stats, user, careerData, careerId } = usePlan();
   
   const [nombreDinamico, setNombreDinamico] = useState('');
-  
+  const [feedback, setFeedback] = useState({ titulo: '', descripcion: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedbackMsg, setFeedbackMsg] = useState({ type: '', text: '' });
   const [tourStep, setTourStep] = useState(0);
 
   useEffect(() => {
@@ -102,6 +104,36 @@ export default function Dashboard() {
   const novedadesFiltradas = NOVEDADES.filter(post => 
     post.targetCareers.includes(careerId)
   );
+
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setFeedbackMsg({ type: '', text: '' });
+
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          titulo: feedback.titulo,
+          descripcion: feedback.descripcion,
+          userName: user?.user_metadata?.full_name || 'Usuario desconocido',
+          userEmail: user?.email || 'Sin email'
+        })
+      });
+
+      if (res.ok) {
+        setFeedbackMsg({ type: 'success', text: '¡Gracias por tu aporte! Tu mensaje fue enviado con éxito a los desarrolladores.' });
+        setFeedback({ titulo: '', descripcion: '' });
+      } else {
+        throw new Error('Error al enviar');
+      }
+    } catch (error) {
+      setFeedbackMsg({ type: 'error', text: 'Hubo un error al enviar el mensaje. Por favor, intentá de nuevo.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -380,6 +412,57 @@ export default function Dashboard() {
             </section>
           </div>
         )}
+        {/* 🔥 NUEVA SECCIÓN DE FEEDBACK 🔥 */}
+        <div className="section-row" style={{ marginTop: '20px', marginBottom: '20px' }}>
+          <section style={{ padding: '0 12px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+            <div className="premium-card no-hover-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <h3 style={{ color: 'var(--text-strong)', margin: '0 0 8px 0', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                  Dejanos tu opinión
+                </h3>
+                <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: 0, lineHeight: 1.5 }}>
+                  ¿Encontraste un error, algo te pareció confuso o tenés alguna sugerencia? Tu crítica nos ayuda un montón a mejorar. <br/>
+                  <strong style={{ color: 'var(--text-strong)' }}>Aviso:</strong> Para poder hacer un seguimiento, este mensaje no es anónimo; se enviará junto con tu nombre y correo registrado.
+                </p>
+              </div>
+
+              {feedbackMsg.text && (
+                <div style={{ background: feedbackMsg.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: feedbackMsg.type === 'success' ? '#10b981' : '#ef4444', padding: '12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 'bold', border: `1px solid ${feedbackMsg.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}` }}>
+                  {feedbackMsg.text}
+                </div>
+              )}
+
+              <form onSubmit={handleFeedbackSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Título breve</label>
+                  <input 
+                    type="text" 
+                    value={feedback.titulo} 
+                    onChange={e => setFeedback({...feedback, titulo: e.target.value})} 
+                    required 
+                    placeholder="Ej: Error en correlativas / Sugerencia visual" 
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--glass-bg)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'inherit' }} 
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Desarrollo de la crítica</label>
+                  <textarea 
+                    value={feedback.descripcion} 
+                    onChange={e => setFeedback({...feedback, descripcion: e.target.value})} 
+                    required 
+                    rows={4} 
+                    placeholder="Explicá detalladamente tu observación, qué estabas haciendo o qué te gustaría ver..." 
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--glass-bg)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'inherit', resize: 'none' }} 
+                  />
+                </div>
+                <button type="submit" className="btn-primary" disabled={isSubmitting} style={{ padding: '14px', borderRadius: '8px', fontWeight: 'bold', opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
+                  {isSubmitting ? 'Enviando...' : 'Enviar mensaje'}
+                </button>
+              </form>
+            </div>
+          </section>
+        </div>
       </main>
     </>
   );

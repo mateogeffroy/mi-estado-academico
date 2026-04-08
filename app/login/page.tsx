@@ -59,13 +59,26 @@ export default function AuthPage() {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         
-        setSuccessMsg('¡Cuenta creada con éxito! Revisá tu correo electrónico para confirmar la cuenta.');
+        setSuccessMsg('¡Cuenta creada con éxito! Revisá tu correo electrónico para confirmar la cuenta (si no lo ves, chequeá la carpeta de SPAM).');
         setIsLogin(true); 
         setPassword('');
         setConfirmPassword('');
       }
     } catch (err: any) {
-      setError(err.message || 'Ocurrió un error al procesar la solicitud.');
+      let errorMessage = err.message || 'Ocurrió un error al procesar la solicitud.';
+      
+      if (errorMessage.includes('For security purposes, you can only request this after')) {
+        const seconds = errorMessage.match(/\d+/)?.[0] || 'unos';
+        errorMessage = `Por seguridad, debés esperar ${seconds} segundos antes de volver a intentarlo.`;
+      } else if (errorMessage.toLowerCase().includes('invalid login credentials')) {
+        errorMessage = 'El correo o la contraseña son incorrectos.';
+      } else if (errorMessage.toLowerCase().includes('user already registered')) {
+        errorMessage = 'Este correo electrónico ya está registrado.';
+      } else if (errorMessage.toLowerCase().includes('rate limit')) {
+        errorMessage = 'Demasiados intentos. Por favor, esperá un momento.';
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
