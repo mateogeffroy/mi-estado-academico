@@ -56,7 +56,13 @@ export default function AuthPage() {
         if (error) throw error;
         router.push('/'); 
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`
+          }
+        });
         if (error) throw error;
         
         setSuccessMsg('¡Cuenta creada con éxito! Revisá tu correo electrónico para confirmar la cuenta.');
