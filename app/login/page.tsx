@@ -56,7 +56,13 @@ export default function AuthPage() {
         if (error) throw error;
         router.push('/'); 
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`
+          }
+        });
         if (error) throw error;
         
         setSuccessMsg('¡Cuenta creada con éxito! Revisá tu correo electrónico para confirmar la cuenta (si no lo ves, chequeá la carpeta de SPAM).');
@@ -90,7 +96,7 @@ export default function AuthPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback` 
+          redirectTo: `${window.location.origin}/` 
         }
       });
       if (error) throw error;

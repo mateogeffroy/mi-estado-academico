@@ -87,7 +87,7 @@ export default function MateriaPage() {
     return (
       <div style={{ textAlign: 'center', paddingTop: '150px', paddingBottom: '100px', color: 'var(--text-strong)' }}>
         <h2>Materia no encontrada</h2>
-        <button className="btn-secondary" onClick={() => router.push('/cursada')} style={{ marginTop: '20px', whiteSpace: 'nowrap' }}>
+        <button className="btn-secondary" onClick={() => router.push('/')} style={{ marginTop: '20px', whiteSpace: 'nowrap' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
           </svg>
@@ -208,7 +208,7 @@ export default function MateriaPage() {
             </div>
           </div>
 
-          <Link href="/cursada" style={{ textDecoration: 'none', flexShrink: 0 }}>
+          <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
             <button className="btn-secondary" style={{ whiteSpace: 'nowrap' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
               Volver a Cursada
