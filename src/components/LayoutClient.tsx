@@ -13,6 +13,9 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasSession, setHasSession] = useState(false);
 
+  // Estado para el modal de Feedback
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [userProfile, setUserProfile] = useState({ name: '', avatarUrl: '', initials: '' });
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -23,7 +26,8 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const router = useRouter(); 
 
-  const isCursadaActive = pathname === '/cursada' || pathname?.startsWith('/materia/');
+  // Nueva lógica de rutas activas
+  const isBlogActive = pathname?.startsWith('/blog');
 
   useEffect(() => {
     setIsSidebarOpen(false);
@@ -43,16 +47,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    if (pathname === '/plan' && typeof window !== 'undefined') {
-      const hasSeenPlanTutorial = localStorage.getItem('mea_tutorial_plan_v2');
-      if (!hasSeenPlanTutorial) {
-        setTimeout(() => setIsModalOpen(true), 500);
-        localStorage.setItem('mea_tutorial_plan_v2', 'true');
-      }
-    }
-  }, [pathname]);
 
   const fetchUserData = async () => {
     const { data } = await supabase.auth.getUser();
@@ -177,85 +171,33 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       <style>{`
         .nav-full-menu { display: flex; }
         .nav-burger-btn { display: none; }
-        
-        .sidebar-action-btn-custom { 
-          padding: 12px 14px !important; 
-          transition: all 0.4s ease !important;
-        }
-
-        .theme-toggle-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-          background: transparent;
-          border: none;
-          color: var(--muted);
-          cursor: pointer;
-          transition: all 0.4s ease;
-          padding: 0; /* 🔥 RELLENO ELIMINADO PARA DARLE ESPACIO AL ICONO 🔥 */
-        }
-        .theme-toggle-btn:hover {
-          color: var(--text-strong);
-          background: var(--glass-hover);
-        }
-
-        .sidebar-btn-hover:hover {
-          color: var(--text-strong) !important;
-          background: var(--glass-hover) !important;
-        }
-
-        .avatar-btn {
-          width: 40px; height: 40px; border-radius: 50%;
-          background: var(--glass-bg); 
-          color: var(--text-strong);
-          display: flex; align-items: center; justify-content: center;
-          font-weight: 800; font-size: 1rem; cursor: pointer;
-          border: 2px solid transparent; 
-          transition: all 0.4s ease;
-          overflow: hidden; flex-shrink: 0; padding: 0;
-        }
-        .avatar-btn:hover { 
-          transform: scale(1.05); 
-          background: var(--glass-hover); 
-        }
-        .avatar-btn.active-profile {
-          border-color: var(--cursando); 
-        }
+        .sidebar-action-btn-custom { padding: 12px 14px !important; transition: all 0.4s ease !important; }
+        .theme-toggle-btn { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: transparent; border: none; color: var(--muted); cursor: pointer; transition: all 0.4s ease; padding: 0; }
+        .theme-toggle-btn:hover { color: var(--text-strong); background: var(--glass-hover); }
+        .sidebar-btn-hover:hover { color: var(--text-strong) !important; background: var(--glass-hover) !important; }
+        .avatar-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--glass-bg); color: var(--text-strong); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; cursor: pointer; border: 2px solid transparent; transition: all 0.4s ease; overflow: hidden; flex-shrink: 0; padding: 0; }
+        .avatar-btn:hover { transform: scale(1.05); background: var(--glass-hover); }
+        .avatar-btn.active-profile { border-color: var(--cursando); }
         .avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
-
-        .profile-dropdown-menu {
-          position: absolute; top: calc(100% + 10px); right: 0;
-          background: var(--panel); border: 1px solid var(--border);
-          border-radius: 12px; padding: 8px; min-width: 180px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-          display: flex; flex-direction: column; gap: 4px;
-          animation: fadeIn 0.2s ease-out; z-index: 1500;
-        }
-        .profile-dropdown-item {
-          display: flex; align-items: center; gap: 10px;
-          padding: 10px 14px; border-radius: 8px; font-weight: 600;
-          font-size: 0.9rem; color: var(--text-strong); cursor: pointer;
-          text-decoration: none; transition: background 0.2s ease;
-          background: transparent; border: none; width: 100%; text-align: left;
-        }
+        .profile-dropdown-menu { position: absolute; top: calc(100% + 10px); right: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 8px; min-width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 4px; animation: fadeIn 0.2s ease-out; z-index: 1500; }
+        .profile-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; color: var(--text-strong); cursor: pointer; text-decoration: none; transition: background 0.2s ease; background: transparent; border: none; width: 100%; text-align: left; }
         .profile-dropdown-item:hover { background: var(--glass-hover); }
         .profile-dropdown-item.danger { color: #ef4444; }
         .profile-dropdown-item.danger:hover { background: rgba(239, 68, 68, 0.1); }
-
-        @media (max-width: 1150px) {
-          .nav-full-menu { display: none !important; }
-          .nav-burger-btn { display: flex !important; }
-        }
+        @media (max-width: 1150px) { .nav-full-menu { display: none !important; } .nav-burger-btn { display: flex !important; } }
+        
+        /* Modal de Feedback */
+        .feedback-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--overlay-bg); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; animation: fadeIn 0.2s forwards; padding: 20px; }
+        .feedback-modal { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 500px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 20px; position: relative; }
+        .feedback-input, .feedback-textarea { width: 100%; background: var(--glass-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text-strong); font-family: inherit; font-size: 0.95rem; }
+        .feedback-textarea { resize: vertical; min-height: 120px; }
+        .feedback-input:focus, .feedback-textarea:focus { outline: none; border-color: var(--cursando); }
       `}</style>
 
       <header>
         <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', position: 'relative', zIndex: 1000 }}>
           
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-            
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <img src="/icon.png" alt="Logo Mi Estado Académico" style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0 }} />
               <div className="header-titles">
@@ -267,7 +209,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             </Link>
 
             <div className="nav-full-menu" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: '20px' }}>
-              
               {hasSession && pathname === '/' && (
                 <>
                   <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
@@ -276,47 +217,19 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                   </button>
                   
                   <Link href="https://cafecito.app/mateogeffroy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                    <button style={{ ...navBtnBase, padding: '6px 12px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }} onMouseOver={(e) => { e.currentTarget.style.background = '#f59e0b'; e.currentTarget.style.color = 'black'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'; e.currentTarget.style.color = '#f59e0b'; }}>
+                    <button style={{ ...navBtnBase, padding: '6px 12px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4-4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
                       Cafecito
                     </button>
                   </Link>
                 </>
               )}
-
-              {hasSession && pathname === '/plan' && (
-                <>
-                  <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
-                  <button className="help-btn" onClick={() => setIsModalOpen(true)} title="Ver instrucciones del Plan">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  </button>
-                </>
-              )}
-
             </div>
-
-          </div>
-
-          <div className="nav-full-menu" style={{ flex: 1.5, justifyContent: 'center' }}>
-            {pathname === '/plan' && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '8px 18px', fontSize: '0.7rem', color: 'var(--muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot ld-disabled" style={{ width: '8px', height: '8px' }}></div>Bloqueada</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot ld-available" style={{ width: '8px', height: '8px' }}></div>Disponible</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot" style={{ backgroundColor: 'var(--cursando)', width: '8px', height: '8px' }}></div>Cursando</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot ld-cursada" style={{ width: '8px', height: '8px' }}></div>Cursada</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="legend-dot ld-aprobada" style={{ width: '8px', height: '8px' }}></div>Aprobada</div>
-              </div>
-            )}
           </div>
 
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             <div className="nav-full-menu" style={{ gap: '10px', alignItems: 'center' }}>
-              
-              <button 
-                className="theme-toggle-btn" 
-                title="Alternar tema"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              >
+              <button className="theme-toggle-btn" title="Alternar tema" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                 {mounted && theme === 'dark' ? (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '24px', height: '24px' }}>
                     <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
@@ -346,10 +259,11 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                     </button>
                   </Link>
                   
-                  <Link href="/cursada" style={{ textDecoration: 'none' }}>
-                    <button style={{ ...navBtnBase, background: isCursadaActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isCursadaActive ? 'black' : 'var(--text-strong)', border: isCursadaActive ? 'none' : '1px solid var(--border)' }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                      Mi Cursada
+                  {/* 🔥 BOTÓN DE BLOG EN LUGAR DE CURSADA 🔥 */}
+                  <Link href="/blog" style={{ textDecoration: 'none' }}>
+                    <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                      Blog
                     </button>
                   </Link>
 
@@ -386,12 +300,11 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               ) : (
                 <>
                   <Link href="/blog" style={{ textDecoration: 'none' }}>
-                    <button style={{ ...navBtnBase, background: pathname.startsWith('/blog') ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname.startsWith('/blog') ? 'black' : 'var(--text-strong)', border: pathname.startsWith('/blog') ? 'none' : '1px solid var(--border)' }}>
+                    <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
                       Blog y Novedades
                     </button>
                   </Link>
-                  
                   <Link href="/login" style={{ textDecoration: 'none' }}>
                     <button style={{ ...navBtnBase, background: 'var(--cursando)', color: 'black', border: 'none' }}>
                       Iniciar Sesión / Registrarse
@@ -402,12 +315,9 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             </div>
 
             <button className="nav-burger-btn hamburger-btn" onClick={() => setIsSidebarOpen(true)}>
-              <div className={`hamburger-icon ${isSidebarOpen ? 'open' : ''}`}>
-                <span></span><span></span><span></span>
-              </div>
+              <div className={`hamburger-icon ${isSidebarOpen ? 'open' : ''}`}><span></span><span></span><span></span></div>
             </button>
           </div>
-
         </div>
       </header>
 
@@ -420,9 +330,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         </div>
         
         <div className="sidebar-content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '16px', gap: '0' }}>
-          
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-            
             {hasSession ? (
               <>
                 <Link href="/" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname === '/' ? 'active-route' : ''}`}>
@@ -433,120 +341,51 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
                   Plan de Estudios
                 </Link>
-                <Link href="/cursada" className={`sidebar-action-btn sidebar-action-btn-custom ${isCursadaActive ? 'active-route' : ''}`}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  Mi Cursada
+                <Link href="/blog" className={`sidebar-action-btn sidebar-action-btn-custom ${isBlogActive ? 'active-route' : ''}`}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                  Blog
                 </Link>
-
                 <Link href="/perfil" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname === '/perfil' ? 'active-route' : ''}`}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   Mi Perfil
                 </Link>
-
-                {pathname === '/' && (
-                  <div style={{ marginTop: '10px' }}>
-                    <div className="sidebar-divider" style={{ margin: '10px 0' }}></div>
-                    <button onClick={() => { setIsSidebarOpen(false); window.dispatchEvent(new Event('start-home-tour')); }} className="sidebar-action-btn sidebar-action-btn-custom" style={{ color: 'var(--cursando)', borderColor: 'var(--border)', background: 'transparent', display: 'flex', alignItems: 'center', gap: '12px', width: '100%', textAlign: 'left' }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                      Guía de inicio
-                    </button>
-                    <Link href="https://cafecito.app/mateogeffroy" target="_blank" rel="noopener noreferrer" className="sidebar-action-btn sidebar-action-btn-custom" style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.2)', background: 'rgba(245, 158, 11, 0.05)', display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4-4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
-                      Invitame un Cafecito
-                    </Link>
-                  </div>
-                )}
-
-                {pathname === '/plan' && (
-                  <div style={{ marginTop: '10px' }}>
-                    <div className="sidebar-divider" style={{ margin: '10px 0' }}></div>
-                    
-                    <div className="sidebar-legend" style={{ padding: '0 4px' }}>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-strong)', fontWeight: 'bold', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Referencias</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem', color: 'var(--muted)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div className="legend-dot ld-disabled" style={{ width: '10px', height: '10px', borderRadius: '50%' }}></div> Bloqueada</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div className="legend-dot ld-available" style={{ width: '10px', height: '10px', borderRadius: '50%' }}></div> Disponible</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div className="legend-dot" style={{ backgroundColor: 'var(--cursando)', width: '10px', height: '10px', borderRadius: '50%' }}></div> Cursando</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div className="legend-dot ld-cursada" style={{ width: '10px', height: '10px', borderRadius: '50%' }}></div> Cursada</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div className="legend-dot ld-aprobada" style={{ width: '10px', height: '10px', borderRadius: '50%' }}></div> Aprobada</div>
-                      </div>
-                    </div>
-                    
-                    <div className="sidebar-divider" style={{ margin: '12px 0' }}></div>
-                    
-                    <button className="sidebar-action-btn sidebar-action-btn-custom" onClick={() => { setIsSidebarOpen(false); setIsModalOpen(true); }} style={{ justifyContent: 'center', background: 'var(--cursando)', color: 'black', border: 'none', marginTop: '4px', width: '100%' }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                      ¿Cómo usar el Plan?
-                    </button>
-                  </div>
-                )}
               </>
             ) : (
               <>
-                <Link href="/blog" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname.startsWith('/blog') ? 'active-route' : ''}`}>
+                <Link href="/blog" className={`sidebar-action-btn sidebar-action-btn-custom ${isBlogActive ? 'active-route' : ''}`}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
                   Blog y Novedades
                 </Link>
-
                 <div className="sidebar-divider" style={{ margin: '10px 0' }}></div>
-
                 <Link href="/login" className="sidebar-action-btn sidebar-action-btn-custom" style={{ background: 'var(--cursando)', color: 'black', justifyContent: 'center' }}>
                   Iniciar Sesión / Registrarse
                 </Link>
               </>
             )}
           </div>
-
           <div style={{ marginTop: 'auto' }}>
-            <div className="sidebar-divider" style={{ margin: '10px 0' }}></div>
-            
-            <button 
-              className="sidebar-action-btn sidebar-action-btn-custom sidebar-btn-hover" 
-              title="Alternar tema" 
-              onClick={() => {
-                setTheme(theme === 'dark' ? 'light' : 'dark');
-                setIsSidebarOpen(false);
-              }}
-              style={{ color: 'var(--muted)', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', gap: '12px', width: '100%', textAlign: 'left', marginBottom: hasSession ? '8px' : '0' }}
-            >
-              {mounted && theme === 'dark' ? (
-                <>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '20px', height: '20px' }}>
-                    <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
-                  </svg>
-                  Modo Claro
-                </>
-              ) : (
-                <>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '20px', height: '20px' }}>
-                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-                  </svg>
-                  Modo Oscuro
-                </>
-              )}
-            </button>
-
             {hasSession && (
-              <button className="sidebar-action-btn sidebar-action-btn-custom btn-danger-sidebar" onClick={handleLogout} style={{ width: '100%' }}>
+              <button className="sidebar-action-btn sidebar-action-btn-custom btn-danger-sidebar" onClick={handleLogout} style={{ width: '100%', marginTop: '10px' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 Cerrar Sesión
               </button>
             )}
           </div>
-
         </div>
       </aside>
 
       <WelcomeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
+      {/* Contenido principal de las páginas */}
       <div>{children}</div>
 
+      {/* FOOTER ACTUALIZADO CON BOTÓN DE SUGERENCIAS */}
       <footer style={{ background: 'var(--panel)', borderTop: '1px solid var(--border)', padding: '30px 20px', marginTop: 'auto' }}>
         <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
           <div style={{ color: 'var(--muted)', fontSize: '0.8rem', textAlign: 'center', flex: '1 1 auto' }}>
             © {new Date().getFullYear()} Mateo Geffroy - <strong>Mi Estado Académico</strong>
           </div>
-          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', alignItems: 'center', flex: '1 1 auto', fontSize: '0.8rem', color: 'var(--muted)' }}>
+          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', alignItems: 'center', flex: '1 1 auto', fontSize: '0.8rem', color: 'var(--muted)', flexWrap: 'wrap' }}>
             <Link href="/terminos" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-strong)'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>
               Términos y Condiciones
             </Link>
@@ -554,9 +393,58 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             <Link href="/privacidad" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-strong)'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}>
               Políticas de Privacidad
             </Link>
+            <span style={{ opacity: 0.5 }}>|</span>
+            <button 
+              onClick={() => setIsFeedbackModalOpen(true)}
+              style={{ background: 'transparent', border: 'none', color: 'inherit', padding: 0, fontSize: 'inherit', cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '6px' }} 
+              onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-strong)'} 
+              onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Dejanos tu opinión
+            </button>
           </div>
         </div>
       </footer>
+
+      {/* 🔥 MODAL DE OPINIÓN/FEEDBACK 🔥 */}
+      {isFeedbackModalOpen && (
+        <div className="feedback-modal-overlay" onClick={() => setIsFeedbackModalOpen(false)}>
+          <div className="feedback-modal" onClick={(e) => e.stopPropagation()}>
+            <button 
+              onClick={() => setIsFeedbackModalOpen(false)} 
+              style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer', padding: '4px' }}
+            >
+              ✕
+            </button>
+            
+            <div>
+              <h2 style={{ color: 'var(--text-strong)', margin: '0 0 8px 0', fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Dejanos tu opinión
+              </h2>
+              <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: '1.5', margin: 0 }}>
+                ¿Encontraste un error, algo te pareció confuso o tenés alguna sugerencia? Tu crítica nos ayuda un montón a mejorar.
+              </p>
+            </div>
+
+            <form onSubmit={(e) => { e.preventDefault(); alert("¡Mensaje enviado!"); setIsFeedbackModalOpen(false); }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Título Breve</label>
+                <input type="text" className="feedback-input" placeholder="Ej: Error en correlativas / Sugerencia visual" required />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Desarrollo de la crítica</label>
+                <textarea className="feedback-textarea" placeholder="Explicá detalladamente tu observación, qué estabas haciendo o qué te gustaría ver..." required></textarea>
+              </div>
+              <button type="submit" className="btn-primary" style={{ padding: '14px', fontSize: '1rem', marginTop: '10px' }}>
+                Enviar mensaje
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
     </>
   );
 }
