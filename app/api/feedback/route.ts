@@ -11,7 +11,7 @@ export async function POST(request: Request) {
       // 🔥 ACÁ ESTÁ EL CAMBIO: Usamos tu dominio verificado 🔥
       from: 'Feedback App <noreply@miestadoacademico.com.ar>', 
       to: ['mateogeffroy.dev@gmail.com'],
-      subject: `💡 Nuevo Feedback: ${titulo}`,
+      subject: `Nuevo Feedback: ${titulo}`,
       html: `
         <h2>Nuevo mensaje de feedback</h2>
         <p><strong>Usuario:</strong> ${userName} (${userEmail})</p>
