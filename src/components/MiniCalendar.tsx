@@ -11,21 +11,19 @@ export default function MiniCalendar({ detalles, ALL }: MiniCalendarProps) {
   const [viewDate, setViewDate] = useState(new Date());
   const [hoveredDayData, setHoveredDayData] = useState<{ day: number, events: string[] } | null>(null);
   
-  // Detectar si estamos en un celular/pantalla táctil para cambiar hover por clic
+  // 1. Detectamos si es un dispositivo táctil para cambiar el comportamiento
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
+    // Verificamos si el dispositivo soporta eventos táctiles
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
-  }, []);
 
-  // Cerrar el tooltip en celulares si tocan en cualquier otro lado de la pantalla
-  useEffect(() => {
+    // Cerramos el globo si se toca fuera del calendario en el celular
     const handleClickOutside = () => setHoveredDayData(null);
-    if (isTouchDevice) {
-      document.addEventListener('click', handleClickOutside);
-    }
+    document.addEventListener('click', handleClickOutside);
+    
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [isTouchDevice]);
+  }, []);
 
   const currentMonth = viewDate.getMonth();
   const currentYear = viewDate.getFullYear();
@@ -36,16 +34,13 @@ export default function MiniCalendar({ detalles, ALL }: MiniCalendarProps) {
   const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const nombreMesActual = `${meses[currentMonth]} ${currentYear}`;
   
-  // Variables para la lógica de los días fantasma
   const diasDelMes = new Date(currentYear, currentMonth + 1, 0).getDate();
   const primerDiaDelMes = new Date(currentYear, currentMonth, 1).getDay();
   const diasMesAnterior = new Date(currentYear, currentMonth, 0).getDate();
 
-  // Calcular celdas totales para rellenar la grilla final del mes
   const totalCeldas = Math.ceil((primerDiaDelMes + diasDelMes) / 7) * 7;
   const diasSiguientes = totalCeldas - (primerDiaDelMes + diasDelMes);
 
-  // Mapear eventos al día correspondiente
   const eventosPorDia: Record<number, string[]> = {};
   Object.keys(detalles || {}).forEach(materiaId => {
     const detalleMateria = detalles[materiaId];
@@ -65,11 +60,10 @@ export default function MiniCalendar({ detalles, ALL }: MiniCalendarProps) {
   const handlePrevMonth = () => setViewDate(new Date(currentYear, currentMonth - 1, 1));
   const handleNextMonth = () => setViewDate(new Date(currentYear, currentMonth + 1, 1));
 
-  // Función para determinar colores de la celda según el tipo de evento
   const getDayStyles = (esHoy: boolean, eventosDelDia: string[] | undefined) => {
-    const colorParcial = 'var(--cal-parcial, rgba(59, 130, 246, 0.25))'; // Azul
-    const colorTP = 'var(--cal-tp, rgba(239, 68, 68, 0.25))'; // Rojo
-    const colorExpo = 'var(--cal-expo, rgba(34, 197, 94, 0.25))'; // Verde
+    const colorParcial = 'var(--cal-parcial, rgba(59, 130, 246, 0.25))'; 
+    const colorTP = 'var(--cal-tp, rgba(239, 68, 68, 0.25))'; 
+    const colorExpo = 'var(--cal-expo, rgba(34, 197, 94, 0.25))'; 
     
     let background = 'transparent';
     let borderColor = 'transparent';
@@ -87,9 +81,7 @@ export default function MiniCalendar({ detalles, ALL }: MiniCalendarProps) {
       }
     }
 
-    if (esHoy) {
-      borderColor = 'var(--cursando)';
-    }
+    if (esHoy) borderColor = 'var(--cursando)';
 
     return { background, borderColor };
   };
@@ -105,9 +97,13 @@ export default function MiniCalendar({ detalles, ALL }: MiniCalendarProps) {
   return (
     <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '24px', padding: '25px', position: 'relative' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <button onClick={handlePrevMonth} className="calendar-nav-btn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+        <button onClick={handlePrevMonth} className="calendar-nav-btn" style={{ background: 'transparent', border: 'none', color: 'var(--text-strong)' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
         <h4 style={{ color: 'var(--text-strong)', margin: 0, textTransform: 'capitalize', fontSize: '1.1rem' }}>{nombreMesActual}</h4>
-        <button onClick={handleNextMonth} className="calendar-nav-btn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+        <button onClick={handleNextMonth} className="calendar-nav-btn" style={{ background: 'transparent', border: 'none', color: 'var(--text-strong)' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
       </div>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '15px', fontWeight: 'bold' }}>
@@ -116,55 +112,50 @@ export default function MiniCalendar({ detalles, ALL }: MiniCalendarProps) {
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center' }}>
         
-        {/* Renderizar días fantasma del MES ANTERIOR */}
-        {Array.from({ length: primerDiaDelMes }).map((_, i) => {
-          const diaMesAnterior = diasMesAnterior - primerDiaDelMes + i + 1;
-          return (
-            <div key={`prev-${i}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', color: 'var(--muted)', opacity: 0.35, pointerEvents: 'none' }}>
-              {diaMesAnterior}
-            </div>
-          );
-        })}
+        {/* Días fantasma mes anterior */}
+        {Array.from({ length: primerDiaDelMes }).map((_, i) => (
+          <div key={`prev-${i}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', color: 'var(--muted)', opacity: 0.35, pointerEvents: 'none' }}>
+            {diasMesAnterior - primerDiaDelMes + i + 1}
+          </div>
+        ))}
 
-        {/* Renderizar días del MES ACTUAL */}
+        {/* Días mes actual */}
         {Array.from({ length: diasDelMes }, (_, i) => {
           const dia = i + 1; 
           const esHoy = dia === currentDay; 
           const eventosDelDia = eventosPorDia[dia]; 
           const tieneEvento = !!eventosDelDia; 
-          const isHovered = hoveredDayData?.day === dia;
+          const isOpen = hoveredDayData?.day === dia;
 
           const { background, borderColor } = getDayStyles(esHoy, eventosDelDia);
 
           return (
             <div key={dia} className="calendar-day"
-              onMouseEnter={() => { if (!isTouchDevice && tieneEvento) setHoveredDayData({ day: dia, events: eventosDelDia }); }}
-              onMouseLeave={() => { if (!isTouchDevice) setHoveredDayData(null); }}
+              // 2. PC: Hover normal (Solo funciona si NO es dispositivo táctil)
+              onPointerEnter={(e) => { if (e.pointerType === 'mouse' && tieneEvento) setHoveredDayData({ day: dia, events: eventosDelDia }); }}
+              onPointerLeave={(e) => { if (e.pointerType === 'mouse') setHoveredDayData(null); }}
+              
+              // 3. Celular: Toque para abrir/cerrar
               onClick={(e) => { 
-                if (isTouchDevice && tieneEvento) {
-                  e.stopPropagation(); // Evita que el clic se propague al documento y lo cierre instantáneamente
+                if (tieneEvento) {
+                  e.stopPropagation(); // Evita que el click llegue al document y cierre todo instantáneamente
                   setHoveredDayData(prev => prev?.day === dia ? null : { day: dia, events: eventosDelDia });
                 }
               }}
               style={{ 
-                position: 'relative', 
-                aspectRatio: '1', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                fontSize: '0.9rem', 
-                borderRadius: '10px', 
-                background: background,
-                border: `2px solid ${borderColor}`,
-                color: (esHoy && !tieneEvento) ? 'var(--text-strong)' : (esHoy && tieneEvento ? 'var(--text-strong)' : 'var(--text-strong)'),
-                fontWeight: esHoy || tieneEvento ? '900' : 'normal', 
-                cursor: tieneEvento ? 'pointer' : 'default',
-                transition: 'all 0.2s ease'
+                position: 'relative', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                fontSize: '0.9rem', borderRadius: '10px', background: background, border: `2px solid ${borderColor}`,
+                color: 'var(--text-strong)', fontWeight: esHoy || tieneEvento ? '900' : 'normal', 
+                cursor: tieneEvento ? 'pointer' : 'default', transition: 'all 0.2s ease'
               }}>
               {dia}
-              {isHovered && tieneEvento && (
+              
+              {/* Globo de texto (Tooltip) */}
+              {isOpen && tieneEvento && (
                 <div className="calendar-tooltip-card">
-                  <div style={{ color: 'var(--text-strong)', borderBottom: '1px solid var(--border)', paddingBottom: '6px', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 'bold' }}>{`${nombreMesActual.split(' ')[0]} ${dia}`}</div>
+                  <div style={{ color: 'var(--text-strong)', borderBottom: '1px solid var(--border)', paddingBottom: '6px', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                    {`${nombreMesActual.split(' ')[0]} ${dia}`}
+                  </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
                     {eventosDelDia.map((evStr, idx) => {
                       const [mName, eType, eName] = evStr.split('|');
@@ -182,15 +173,12 @@ export default function MiniCalendar({ detalles, ALL }: MiniCalendarProps) {
           );
         })}
 
-        {/* Renderizar días fantasma del MES SIGUIENTE */}
-        {Array.from({ length: diasSiguientes }).map((_, i) => {
-          const diaMesSiguiente = i + 1;
-          return (
-            <div key={`next-${i}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', color: 'var(--muted)', opacity: 0.35, pointerEvents: 'none' }}>
-              {diaMesSiguiente}
-            </div>
-          );
-        })}
+        {/* Días fantasma mes siguiente */}
+        {Array.from({ length: diasSiguientes }).map((_, i) => (
+          <div key={`next-${i}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', color: 'var(--muted)', opacity: 0.35, pointerEvents: 'none' }}>
+            {i + 1}
+          </div>
+        ))}
 
       </div>
     </div>

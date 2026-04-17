@@ -420,7 +420,7 @@ export default function Dashboard() {
                           <div style={{ fontWeight: 'bold', color: 'var(--text-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{evento.materia}</div>
                           <div style={{ fontSize: '0.8rem', color: getEventColor(evento.tipo), fontWeight: 700, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{evento.tipo}: {evento.nombre}</div>
                         </div>
-                        <div style={{ background: 'var(--bg)', padding: '8px 12px', borderRadius: '8px', fontFamily: 'Space Mono', fontWeight: 'bold', flexShrink: 0 }}>
+                        <div style={{ background: 'var(--bg)', padding: '8px 12px', borderRadius: '8px', fontFamily: 'Space Mono', fontWeight: 'bold', flexShrink: 0, color: '#ffffff' }}>
                           {formatearFecha(evento.fecha)}
                         </div>
                       </div>
