@@ -11,18 +11,10 @@ export default function MiniCalendar({ detalles, ALL }: MiniCalendarProps) {
   const [viewDate, setViewDate] = useState(new Date());
   const [hoveredDayData, setHoveredDayData] = useState<{ day: number, events: string[] } | null>(null);
   
-  // 1. Detectamos si es un dispositivo táctil para cambiar el comportamiento
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
-    // Verificamos si el dispositivo soporta eventos táctiles
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
-
-    // Cerramos el globo si se toca fuera del calendario en el celular
-    const handleClickOutside = () => setHoveredDayData(null);
-    document.addEventListener('click', handleClickOutside);
-    
-    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   const currentMonth = viewDate.getMonth();
@@ -131,15 +123,13 @@ export default function MiniCalendar({ detalles, ALL }: MiniCalendarProps) {
 
           return (
             <div key={dia} className="calendar-day"
-              // 2. PC: Hover normal (Solo funciona si NO es dispositivo táctil)
               onPointerEnter={(e) => { if (e.pointerType === 'mouse' && tieneEvento) setHoveredDayData({ day: dia, events: eventosDelDia }); }}
               onPointerLeave={(e) => { if (e.pointerType === 'mouse') setHoveredDayData(null); }}
-              
-              // 3. Celular: Toque para abrir/cerrar
-              onClick={(e) => { 
+              onClick={() => {
                 if (tieneEvento) {
-                  e.stopPropagation(); // Evita que el click llegue al document y cierre todo instantáneamente
                   setHoveredDayData(prev => prev?.day === dia ? null : { day: dia, events: eventosDelDia });
+                } else {
+                  setHoveredDayData(null);
                 }
               }}
               style={{ 
