@@ -208,7 +208,7 @@ header {
    MAIN CONTENT
    ============================================================ */
 main {
-  padding-top: calc(var(--header-height) + 30px) !important;
+  padding-top: calc(var(--header-height) + 15px) !important;
   flex: 1;
   width: 100%;
   max-width: 1200px;
@@ -671,7 +671,7 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
   .logo-landing { font-size: clamp(1.6rem, 7vw, 2.4rem) !important; }
 
   main {
-    padding-top: calc(var(--header-height) + 20px) !important;
+    padding-top: calc(var(--header-height) + 10px) !important;
     padding-left: 12px !important;
     padding-right: 12px !important;
   }
@@ -724,7 +724,9 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
 *, *::before, *::after { max-width: 100%; }
 
 [style*="position: fixed"], [style*="position:fixed"],
-.tooltip, .sidebar, .sidebar-overlay, .calendar-tooltip-card, .scroll-top-btn {
+.tooltip, .sidebar, .sidebar-overlay, .calendar-tooltip-card, .scroll-top-btn,
+.calendar-body, .calendar-body *, .calendar-inner, .grid-lines, .grid-line,
+.time-column, .time-label, .day-column, .event-card, .inhabilitado-overlay {
   max-width: none;
 }
 

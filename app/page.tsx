@@ -131,7 +131,7 @@ export default function Dashboard() {
           comisionData.dias.forEach((dia: any) => {
             let nombreDiaLimpio = dia.nombre.split(' ')[0]; 
             if (horariosSemanales[nombreDiaLimpio]) {
-              horariosSemanales[nombreDiaLimpio].push({ id: `${m.id}-${dia.nombre}`, materiaLimpia: nombreMateriaLimpio, cuatrimestre, inicio: dia.inicio, fin: dia.fin, comision: comisionId, colorFondo, colorBorde });
+              horariosSemanales[nombreDiaLimpio].push({ id: `${m.id}-${dia.nombre}`, materiaId: m.id, materiaLimpia: nombreMateriaLimpio, cuatrimestre, inicio: dia.inicio, fin: dia.fin, comision: comisionId, colorFondo, colorBorde });
             }
           });
         }
@@ -155,7 +155,7 @@ export default function Dashboard() {
 
           let nombreDiaLimpio = horario.dia.split(' ')[0]; 
           if (horariosSemanales[nombreDiaLimpio]) {
-            horariosSemanales[nombreDiaLimpio].push({ id: `${m.id}-${horario.id}`, materiaLimpia: nombreMateriaLimpio, cuatrimestre, inicio: horario.inicio, fin: horario.fin, comision: 'Pers.', colorFondo, colorBorde });
+            horariosSemanales[nombreDiaLimpio].push({ id: `${m.id}-${horario.id}`, materiaId: m.id, materiaLimpia: nombreMateriaLimpio, cuatrimestre, inicio: horario.inicio, fin: horario.fin, comision: 'Pers.', colorFondo, colorBorde });
           }
         });
       }
@@ -278,6 +278,15 @@ export default function Dashboard() {
           .prog-val { font-size: 2rem; }
           .prog-label { font-size: 0.55rem; }
         }
+
+        @media (max-height: 800px) {
+          .dashboard-main { gap: 15px; }
+          .dashboard-top-bar { padding: 12px 20px; }
+          .dashboard-greeting { font-size: 1.4rem; }
+          .top-stat-val { font-size: 1.2rem; }
+          .prog-val { font-size: 1.8rem; }
+          .schedule-header { margin-bottom: 12px; }
+        }
       `}</style>
 
       {/* Tutorial Overlay */}
@@ -353,52 +362,40 @@ export default function Dashboard() {
                  <span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: '2px' }}>%</span>
                </div>
                <div className="prog-label">
-                 Progreso<br/>Total
+                 Progreso
                </div>
              </div>
           </div>
         </section>
 
         {/* --- DASHBOARD PRINCIPAL --- */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
           {/* Horario Semanal */}
           <div id="seccion-horarios">
-            
-            <div className="schedule-header">
-              <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Horario Semanal
-              </h3>
-              
-              <div className="schedule-toggle">
-                {['1', '2'].map((opcion) => (
-                  <div key={opcion} onClick={() => { setFiltroCuatri(opcion); localStorage.setItem('filtroCuatrimestre', opcion); }}
-                    style={{ padding: '8px 20px', fontSize: '0.85rem', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', transition: '0.3s',
-                      color: filtroCuatri === opcion ? '#fff' : 'var(--muted)',
-                      background: filtroCuatri === opcion ? 'var(--cursando)' : 'transparent'
-                    }}>
-                    {opcion === '1' ? '1º Cuatri' : '2º Cuatri'}
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Mensaje de estado vacío */}
-            {diasMostrar.length === 0 ? (
-              <div style={{ padding: '40px', textAlign: 'center', background: 'var(--panel)', borderRadius: '20px', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.5"><path d="M21 10V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
-                <div style={{ color: 'var(--text-strong)', fontWeight: 'bold', fontSize: '1.1rem' }}>Tu horario está vacío</div>
-                <div style={{ color: 'var(--muted)', fontSize: '0.9rem', maxWidth: '400px', lineHeight: 1.5 }}>
-                  Para visualizar tu grilla acá, andá a <strong>Plan de Estudios</strong> y marcá las materias que estás haciendo como "Cursando".
+            <HorarioCalendar 
+              horarios={horariosSemanales} 
+              isEmpty={diasMostrar.length === 0}
+              title={
+                <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Horario Semanal
+                </h3>
+              }
+              action={
+                <div className="schedule-toggle" style={{ display: 'flex', background: 'var(--panel)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                  {['1', '2'].map((opcion) => (
+                    <div key={opcion} onClick={() => { setFiltroCuatri(opcion); localStorage.setItem('filtroCuatrimestre', opcion); }}
+                      style={{ padding: '8px 20px', fontSize: '0.85rem', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', transition: '0.3s',
+                        color: filtroCuatri === opcion ? '#fff' : 'var(--muted)',
+                        background: filtroCuatri === opcion ? 'var(--cursando)' : 'transparent'
+                      }}>
+                      {opcion === '1' ? '1º Cuatri' : '2º Cuatri'}
+                    </div>
+                  ))}
                 </div>
-                <Link href="/plan" style={{ textDecoration: 'none', marginTop: '10px' }}>
-                  <button className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>Ir al Plan de Estudios</button>
-                </Link>
-              </div>
-            ) : (
-              <HorarioCalendar horarios={horariosSemanales} />
-            )}
+              }
+            />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: '40px' }}>
