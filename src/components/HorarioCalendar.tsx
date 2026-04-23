@@ -101,10 +101,10 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action }: Ho
           </button>
 
           <div className="hc-nav-text">
-            <span style={{ color: 'var(--text-strong)', fontWeight: '800', fontSize: '0.95rem', textAlign: 'center' }}>
+            <span style={{ color: 'var(--text-strong)', fontWeight: '700', fontSize: '0.95rem', textAlign: 'center' }}>
               {monday.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })} al {datesOfWeek[5].toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
             </span>
-            <button onClick={handleCurrentWeek} style={{ background: 'none', border: 'none', color: 'var(--cursando)', fontSize: '0.75rem', cursor: 'pointer', padding: '2px 5px', fontWeight: '800', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity=0.7} onMouseOut={e => e.currentTarget.style.opacity=1}>Ir a hoy</button>
+            <button onClick={handleCurrentWeek} style={{ background: 'none', border: 'none', color: 'var(--cursando)', fontSize: '0.75rem', cursor: 'pointer', padding: '2px 5px', fontWeight: '700', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity=0.7} onMouseOut={e => e.currentTarget.style.opacity=1}>Ir a hoy</button>
           </div>
 
           <button onClick={handleNextWeek} style={{ background: 'transparent', border: 'none', color: 'var(--text-strong)', padding: '8px 12px', cursor: 'pointer', borderRadius: '12px', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseOver={e => e.currentTarget.style.background='var(--glass-bg)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
