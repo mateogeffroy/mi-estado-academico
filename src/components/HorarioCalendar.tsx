@@ -71,23 +71,40 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action }: Ho
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
+      <style>{`
+        .hc-header-wrapper { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .hc-title-box { flex: 1 1 0%; display: flex; justify-content: flex-start; min-width: max-content; }
+        .hc-nav-box { display: flex; align-items: center; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        .hc-nav-text { display: flex; flex-direction: column; align-items: center; padding: 0 20px; min-width: 200px; }
+        .hc-action-box { flex: 1 1 0%; display: flex; justify-content: flex-end; min-width: max-content; }
+        
+        /* 📱 ESTILOS MÓVILES PARA CENTRAR TODO 📱 */
+        @media (max-width: 768px) {
+          .hc-header-wrapper { flex-direction: column; justify-content: center; gap: 14px; }
+          .hc-title-box { justify-content: center; flex: none; width: 100%; min-width: auto; }
+          .hc-nav-box { width: 100%; max-width: 340px; justify-content: space-between; }
+          .hc-nav-text { min-width: auto; padding: 0 10px; }
+          .hc-action-box { justify-content: center; flex: none; width: 100%; min-width: auto; }
+        }
+      `}</style>
+
       {/* 🔥 ENCABEZADO UNIFICADO: Título, Navegación y Toggle 🔥 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-        <div style={{ flex: '1 1 0%', display: 'flex', justifyContent: 'flex-start', minWidth: 'max-content' }}>
+      <div className="hc-header-wrapper">
+        <div className="hc-title-box">
           {title}
         </div>
 
         {/* Iterador de semanas mejorado */}
-        <div style={{ display: 'flex', alignItems: 'center', background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', padding: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
+        <div className="hc-nav-box">
           <button onClick={handlePrevWeek} style={{ background: 'transparent', border: 'none', color: 'var(--text-strong)', padding: '8px 12px', cursor: 'pointer', borderRadius: '12px', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseOver={e => e.currentTarget.style.background='var(--glass-bg)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
           </button>
 
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px', minWidth: '200px' }}>
-            <span style={{ color: 'var(--text-strong)', fontWeight: '700', fontSize: '0.95rem' }}>
+          <div className="hc-nav-text">
+            <span style={{ color: 'var(--text-strong)', fontWeight: '800', fontSize: '0.95rem', textAlign: 'center' }}>
               {monday.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })} al {datesOfWeek[5].toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
             </span>
-            <button onClick={handleCurrentWeek} style={{ background: 'none', border: 'none', color: 'var(--cursando)', fontSize: '0.75rem', cursor: 'pointer', padding: '2px 5px', fontWeight: '700', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity=0.7} onMouseOut={e => e.currentTarget.style.opacity=1}>Ir a hoy</button>
+            <button onClick={handleCurrentWeek} style={{ background: 'none', border: 'none', color: 'var(--cursando)', fontSize: '0.75rem', cursor: 'pointer', padding: '2px 5px', fontWeight: '800', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity=0.7} onMouseOut={e => e.currentTarget.style.opacity=1}>Ir a hoy</button>
           </div>
 
           <button onClick={handleNextWeek} style={{ background: 'transparent', border: 'none', color: 'var(--text-strong)', padding: '8px 12px', cursor: 'pointer', borderRadius: '12px', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseOver={e => e.currentTarget.style.background='var(--glass-bg)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
@@ -95,7 +112,7 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action }: Ho
           </button>
         </div>
 
-        <div style={{ flex: '1 1 0%', display: 'flex', justifyContent: 'flex-end', minWidth: 'max-content' }}>
+        <div className="hc-action-box">
           {action}
         </div>
       </div>
