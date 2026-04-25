@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { usePlan } from '../../src/context/PlanContext';
 import { supabase } from '../../src/lib/supabase';
 import GradeModal from '../../src/components/GradeModal';
-import ConfirmModal from '../../src/components/ConfirmModal';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
@@ -34,9 +33,30 @@ const CARRERAS_POR_UNI: Record<string, { id: string, name: string }[]> = {
   ]
 };
 
+// Función helper para buscar el nombre de la carrera
+const getNombreCarrera = (id: string) => {
+  for (const uni of Object.values(CARRERAS_POR_UNI)) {
+    const found = uni.find(c => c.id === id);
+    if (found) return found.name;
+  }
+  return id;
+};
+
+// 🔥 Función auxiliar para determinar el prefijo de la carrera
+const getCareerPrefix = (careerId: string) => {
+  if (careerId.includes('sistemas')) return 'SIS-';
+  if (careerId.includes('industrial')) return 'IND-';
+  if (careerId.includes('mecanica')) return 'MEC-';
+  if (careerId.includes('civil')) return 'CIV-';
+  if (careerId.includes('electrica')) return 'ELE-';
+  if (careerId.includes('quimica')) return 'QUI-';
+  return null;
+};
+
 export default function PerfilPage() {
   const router = useRouter();
-  const { materias, stats, detalles, actualizarDetalleMateria, careerData, careerId } = usePlan();
+  // Traemos las nuevas funciones del Contexto Multi-Carrera
+  const { materias, stats, detalles, actualizarDetalleMateria, careerData, careerId, todasLasCarreras, agregarCarrera, setCarreraActiva, borrarCarrera } = usePlan();
   const { ALL } = careerData;
 
   const [isMounted, setIsMounted] = useState(false);
@@ -45,12 +65,14 @@ export default function PerfilPage() {
   const [nombre, setNombre] = useState('');
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempNombre, setTempNombre] = useState('');
+  
+  // Estados para el selector de nueva carrera
   const [universidad, setUniversidad] = useState('utn');
   const [nuevaCarreraId, setNuevaCarreraId] = useState('');
+  const [isAddingMode, setIsAddingMode] = useState(false);
   
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
   const [selectedMateria, setSelectedMateria] = useState<{ id: string; name: string } | null>(null);
-  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, onConfirm: () => {} });
 
   useEffect(() => {
     setIsMounted(true);
@@ -64,16 +86,12 @@ export default function PerfilPage() {
     };
     fetchUserData();
 
-    if (careerId.includes('unlp')) {
-      setUniversidad('unlp');
-    } else {
-      setUniversidad('utn');
-    }
-    setNuevaCarreraId(careerId);
-  }, [careerId]);
+    // Inicializar el selector con la primera carrera disponible
+    setNuevaCarreraId(CARRERAS_POR_UNI['utn'][0].id);
+  }, []);
 
   useEffect(() => {
-    if (CARRERAS_POR_UNI[universidad] && !CARRERAS_POR_UNI[universidad].find(c => c.id === nuevaCarreraId)) {
+    if (CARRERAS_POR_UNI[universidad]) {
       setNuevaCarreraId(CARRERAS_POR_UNI[universidad][0].id);
     }
   }, [universidad]);
@@ -81,13 +99,9 @@ export default function PerfilPage() {
   useEffect(() => {
     const container = document.getElementById('chart-container');
     if (!container) return;
-
     const resizeObserver = new ResizeObserver(entries => {
-      for (let entry of entries) {
-        setChartWidth(entry.contentRect.width); 
-      }
+      for (let entry of entries) { setChartWidth(entry.contentRect.width); }
     });
-
     resizeObserver.observe(container);
     return () => resizeObserver.disconnect();
   }, [isMounted]);
@@ -97,70 +111,61 @@ export default function PerfilPage() {
     await supabase.auth.updateUser({ data: { full_name: tempNombre } });
     setNombre(tempNombre);
     setIsEditingName(false);
-    window.location.reload(); 
   };
 
-  const handleSaveCareer = () => {
-    if (nuevaCarreraId === careerId) return; 
-    
-    setConfirmConfig({
-      isOpen: true,
-      onConfirm: async () => {
-        try {
-          const { data: userData, error: userError } = await supabase.auth.getUser();
+  // Lógica: Inscribirse a una carrera (sin borrar nada)
+  const handleInscribirse = async () => {
+    if (todasLasCarreras.includes(nuevaCarreraId)) {
+      alert("Ya estás inscripto en esta carrera.");
+      return;
+    }
+    await agregarCarrera(nuevaCarreraId);
+    setIsAddingMode(false);
+  };
 
-          if (userError || !userData?.user) {
-            console.error("❌ Error obteniendo usuario:", userError);
-            return;
-          }
+  // 🔥 NUEVA LÓGICA: Borrado en Cascada Seguro 🔥
+  const handleEliminarCarrera = async (idToBorrar: string) => {
+    if (!window.confirm(`¿Seguro que querés desanotarte de ${getNombreCarrera(idToBorrar)}? Esto borrará tus datos exclusivos de esta carrera.`)) return;
 
-          await supabase.auth.updateUser({ 
-            data: { carrera_id: nuevaCarreraId } 
-          });
+    try {
+      const { data } = await supabase.auth.getUser();
+      const userId = data.user?.id;
+      const prefix = getCareerPrefix(idToBorrar);
 
-          const { error: dbError } = await supabase
-            .from('progreso_usuarios')
-            .update({ 
-              carrera_id: nuevaCarreraId,
-              estado_materias: {},   
-              detalles_materias: {}  
-            })
-            .eq('id_usuario', userData.user.id); 
+      if (prefix && userId) {
+        // 1. Limpiar materias exclusivas de esta carrera
+        const { error: errMaterias } = await supabase
+          .from('usuario_materias')
+          .delete()
+          .eq('user_id', userId)
+          .like('materia_id', `${prefix}%`);
 
-          if (dbError) {
-            console.error("❌ Error DB Update:", dbError);
-            alert("Hubo un error al actualizar. Mirá la consola.");
-            return; 
-          }
+        if (errMaterias) console.error('Error limpiando materias:', errMaterias);
 
-          Object.keys(localStorage).forEach(key => {
-            if (!key.startsWith('sb-')) { 
-              localStorage.removeItem(key);
-            }
-          });
+        // 2. Limpiar eventos exclusivos de esta carrera
+        const { error: errEventos } = await supabase
+          .from('usuario_eventos')
+          .delete()
+          .eq('user_id', userId)
+          .like('materia_id', `${prefix}%`);
 
-          window.location.reload(); 
-
-        } catch (err) {
-          console.error("❌ Error general:", err);
-        }
+        if (errEventos) console.error('Error limpiando eventos:', errEventos);
       }
-    });
+
+      // Finalmente, la sacamos del array del perfil
+      await borrarCarrera(idToBorrar);
+      
+    } catch (error) {
+      console.error('Error crítico en borrado en cascada:', error);
+    }
   };
 
   const aprobadasOrdenadas = ALL.filter((s: any) =>
-    materias[s.id] === 'aprobada' &&
-    !s.isElectivePlaceholder &&
-    s.id !== 'SEM' &&
-    s.id !== 'PPS'
+    materias[s.id] === 'aprobada' && !s.isElectivePlaceholder && s.id !== 'SEM' && s.id !== 'PPS'
   ).sort((a, b) => {
     const nivelA = a.level || 99; 
     const nivelB = b.level || 99;
-    
-    if (nivelA !== nivelB) {
-      return nivelA - nivelB;
-    }
-    
+    if (nivelA !== nivelB) return nivelA - nivelB;
     const numA = parseInt(a.num) || parseInt(a.id) || 999;
     const numB = parseInt(b.num) || parseInt(b.id) || 999;
     return numA - numB;
@@ -171,10 +176,8 @@ export default function PerfilPage() {
   
   const dataGrafico = materiasConNota.map((m, index) => {
     const notaNumerica = Number(detalles[m.id].notaFinal) || 0; 
-    
     sumaAcumulada += notaNumerica;
     const promedioHastaAca = sumaAcumulada / (index + 1);
-    
     return {
       nombreCorto: m.name.length > 15 ? m.name.substring(0, 15) + '...' : m.name,
       nombreCompleto: m.name,
@@ -201,17 +204,9 @@ export default function PerfilPage() {
   return (
     <>
       <style>{`
-        .recharts-wrapper * {
-          max-width: none !important;
-        }
-        .recharts-wrapper, .recharts-surface {
-          outline: none !important;
-        }
-        @media (max-width: 600px) {
-          .stars-container {
-            display: none !important;
-          }
-        }
+        .recharts-wrapper * { max-width: none !important; }
+        .recharts-wrapper, .recharts-surface { outline: none !important; }
+        @media (max-width: 600px) { .stars-container { display: none !important; } }
       `}</style>
 
       <main style={{ paddingBottom: '80px', display: 'flex', flexDirection: 'column', gap: '40px', minHeight: '100vh', paddingTop: '40px' }}>
@@ -224,13 +219,7 @@ export default function PerfilPage() {
               
               {isEditingName ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <input 
-                    type="text" 
-                    value={tempNombre} 
-                    onChange={(e) => setTempNombre(e.target.value)}
-                    style={{ background: 'var(--glass-bg)', border: '1px solid var(--cursando)', color: 'var(--text-strong)', padding: '8px 12px', borderRadius: '8px', fontSize: '1.5rem', fontWeight: 'bold', outline: 'none' }}
-                    autoFocus
-                  />
+                  <input type="text" value={tempNombre} onChange={(e) => setTempNombre(e.target.value)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--cursando)', color: 'var(--text-strong)', padding: '8px 12px', borderRadius: '8px', fontSize: '1.5rem', fontWeight: 'bold', outline: 'none' }} autoFocus />
                   <button onClick={handleSaveName} className="btn-primary" style={{ padding: '8px 16px' }}>Guardar</button>
                   <button onClick={() => { setIsEditingName(false); setTempNombre(nombre); }} className="btn-secondary" style={{ padding: '8px 16px' }}>Cancelar</button>
                 </div>
@@ -246,48 +235,100 @@ export default function PerfilPage() {
 
             <Link href="/" style={{ textDecoration: 'none' }}>
               <button className="btn-secondary">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m12 19-7-7 7-7"/>
-                  <path d="M19 12H5"/>
-                </svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
                 Volver al Inicio
               </button>
             </Link>
           </div>
 
-          {/* 🔥 AHORA TODO ES UNA COLUMNA VERTICAL CON GAP 🔥 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
             
-            {/* SECCIÓN 1: MATERIAS APROBADAS */}
+            <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '20px' }}>
+                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                  Mis Carreras
+                </h3>
+                
+                {!isAddingMode && (
+                  <button onClick={() => setIsAddingMode(true)} className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.85rem' }}>
+                    + Agregar carrera
+                  </button>
+                )}
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {todasLasCarreras.map(id => (
+                  <div key={id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: id === careerId ? 'var(--glass-bg)' : 'transparent', border: `1px solid ${id === careerId ? 'var(--cursando)' : 'var(--border)'}`, borderRadius: '12px', transition: 'all 0.2s' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ color: 'var(--text-strong)', fontWeight: 'bold', fontSize: '0.95rem' }}>
+                        {getNombreCarrera(id)}
+                      </span>
+                      {id === careerId && <span style={{ color: 'var(--cursando)', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Plan Activo</span>}
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      {id !== careerId && (
+                        <button onClick={() => setCarreraActiva(id)} className="btn-secondary" style={{ background: 'transparent', padding: '6px 12px', fontSize: '0.8rem' }}>
+                          Cambiar a esta
+                        </button>
+                      )}
+                      
+                      {/* 🔥 Tacho de basura ahora usa el borrado en cascada 🔥 */}
+                      {todasLasCarreras.length > 1 && (
+                        <button 
+                          onClick={() => handleEliminarCarrera(id)}
+                          style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '6px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                          title="Desanotarse"
+                          onMouseOver={e => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = '#fff'; }}
+                          onMouseOut={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#ef4444'; }}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {isAddingMode && (
+                  <div style={{ marginTop: '10px', padding: '16px', background: 'var(--glass-bg)', border: '1px dashed var(--border)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '15px', animation: 'fadeIn 0.3s ease' }}>
+                    <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>Inscribirse a un nuevo plan</div>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      <select value={universidad} onChange={(e) => setUniversidad(e.target.value)} style={{ flex: 1, minWidth: '150px', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none' }}>
+                        {UNIVERSIDADES.map(uni => <option key={uni.id} value={uni.id}>{uni.name}</option>)}
+                      </select>
+                      <select value={nuevaCarreraId} onChange={(e) => setNuevaCarreraId(e.target.value)} style={{ flex: 2, minWidth: '250px', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none' }}>
+                        {CARRERAS_POR_UNI[universidad]?.map(c => <option key={c.id} value={c.id} disabled={todasLasCarreras.includes(c.id)}>{c.name} {todasLasCarreras.includes(c.id) ? '(Ya inscripto)' : ''}</option>)}
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                      <button onClick={() => setIsAddingMode(false)} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontWeight: 'bold' }}>Cancelar</button>
+                      <button onClick={handleInscribirse} className="btn-primary" disabled={todasLasCarreras.includes(nuevaCarreraId)}>Confirmar inscripción</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+
             <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
               <h3 style={{ color: 'var(--aprobada)', marginBottom: '16px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Materias Aprobadas
+                Materias Aprobadas del Plan Actual
               </h3>
               
               {aprobadasOrdenadas.length === 0 ? (
-                <p style={{ color: 'var(--muted)', textAlign: 'center', fontStyle: 'italic', padding: '20px' }}>Todavía no tenés materias aprobadas.</p>
+                <p style={{ color: 'var(--muted)', textAlign: 'center', fontStyle: 'italic', padding: '20px' }}>Todavía no tenés materias aprobadas en esta carrera.</p>
               ) : (
                 <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }} className="custom-scrollbar">
                   {aprobadasOrdenadas.map(m => (
                     <div key={m.id} className="list-row" style={{ cursor: 'pointer', padding: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={() => { setSelectedMateria({ id: m.id, name: m.name }); setIsGradeModalOpen(true); }}>
-                      
-                      {/* GRUPO IZQUIERDA: Nivel, Nombre y Nota */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-                        <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontFamily: 'Space Mono', whiteSpace: 'nowrap' }}>
-                          Nivel {m.level || '-'}
-                        </span>
-                        
-                        <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {m.name}
-                        </span>
-
+                        <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontFamily: 'Space Mono', whiteSpace: 'nowrap' }}>Nivel {m.level || '-'}</span>
+                        <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.name}</span>
                         <span style={{ color: detalles[m.id]?.notaFinal ? 'var(--aprobada)' : 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold', flexShrink: 0, fontVariantNumeric: 'tabular-nums', paddingLeft: '4px' }}>
                           {detalles[m.id]?.notaFinal ? `Nota: ${detalles[m.id].notaFinal}` : 'Sin nota'}
                         </span>
                       </div>
-                      
-                      {/* GRUPO DERECHA: Estrellas (se ocultan en celular) */}
                       {detalles[m.id]?.dificultad && (
                         <div className="stars-container" style={{ display: 'flex', gap: '2px', marginLeft: '15px', flexShrink: 0 }}>
                           {[...Array(5)].map((_, i) => (
@@ -301,55 +342,31 @@ export default function PerfilPage() {
                   ))}
                 </div>
               )}
-
               <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--muted)', fontSize: '1.1rem', fontWeight: 'bold' }}>Promedio Total</span>
+                <span style={{ color: 'var(--muted)', fontSize: '1.1rem', fontWeight: 'bold' }}>Promedio del Plan</span>
                 <span style={{ color: 'var(--text-strong)', fontSize: '2.2rem', fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{stats.promedio}</span>
               </div>
             </section>
 
-            {/* SECCIÓN 2: GRÁFICO DE EVOLUCIÓN */}
             <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'block' }}>
               <h3 style={{ color: 'var(--text-strong)', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
                 Evolución del Promedio
               </h3>
-              
               {dataGrafico.length < 2 ? (
                 <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--muted)', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-                  Necesitás cargar notas en al menos 2 materias para ver tu gráfico de evolución.
+                  Necesitás cargar notas en al menos 2 materias para ver tu gráfico de evolución en este plan.
                 </div>
               ) : (
                 <div id="chart-container" style={{ width: '100%', height: '350px', position: 'relative' }}>
                   {isMounted && chartWidth > 0 ? (
                     <LineChart style={{ userSelect: 'none' }} width={chartWidth} height={350} data={dataGrafico} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                      
                       <XAxis dataKey="nombreCompleto" stroke="var(--muted)" tick={false} tickLine={false} axisLine={false} tickMargin={10} />
                       <YAxis domain={[1, 10]} ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]} stroke="var(--muted)" fontSize={11} tickLine={false} axisLine={false} />
-                      
                       <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--border)', strokeWidth: 1, strokeDasharray: '4 4' }} />
-                      
-                      <Line 
-                        type="monotone" 
-                        dataKey="promedio" 
-                        name="Promedio Histórico" 
-                        stroke="#3b82f6" 
-                        strokeWidth={3} 
-                        dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: 'var(--panel)' }} 
-                        activeDot={{ r: 6, strokeWidth: 0 }} 
-                      />
-                      
-                      <Line 
-                        type="monotone" 
-                        dataKey="nota" 
-                        name="Nota de la Materia" 
-                        stroke="#10b981" 
-                        strokeWidth={2} 
-                        strokeDasharray="4 4" 
-                        dot={{ r: 3, fill: '#10b981', strokeWidth: 0 }} 
-                        activeDot={{ r: 5, fill: '#10b981', strokeWidth: 0 }} 
-                      />
+                      <Line type="monotone" dataKey="promedio" name="Promedio Histórico" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: 'var(--panel)' }} activeDot={{ r: 6, strokeWidth: 0 }} />
+                      <Line type="monotone" dataKey="nota" name="Nota de la Materia" stroke="#10b981" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: '#10b981', strokeWidth: 0 }} activeDot={{ r: 5, fill: '#10b981', strokeWidth: 0 }} />
                     </LineChart>
                   ) : (
                     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -360,59 +377,8 @@ export default function PerfilPage() {
               )}
             </section>
 
-            {/* SECCIÓN 3: CONFIGURACIÓN ACADÉMICA (AHORA AL FINAL) */}
-            <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-              <h3 style={{ color: 'var(--text-strong)', marginBottom: '16px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 22v-2"/><path d="m17 20.66-1-1.73"/><path d="M11 10.27 7 3.34"/><path d="m20.66 17-1.73-1"/><path d="m3.34 7 1.73 1"/><path d="M14 12h8"/><path d="M2 12h2"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m17 3.34-1 1.73"/><path d="m11 13.73-4 6.93"/></svg>
-                Configuración Académica
-              </h3>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <select 
-                  value={universidad}
-                  onChange={(e) => setUniversidad(e.target.value)}
-                  style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--glass-bg)', color: 'var(--text-strong)', fontSize: '0.95rem', outline: 'none' }}
-                >
-                  {UNIVERSIDADES.map(uni => <option key={uni.id} value={uni.id} style={{ background: 'var(--panel)', color: 'var(--text-strong)' }}>{uni.name}</option>)}
-                </select>
-
-                <select 
-                  value={nuevaCarreraId}
-                  onChange={(e) => setNuevaCarreraId(e.target.value)}
-                  style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--glass-bg)', color: 'var(--text-strong)', fontSize: '0.95rem', outline: 'none' }}
-                >
-                  {CARRERAS_POR_UNI[universidad]?.map(c => <option key={c.id} value={c.id} style={{ background: 'var(--panel)', color: 'var(--text-strong)' }}>{c.name}</option>)}
-                </select>
-
-                {nuevaCarreraId !== careerId && (
-                  <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '12px', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid rgba(239, 68, 68, 0.2)', fontWeight: 'bold' }}>
-                    ⚠️ Atención: Cambiar de carrera reiniciará por completo tu progreso actual.
-                  </div>
-                )}
-
-                <button 
-                  onClick={handleSaveCareer} 
-                  className="btn-danger" 
-                  disabled={nuevaCarreraId === careerId}
-                  style={{ opacity: nuevaCarreraId === careerId ? 0.5 : 1, cursor: nuevaCarreraId === careerId ? 'not-allowed' : 'pointer' }}
-                >
-                  Cambiar Carrera
-                </button>
-              </div>
-            </section>
-
           </div>
         </div>
-
-        <ConfirmModal 
-          isOpen={confirmConfig.isOpen}
-          title="¿Seguro que querés cambiar de carrera?"
-          message="Al confirmar, todo tu progreso actual (materias aprobadas, cursadas, eventos y promedios) se eliminará de forma permanente para cargar el nuevo plan de estudios. Esta acción no se puede deshacer."
-          confirmText="Sí, cambiar carrera y reiniciar"
-          isDanger={true}
-          onConfirm={confirmConfig.onConfirm}
-          onCancel={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
-        />
 
         <GradeModal 
           isOpen={isGradeModalOpen} 
@@ -423,9 +389,7 @@ export default function PerfilPage() {
           onSubmit={(nota, dificultad) => { 
             if (selectedMateria) { 
               actualizarDetalleMateria(selectedMateria.id, { 
-                ...detalles[selectedMateria.id], 
-                notaFinal: nota,
-                dificultad: dificultad 
+                ...detalles[selectedMateria.id], notaFinal: nota, dificultad: dificultad 
               }); 
             } 
           }} 

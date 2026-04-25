@@ -6,11 +6,26 @@ import { usePlan } from '../src/context/PlanContext';
 import CountUp from '../src/components/CountUp';
 import SpotlightCard from '../src/components/SpotlightCard';
 import HorarioCalendar from '../src/components/HorarioCalendar';
-import MiniCalendar from '../src/components/MiniCalendar';
 import { supabase } from '../src/lib/supabase';
 
+// Diccionario para mostrar nombres limpios en el selector
+const NOMBRES_CARRERAS: Record<string, string> = {
+  'utn-sistemas-2023': 'Ingeniería en Sistemas',
+  'utn-civil-2023': 'Ingeniería Civil',
+  'utn-industrial-2008': 'Ingeniería Industrial',
+  'utn-mecanica-2023': 'Ingeniería Mecánica',
+  'utn-quimica-2008': 'Ingeniería Química',
+  'utn-electrica-2023': 'Ingeniería Eléctrica',
+  'unlp-apu-2021': 'APU (UNLP)',
+  'unlp-sistemas-2021': 'Lic. en Sistemas (UNLP)',
+  'unlp-informatica-2021': 'Lic. en Informática (UNLP)',
+  'unlp-psicologia-2012': 'Psicología (UNLP)',
+  'unlp-computacion-2024': 'Ing. en Computación (UNLP)',
+  'unlp-sonido-2023': 'Tec. en Sonido (UNLP)',
+};
+
 export default function Dashboard() {
-  const { stats, user, careerData, materias, detalles } = usePlan();
+  const { stats, user, careerData, materias, detalles, todasLasCarreras, careerId, setCarreraActiva } = usePlan();
   const { ALL } = careerData;
   
   const [nombreDinamico, setNombreDinamico] = useState('');
@@ -42,15 +57,6 @@ export default function Dashboard() {
     }
   }, []);
 
-  useEffect(() => {
-    const handleStartTour = () => {
-      setTourStep(1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-    window.addEventListener('start-home-tour', handleStartTour);
-    return () => window.removeEventListener('start-home-tour', handleStartTour);
-  }, []);
-
   const closeTour = () => {
     setTourStep(0);
     localStorage.setItem('mea_tutorial_home_v3', 'true');
@@ -67,8 +73,8 @@ export default function Dashboard() {
 
   const obtenerProximosEventos = () => {
     let eventosMapeados: any[] = [];
-    const hoyStr = new Date().toISOString().split('T')[0];
-
+    const d = new Date();
+    const hoyStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     Object.keys(detalles || {}).forEach(materiaId => {
       const detalleMateria = detalles[materiaId];
       if (detalleMateria?.eventos && detalleMateria.eventos.length > 0) {
@@ -174,102 +180,39 @@ export default function Dashboard() {
         .tour-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--overlay-bg); z-index: 9998; backdrop-filter: blur(3px); transition: opacity 0.3s ease; }
         .tour-dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 420px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; z-index: 10000; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 16px; text-align: center; }
 
-        /* =======================================================
-           ESTILOS RESPONSIVOS: MARGENES Y FUENTES
-           ======================================================= */
+        .dashboard-main { padding-bottom: 80px; display: flex; flex-direction: column; gap: clamp(20px, 3vh, 40px); max-width: 1200px; margin: 0 auto; padding-left: clamp(12px, 2vw, 20px); padding-right: clamp(12px, 2vw, 20px); }
+        .dashboard-top-bar { display: flex; align-items: center; justify-content: space-between; gap: clamp(10px, 2vw, 20px); margin-top: clamp(0px, 1vh, 10px); background: var(--panel); padding: clamp(14px, 2vh, 24px) clamp(20px, 3vw, 35px); border-radius: 20px; border: 1px solid var(--border); flex-wrap: nowrap; overflow: hidden; }
+        .dashboard-greeting { font-size: clamp(1.2rem, 2.5vw, 2rem); color: var(--text-strong); margin: 0; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
         
-        .dashboard-main {
-          padding-bottom: 80px; display: flex; flex-direction: column; gap: clamp(20px, 3vh, 40px); 
-          max-width: 1200px; margin: 0 auto; padding-left: clamp(12px, 2vw, 20px); padding-right: clamp(12px, 2vw, 20px);
-        }
+        /* 🔥 Estilos para el selector de carrera 🔥 */
+        .career-selector { background: var(--bg); border: 1px solid var(--border); color: var(--text-strong); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; outline: none; cursor: pointer; transition: all 0.2s; width: fit-content; max-width: 250px; text-overflow: ellipsis; }
+        .career-selector:hover { border-color: var(--cursando); }
 
-        .dashboard-top-bar {
-          display: flex; align-items: center; justify-content: space-between;
-          gap: clamp(10px, 2vw, 20px); margin-top: clamp(0px, 1vh, 10px); background: var(--panel);
-          padding: clamp(14px, 2vh, 24px) clamp(20px, 3vw, 35px); border-radius: 20px; border: 1px solid var(--border);
-          flex-wrap: nowrap; overflow: hidden;
-        }
-
-        .dashboard-greeting {
-          font-size: clamp(1.2rem, 2.5vw, 2rem); color: var(--text-strong); margin: 0;
-          font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0;
-        }
-
-        /* Modificado: Quitamos el sub-grupo para que los 4 stats sean hermanos y se distribuyan parejo */
-        .dashboard-stats-wrapper {
-          display: flex; align-items: center; justify-content: flex-start; flex: 1;
-          gap: clamp(10px, 1.5vw, 24px); flex-wrap: nowrap;
-        }
-
+        .dashboard-stats-wrapper { display: flex; align-items: center; justify-content: flex-start; flex: 1; gap: clamp(10px, 1.5vw, 24px); flex-wrap: nowrap; }
         .top-stat-item { display: flex; align-items: baseline; gap: clamp(4px, 0.8vw, 8px); white-space: nowrap; }
         .top-stat-val { font-weight: 800; font-size: clamp(1.2rem, 2vw, 1.5rem); line-height: 1; }
         .top-stat-label { color: var(--muted); font-size: clamp(0.55rem, 0.8vw, 0.75rem); text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
-
-        .dashboard-progress { 
-          display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; 
-          margin-left: auto; /* En desktop, lo empuja hacia la derecha del todo */
-        }
+        .dashboard-progress { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; margin-left: auto; }
         .prog-val { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 900; color: var(--text-strong); font-variant-numeric: tabular-nums; line-height: 1; display: flex; align-items: baseline; }
         .prog-label { font-size: clamp(0.55rem, 0.8vw, 0.75rem); color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-top: 6px; text-align: center; line-height: 1.2; }
+        .schedule-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: clamp(12px, 2.5vh, 25px); }
+        .schedule-toggle { display: flex; background: var(--panel); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
 
-        .schedule-header {
-          display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; 
-          gap: 20px; margin-bottom: clamp(12px, 2.5vh, 25px);
-        }
-        
-        .schedule-toggle {
-          display: flex; background: var(--panel); padding: 4px; border-radius: 12px; border: 1px solid var(--border);
-        }
-
-        /* 📱 COMPORTAMIENTO MÓVIL ESTRICTO (< 600px) 📱 */
         @media (max-width: 600px) {
-          .dashboard-top-bar { 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 12px; 
-            padding: 16px 16px; 
-          }
-          
-          .dashboard-greeting { 
-            font-size: 1.3rem; 
-            width: 100%; 
-            justify-content: center; 
-          }
-          
-          .dashboard-stats-wrapper { 
-            width: 100%; 
-            justify-content: space-between; /* Espacia los 4 elementos uniformemente */
-            gap: 0px; 
-          }
-          .dashboard-progress { 
-            margin-left: 0; /* Quita el empuje a la derecha para que participe del space-between */
-            align-items: center; 
-          }
-          
+          .dashboard-top-bar { flex-direction: column; align-items: center; gap: 12px; padding: 16px 16px; }
+          .dashboard-greeting { font-size: 1.3rem; width: 100%; justify-content: center; }
+          .career-selector { margin: 0 auto; }
+          .dashboard-stats-wrapper { width: 100%; justify-content: space-between; gap: 0px; margin-top: 8px; }
+          .dashboard-progress { margin-left: 0; align-items: center; }
           .top-stat-item { flex-direction: column; align-items: center; gap: 0px; }
-          
-          /* Igualamos los tamaños de los números */
-          .top-stat-val { font-size: 1.1rem; } 
-          .prog-val { font-size: 1.1rem; } 
-          
-          /* Igualamos los tamaños de los textos */
-          .top-stat-label { font-size: 0.5rem; } 
-          .prog-label { font-size: 0.5rem; margin-top: 2px; }
-
+          .top-stat-val { font-size: 1.1rem; } .prog-val { font-size: 1.1rem; } 
+          .top-stat-label { font-size: 0.5rem; } .prog-label { font-size: 0.5rem; margin-top: 2px; }
           .schedule-header { flex-direction: column; justify-content: center; gap: 14px; margin-bottom: 12px; }
           .schedule-toggle { justify-content: center; width: 100%; max-width: 320px; }
           .schedule-toggle > div { flex: 1; text-align: center; } 
         }
-        
-        /* 💻 COMPORTAMIENTO TABLET (601px - 900px) 💻 */
         @media (max-width: 900px) {
-          /* Sobrescribir globals.css: Forzamos la fecha a la derecha en móviles */
-          .event-card-modern {
-            flex-direction: row !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-          }
-
+          .event-card-modern { flex-direction: row !important; align-items: center !important; justify-content: space-between !important; }
           .dashboard-top-bar { padding: 14px 16px; gap: 12px; }
           .dashboard-stats-wrapper { gap: 12px; }
           .top-stat-item { flex-direction: column; align-items: center; gap: 2px; }
@@ -277,15 +220,6 @@ export default function Dashboard() {
           .top-stat-label { font-size: 0.55rem; }
           .prog-val { font-size: 2rem; }
           .prog-label { font-size: 0.55rem; }
-        }
-
-        @media (max-height: 800px) {
-          .dashboard-main { gap: 15px; }
-          .dashboard-top-bar { padding: 12px 20px; }
-          .dashboard-greeting { font-size: 1.4rem; }
-          .top-stat-val { font-size: 1.2rem; }
-          .prog-val { font-size: 1.8rem; }
-          .schedule-header { margin-bottom: 12px; }
         }
       `}</style>
 
@@ -337,11 +271,32 @@ export default function Dashboard() {
         
         {/* --- CABECERA DE ESTADÍSTICAS --- */}
         <section className="dashboard-top-bar">
-          <h2 className="dashboard-greeting">
-            ¡Hola, <span style={{ color: 'var(--cursando)' }}>{primerNombre}</span>! <span className="wave">👋</span>
-          </h2>
           
-          {/* Ahora los 4 elementos son hermanos directos para repartirse parejo en mobile */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <h2 className="dashboard-greeting">
+              ¡Hola, <span style={{ color: 'var(--cursando)' }}>{primerNombre}</span>! <span className="wave">👋</span>
+            </h2>
+            {todasLasCarreras?.length > 1 ? (
+              <select 
+                value={careerId}
+                onChange={(e) => setCarreraActiva(e.target.value)}
+                className="career-selector"
+                title="Cambiar carrera actual"
+              >
+                {todasLasCarreras.map(id => (
+                  <option key={id} value={id}>{NOMBRES_CARRERAS[id] || id}</option>
+                ))}
+              </select>
+            ) : todasLasCarreras?.length === 1 ? (
+              <div 
+                className="career-selector" 
+                style={{ pointerEvents: 'none', border: '1px solid transparent', background: 'var(--glass-bg)', display: 'inline-block' }}
+              >
+                {NOMBRES_CARRERAS[careerId] || careerId}
+              </div>
+            ) : null}
+          </div>
+          
           <div className="dashboard-stats-wrapper">
              <div className="top-stat-item">
                <span className="top-stat-val" style={{ color: 'var(--aprobada)' }}>{stats.aprobadas}</span>
@@ -355,15 +310,12 @@ export default function Dashboard() {
                <span className="top-stat-val" style={{ color: 'var(--cursando)' }}>{stats.cursando}</span>
                <span className="top-stat-label">En Curso</span>
              </div>
-             
              <div className="dashboard-progress">
                <div className="prog-val">
                  <CountUp from={0} to={stats.porcentaje} duration={0.2} />
                  <span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: '2px' }}>%</span>
                </div>
-               <div className="prog-label">
-                 Progreso
-               </div>
+               <div className="prog-label">Progreso</div>
              </div>
           </div>
         </section>
@@ -376,6 +328,8 @@ export default function Dashboard() {
             <HorarioCalendar 
               horarios={horariosSemanales} 
               isEmpty={diasMostrar.length === 0}
+              detalles={detalles}
+              materiasData={ALL}
               title={
                 <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -399,8 +353,6 @@ export default function Dashboard() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: '40px' }}>
-            
-            {/* Próximos Eventos */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <h3 style={{ color: 'var(--cursando)', fontSize: '1.3rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -426,13 +378,8 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-
-            {/* Calendario Integrado */}
-            <MiniCalendar detalles={detalles} ALL={ALL} />
-            
           </div>
 
-          {/* Acceso Rápido */}
           <div>
             <h3 style={{ color: 'var(--text-strong)', fontSize: '1.3rem', marginBottom: '20px', fontWeight: 'bold' }}>Materias</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>

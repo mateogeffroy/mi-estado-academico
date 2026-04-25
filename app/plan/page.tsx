@@ -7,8 +7,24 @@ import ConfirmModal from '../../src/components/ConfirmModal';
 import SimuladorModal from '../../src/components/SimuladorModal';
 import AdBanner from '../../src/components/AdBanner'; 
 
+const NOMBRES_CARRERAS: Record<string, string> = {
+  'utn-sistemas-2023': 'Ingeniería en Sistemas',
+  'utn-civil-2023': 'Ingeniería Civil',
+  'utn-industrial-2008': 'Ingeniería Industrial',
+  'utn-mecanica-2023': 'Ingeniería Mecánica',
+  'utn-quimica-2008': 'Ingeniería Química',
+  'utn-electrica-2023': 'Ingeniería Eléctrica',
+  'unlp-apu-2021': 'APU (UNLP)',
+  'unlp-sistemas-2021': 'Lic. en Sistemas (UNLP)',
+  'unlp-informatica-2021': 'Lic. en Informática (UNLP)',
+  'unlp-psicologia-2012': 'Psicología (UNLP)',
+  'unlp-computacion-2024': 'Ing. en Computación (UNLP)',
+  'unlp-sonido-2023': 'Tec. en Sonido (UNLP)',
+};
+
 export default function PlanDeEstudios() {
-  const { materias, detalles, cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas, stats, careerData } = usePlan();
+  // 🔥 Incorporamos las funciones multi-carrera
+  const { materias, detalles, cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas, stats, careerData, todasLasCarreras, careerId, setCarreraActiva } = usePlan();
   const { SUBJECTS, ELECTIVAS, getSubjectById, ALL } = careerData;
   const maxLevel = Math.max(...SUBJECTS.map((s: any) => s.level || 1));
   const levels = Array.from({ length: maxLevel }, (_, i) => i + 1);
@@ -222,11 +238,17 @@ export default function PlanDeEstudios() {
       ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
       : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 
-    if (subject.correlCursada?.length) {
+    // 🔥 FIX: Convertimos los IDs a String para que el filtro sea perfecto
+    const aprobadasRequeridasStr = (subject.correlAprobada || []).map(String);
+    const cursadasFiltradas = (subject.correlCursada || []).filter(
+      (cid: any) => !aprobadasRequeridasStr.includes(String(cid))
+    );
+
+    if (cursadasFiltradas.length > 0) {
       hasTitle = true;
       lines.push(<div key="t1" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Correlativas</div>);
       lines.push(<b key="s1" style={{ display: 'block', marginBottom: '2px', opacity: 0.9 }}>Cursada(s):</b>);
-      subject.correlCursada.forEach((cid: any) => {
+      cursadasFiltradas.forEach((cid: any) => {
         const s = getSubjectById(cid);
         const cleanName = s ? s.name.replace(/\s*\(.*?\)/g, '') : cid;
         const ok = materias[cid] === 'cursada' || materias[cid] === 'aprobada';
@@ -234,7 +256,7 @@ export default function PlanDeEstudios() {
       });
     }
 
-    if (subject.correlAprobada?.length) {
+    if (aprobadasRequeridasStr.length > 0) {
       if (!hasTitle) lines.push(<div key="t2" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Correlativas</div>);
       lines.push(<b key="s2" style={{ display: 'block', marginTop: '6px', marginBottom: '2px', opacity: 0.9 }}>Aprobada(s):</b>);
       subject.correlAprobada.forEach((cid: any) => {
@@ -491,9 +513,10 @@ export default function PlanDeEstudios() {
         .scatter-ad-left { right: 100%; margin-right: 40px; }
         .scatter-ad-right { left: 100%; margin-left: 40px; }
 
-        /* =========================================================
-           OVERRIDE STATS BAR (Diseño Fluido: 1 Fila PC / 2 Filas Mobile)
-           ========================================================= */
+        /* 🔥 Estilos para el selector de carrera 🔥 */
+        .career-selector { background: var(--panel); border: 1px solid var(--border); color: var(--text-strong); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; outline: none; cursor: pointer; transition: all 0.2s; max-width: 250px; text-overflow: ellipsis; white-space: nowrap; }
+        .career-selector:hover { border-color: var(--cursando); }
+
         .plan-stats-bar-override {
           display: flex;
           justify-content: space-between;
@@ -520,6 +543,8 @@ export default function PlanDeEstudios() {
         }
         
         @media (max-width: 900px) {
+          .career-selector { display: none; } /* En móviles ocultamos el select largo de la navbar del plan para que no estalle */
+          
           .plan-stats-bar-override {
             flex-direction: column !important;
             align-items: stretch !important;
@@ -556,6 +581,27 @@ export default function PlanDeEstudios() {
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              
+            {todasLasCarreras?.length > 1 ? (
+              <select 
+                value={careerId}
+                onChange={(e) => setCarreraActiva(e.target.value)}
+                className="career-selector"
+                title="Cambiar carrera actual"
+              >
+                {todasLasCarreras.map(id => (
+                  <option key={id} value={id}>{NOMBRES_CARRERAS[id] || id}</option>
+                ))}
+              </select>
+            ) : todasLasCarreras?.length === 1 ? (
+              <div 
+                className="career-selector" 
+                style={{ pointerEvents: 'none', border: '1px solid transparent', background: 'var(--glass-bg)', display: 'inline-block' }}
+              >
+                {NOMBRES_CARRERAS[careerId] || careerId}
+              </div>
+            ) : null}
+
               <button 
                 onClick={() => setIsSimuladorOpen(true)}
                 style={{ 
@@ -578,7 +624,6 @@ export default function PlanDeEstudios() {
                 title="Proyectá qué materias destrabás"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m12 16 4-4-4-4"/><path d="M8 12h8"/></svg>
-                {/* 🔥 NOMBRE ACTUALIZADO AQUÍ 🔥 */}
                 ¿Qué destrabo?
               </button>
 
@@ -597,8 +642,8 @@ export default function PlanDeEstudios() {
           </div>
         </div>
 
+        {/* ... EL RESTO DEL CÓDIGO QUEDA IGUAL ... */}
         <div style={{ position: 'relative', width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
-          
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             {levels.map((lvl, index) => {
               const materiasObligatorias = SUBJECTS.filter((s: any) => s.level === lvl && !s.isElective && !s.isElectivePlaceholder);

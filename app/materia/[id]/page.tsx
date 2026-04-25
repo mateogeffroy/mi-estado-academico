@@ -11,7 +11,7 @@ export default function MateriaPage() {
   const params = useParams();
   const router = useRouter();
   const { id } = params;
-  const { detalles, actualizarDetalleMateria, careerData } = usePlan();
+  const { detalles, actualizarDetalleMateria, careerData, user } = usePlan();
   const { getSubjectById } = careerData;
   const hoy = new Date().toISOString().split('T')[0];
   const materia = getSubjectById(id);
@@ -28,13 +28,12 @@ export default function MateriaPage() {
     fecha: hoy
   });
 
-  // 🔥 LÓGICA DE DURACIÓN FIJA O VARIABLE 🔥
   const isDuracionFija = materia?.duration === '1' || materia?.duration === '2' || materia?.duration === 'A';
   
   const getInitialDuracion = () => {
     if (materia?.duration === '1') return '1º Cuatrimestre';
     if (materia?.duration === '2') return '2º Cuatrimestre';
-    if (materia?.duration === 'C') return '1º Cuatrimestre'; // Por defecto si es variable
+    if (materia?.duration === 'C') return '1º Cuatrimestre'; 
     return 'Anual'; 
   };
 
@@ -44,30 +43,18 @@ export default function MateriaPage() {
   };
 
   const [nuevoHorario, setNuevoHorario] = useState({
-    dia: 'Lunes',
-    inicio: '18:00',
-    fin: '22:00',
-    duracion: getInitialDuracion()
+    dia: 'Lunes', inicio: '18:00', fin: '22:00', duracion: getInitialDuracion()
   });
 
   const [showDificultadInfo, setShowDificultadInfo] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const [statsDificultad, setStatsDificultad] = useState({
-    promedio: 0, total: 0, loading: true
-  });
+  const [statsDificultad, setStatsDificultad] = useState({ promedio: 0, total: 0, loading: true });
 
   useEffect(() => {
     const fetchEstadisticas = async () => {
-      const { data, error } = await supabase.rpc('obtener_estadisticas_materia', { 
-        p_materia_id: id as string 
-      });
-
+      const { data, error } = await supabase.rpc('obtener_estadisticas_materia', { p_materia_id: id as string });
       if (!error && data && data.length > 0) {
-        setStatsDificultad({
-          promedio: Number(data[0].promedio),
-          total: Number(data[0].total_votos),
-          loading: false
-        });
+        setStatsDificultad({ promedio: Number(data[0].promedio), total: Number(data[0].total_votos), loading: false });
       } else {
         setStatsDificultad({ promedio: 0, total: 0, loading: false });
       }
@@ -83,34 +70,43 @@ export default function MateriaPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showDificultadInfo]);
 
-  if (!materia) {
-    return (
-      <div style={{ textAlign: 'center', paddingTop: '150px', paddingBottom: '100px', color: 'var(--text-strong)' }}>
-        <h2>Materia no encontrada</h2>
-        <button className="btn-secondary" onClick={() => router.push('/')} style={{ marginTop: '20px', whiteSpace: 'nowrap' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
-          </svg>
-          Volver a Cursada
-        </button>
-      </div>
-    );
-  }
+  if (!materia) return (
+    <div style={{ textAlign: 'center', paddingTop: '150px', paddingBottom: '100px', color: 'var(--text-strong)' }}>
+      <h2>Materia no encontrada</h2>
+      <button className="btn-secondary" onClick={() => router.push('/')} style={{ marginTop: '20px' }}>Volver a Cursada</button>
+    </div>
+  );
 
   const handleSeleccionarComision = (comisionId: string) => {
     actualizarDetalleMateria(id as string, { ...detalles[id as string], comision: comisionId });
   };
 
-  const handleAgregarEvento = (e: React.FormEvent) => {
+  const handleAgregarEvento = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nuevoEvento.nombre || !nuevoEvento.fecha) return;
-    const eventoParaGuardar = { id: crypto.randomUUID(), ...nuevoEvento };
+    if (!nuevoEvento.nombre || !nuevoEvento.fecha || !user) return;
+    
+    const eventoID = crypto.randomUUID();
+    const eventoParaGuardar = { id: eventoID, ...nuevoEvento };
+    
+    await supabase.from('usuario_eventos').insert({
+      id: eventoID,
+      user_id: user.id,
+      materia_id: id as string,
+      nombre: nuevoEvento.nombre,
+      tipo: nuevoEvento.tipo,
+      fecha: nuevoEvento.fecha
+    });
+
     const nuevosEventos = [...eventosGuardados, eventoParaGuardar];
     actualizarDetalleMateria(id as string, { ...detalles[id as string], eventos: nuevosEventos });
     setNuevoEvento({ nombre: '', tipo: 'Parcial', fecha: hoy });
   };
 
-  const handleBorrarEvento = (idEvento: string) => {
+  const handleBorrarEvento = async (idEvento: string) => {
+    // 1. Borramos de la tabla relacional
+    await supabase.from('usuario_eventos').delete().eq('id', idEvento);
+
+    // 2. Actualizamos el estado local
     const nuevosEventos = eventosGuardados.filter((ev: any) => ev.id !== idEvento);
     actualizarDetalleMateria(id as string, { ...detalles[id as string], eventos: nuevosEventos });
   };

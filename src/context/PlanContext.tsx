@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { getCareerData, CareerData } from '../lib/data/registry';
 import MaintenanceScreen from '../components/MaintenanceScreen';
@@ -14,6 +14,10 @@ interface PlanContextType {
   loading: boolean;
   careerId: string;
   careerData: CareerData;
+  todasLasCarreras: string[];
+  setCarreraActiva: (id: string) => void;
+  agregarCarrera: (id: string) => Promise<void>;
+  borrarCarrera: (id: string) => Promise<void>; // 🔥 Nueva función agregada
   cambiarEstadoMateria: (id: string, accion: string) => void;
   actualizarDetalleMateria: (id: string, info: any) => void;
   reiniciarProgreso: () => Promise<void>;
@@ -25,9 +29,12 @@ const PlanContext = createContext<PlanContextType | undefined>(undefined);
 export function PlanProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   
-  const [careerId, setCareerId] = useState('utn-sistemas-2023');
-  const careerData = getCareerData(careerId);
+  // --- ESTADOS DE CARRERA ---
+  const [careerId, setCareerId] = useState('');
+  const [todasLasCarreras, setTodasLasCarreras] = useState<string[]>([]);
+  const careerData = getCareerData(careerId || 'utn-sistemas-2023');
 
+  // --- ESTADOS DE PROGRESO ---
   const [materias, setMaterias] = useState<any>({});
   const [detalles, setDetalles] = useState<any>({});
   const [user, setUser] = useState<any>(null);
@@ -37,25 +44,21 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     aprobadas: 0, cursadas: 0, cursando: 0, porcentaje: 0, promedio: 0, totalMaterias: 36
   });
 
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-  const pendingUpdates = useRef<{ materias: any, detalles: any } | null>(null);
-
-  const guardarEnBDOptimizado = (nuevasMaterias: any, nuevosDetalles: any) => {
+  // --- LÓGICA DE PERSISTENCIA ATÓMICA ---
+  const upsertMateria = async (materiaId: string, estado: string, info: any = {}) => {
     if (!user) return;
-    pendingUpdates.current = { materias: nuevasMaterias, detalles: nuevosDetalles };
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-
-    debounceTimer.current = setTimeout(async () => {
-      const payload = pendingUpdates.current;
-      if (payload) {
-        await supabase.from('progreso_usuarios').update({ 
-          estado_materias: payload.materias, 
-          detalles_materias: payload.detalles 
-        }).eq('id_usuario', user.id);
-      }
-    }, 1500);
+    await supabase.from('usuario_materias').upsert({
+      user_id: user.id,
+      materia_id: materiaId,
+      estado: estado,
+      nota_final: info.notaFinal || null,
+      dificultad: info.dificultad || null,
+      comision: info.comision || null,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id,materia_id' });
   };
 
+  // --- CÁLCULOS Y CORRELATIVAS ---
   const evaluarCorrelativas = (estadosActuales: any, currentData: CareerData) => {
     const { ALL, ELECTIVAS } = currentData;
     let estados = { ...estadosActuales };
@@ -63,21 +66,12 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
     while (huboCambios) {
       huboCambios = false;
-      let globalCursadaHoursAnalista = 0; let globalAprobadaHoursAnalista = 0;
-      let globalCursadaHoursIngenieria = 0; let globalAprobadaHoursIngenieria = 0;
+      let hAprobadaIng = 0; let hCursadaIng = 0;
 
       if (ELECTIVAS) {
-        [3, 4, 5].forEach(lvl => {
-          const electivasNivel = ELECTIVAS[lvl as keyof typeof ELECTIVAS] || [];
-          electivasNivel.forEach((el: any) => {
-            if (estados[el.id.toString()] === 'aprobada') {
-              globalAprobadaHoursIngenieria += el.annualHours || 0;
-              if (!el.onlyIngenieria) globalAprobadaHoursAnalista += el.annualHours || 0;
-            } else if (estados[el.id.toString()] === 'cursada') {
-              globalCursadaHoursIngenieria += el.annualHours || 0;
-              if (!el.onlyIngenieria) globalCursadaHoursAnalista += el.annualHours || 0;
-            }
-          });
+        Object.values(ELECTIVAS).flat().forEach((el: any) => {
+          if (estados[el.id] === 'aprobada') hAprobadaIng += el.annualHours || 0;
+          else if (estados[el.id] === 'cursada') hCursadaIng += el.annualHours || 0;
         });
       }
 
@@ -86,39 +80,19 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         const estadoActual = estados[idStr];
 
         if (m.isElectivePlaceholder) {
-          const thresholds: any = { 3: 4, 4: 10, 5: 20 };
-          const target = thresholds[m.level] || m.targetHours || 0;
-          const aprobadaHours = m.level === 3 ? globalAprobadaHoursAnalista : globalAprobadaHoursIngenieria;
-          const cursadaHours = m.level === 3 ? globalCursadaHoursAnalista : globalCursadaHoursIngenieria;
-          const totalActive = aprobadaHours + cursadaHours;
-
+          const target = m.targetHours || 10;
           let newState = 'available';
-          if (aprobadaHours >= target) newState = 'aprobada';
-          else if (totalActive >= target) newState = 'cursada';
-
+          if (hAprobadaIng >= target) newState = 'aprobada';
+          else if ((hAprobadaIng + hCursadaIng) >= target) newState = 'cursada';
           if (estadoActual !== newState) { estados[idStr] = newState; huboCambios = true; }
-          return; 
+          return;
         }
 
-        let cumple = true;
-        if (m.level === 1 && (!m.correlCursada || m.correlCursada.length === 0) && (!m.correlAprobada || m.correlAprobada.length === 0)) {
-          cumple = true;
-        } else {
-          // 🔥 Cambiamos el tipado a (reqId: any) para que acepte los strings de UNLP
-          const reqCursadaOK = m.correlCursada?.every((reqId: any) => {
-            const est = estados[reqId.toString()];
-            return est === 'cursada' || est === 'aprobada';
-          }) ?? true;
-          
-          const reqAprobadaOK = m.correlAprobada?.every((reqId: any) => {
-            const est = estados[reqId.toString()];
-            return est === 'aprobada';
-          }) ?? true;
-          
-          cumple = reqCursadaOK && reqAprobadaOK;
-        }
+        const reqCursadaOK = m.correlCursada?.every((reqId: any) => ['cursada', 'aprobada'].includes(estados[reqId.toString()])) ?? true;
+        const reqAprobadaOK = m.correlAprobada?.every((reqId: any) => estados[reqId.toString()] === 'aprobada') ?? true;
+        const cumple = reqCursadaOK && reqAprobadaOK;
 
-        if (!cumple && estadoActual !== 'disabled') { estados[idStr] = 'disabled'; huboCambios = true; } 
+        if (!cumple && estadoActual !== 'disabled') { estados[idStr] = 'disabled'; huboCambios = true; }
         else if (cumple && (estadoActual === 'disabled' || !estadoActual)) { estados[idStr] = 'available'; huboCambios = true; }
       });
     }
@@ -127,169 +101,187 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
   const calcularEstadisticas = (currentMaterias: any, currentDetalles: any, currentData: CareerData) => {
     const { ALL } = currentData;
-    
-    // 🔥 LÓGICA DINÁMICA DE MATERIAS (A prueba de cualquier tipo de ID)
-    // 1. Buscamos las que son realmente electivas (tienen carga horaria definida o flag)
-    const realElectives = ALL.filter((s: any) => s.annualHours !== undefined || s.hsAnuales !== undefined || s.isElective);
-    
-    // 2. Las obligatorias (core) son todas las materias que NO son contenedores (placeholders) y NO son electivas reales
-    const coreSubjects = ALL.filter((s: any) => !s.isElectivePlaceholder && !realElectives.includes(s));
+    const core = ALL.filter((s: any) => !s.isElectivePlaceholder && s.annualHours === undefined);
+    const electivas = ALL.filter((s: any) => s.annualHours !== undefined);
 
-    const ap = coreSubjects.filter((s: any) => currentMaterias[s.id] === 'aprobada').length +
-               realElectives.filter((s: any) => currentMaterias[s.id] === 'aprobada').length;
-    const cu = coreSubjects.filter((s: any) => currentMaterias[s.id] === 'cursada').length +
-               realElectives.filter((s: any) => currentMaterias[s.id] === 'cursada').length;
-    const cur = coreSubjects.filter((s: any) => currentMaterias[s.id] === 'cursando').length +
-                realElectives.filter((s: any) => currentMaterias[s.id] === 'cursando').length;
+    const ap = ALL.filter(s => currentMaterias[s.id] === 'aprobada').length;
+    const cu = ALL.filter(s => currentMaterias[s.id] === 'cursada').length;
+    const cur = ALL.filter(s => currentMaterias[s.id] === 'cursando').length;
 
-    const electivasTomadas = realElectives.filter((s: any) => currentMaterias[s.id] === 'cursada' || currentMaterias[s.id] === 'aprobada').length;
-    const total = coreSubjects.length + electivasTomadas;
+    const total = core.length + electivas.filter(s => ['cursada', 'aprobada'].includes(currentMaterias[s.id])).length;
     const pct = total > 0 ? Math.round((ap / total) * 100) : 0;
 
-    const aprobadasReales = ALL.filter((s: any) => currentMaterias[s.id] === 'aprobada' && !s.isElectivePlaceholder && s.id !== 'SEM' && s.id !== 'PPS');
-    const notas = aprobadasReales.filter((s: any) => currentDetalles[s.id]?.notaFinal).map((s: any) => currentDetalles[s.id].notaFinal);
-    const promedio = notas.length > 0 ? (notas.reduce((a: number, b: number) => a + b, 0) / notas.length).toFixed(2) : 0;
+    const notas = ALL.filter(s => currentMaterias[s.id] === 'aprobada' && currentDetalles[s.id]?.notaFinal)
+                     .map(s => currentDetalles[s.id].notaFinal);
+    const promedio = notas.length > 0 ? (notas.reduce((a, b) => a + b, 0) / notas.length).toFixed(2) : 0;
 
-    setStats({ aprobadas: ap, cursadas: cu, cursando: cur, porcentaje: pct, promedio: Number(promedio), totalMaterias: total || 36 });
+    setStats({ aprobadas: ap, cursadas: cu, cursando: cur, porcentaje: pct, promedio: Number(promedio), totalMaterias: total });
   };
 
-  // 🔥 EFECTO PRINCIPAL DE CARGA Y REDIRECCIÓN BLINDADO
+  // --- CARGA DE DATOS ---
+  const cargarDatosUsuario = async (userId: string) => {
+    try {
+      const [{ data: carreras }, { data: progreso }, { data: eventos }] = await Promise.all([
+        supabase.from('usuario_carreras').select('carrera_id').eq('user_id', userId),
+        supabase.from('usuario_materias').select('*').eq('user_id', userId),
+        supabase.from('usuario_eventos').select('*').eq('user_id', userId)
+      ]);
+
+      if (!carreras || carreras.length === 0) {
+        router.replace('/onboarding');
+        return;
+      }
+
+      const ids = carreras.map(c => c.carrera_id);
+      setTodasLasCarreras(ids);
+      
+      let activeId = localStorage.getItem('active_career_id');
+      if (!activeId || !ids.includes(activeId)) {
+        activeId = ids[0];
+        localStorage.setItem('active_career_id', activeId);
+      }
+      setCareerId(activeId);
+
+      const matObj: any = {};
+      const detObj: any = {};
+
+      progreso?.forEach(m => {
+        matObj[m.materia_id] = m.estado;
+        detObj[m.materia_id] = {
+          notaFinal: m.nota_final,
+          dificultad: m.dificultad,
+          comision: m.comision,
+          eventos: eventos?.filter(e => e.materia_id === m.materia_id) || []
+        };
+      });
+
+      const currentData = getCareerData(activeId);
+      const matEvaluadas = evaluarCorrelativas(matObj, currentData);
+      
+      setMaterias(matEvaluadas);
+      setDetalles(detObj);
+      calcularEstadisticas(matEvaluadas, detObj, currentData);
+      setLoading(false);
+    } catch (e) {
+      setIsOffline(true);
+    }
+  };
+
   useEffect(() => {
-    let mounted = true;
+    let isMounted = true;
 
-    const processUser = async (sessionUser: any) => {
-      const { data, error } = await supabase
-        .from('progreso_usuarios')
-        .select('estado_materias, detalles_materias, carrera_id')
-        .eq('id_usuario', sessionUser.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        setIsOffline(true);
-        setLoading(false);
-        return;
-      }
-
-      const necesitaOnboarding = error?.code === 'PGRST116' || !data?.carrera_id;
-      const currentPath = window.location.pathname;
-
-      // LÓGICA DE REDIRECCIÓN ESTRICTA
-      if (necesitaOnboarding) {
-        if (currentPath !== '/onboarding') {
-          router.replace('/onboarding');
-        } else {
-          setLoading(false); // Ya está donde debe estar, se detiene la carga
-        }
-        return;
-      }
-
-      // Si NO necesita onboarding, pero está atrapado en esa página
-      if (!necesitaOnboarding && currentPath === '/onboarding') {
-        router.replace('/');
-        return;
-      }
-
-      // Si todo está correcto, cargamos sus datos en la app
-      if (mounted && data?.carrera_id) {
-        setUser(sessionUser);
-        setCareerId(data.carrera_id);
-        const currentData = getCareerData(data.carrera_id);
-        const mat = evaluarCorrelativas(data.estado_materias || {}, currentData);
-        const det = data.detalles_materias || {};
-        setMaterias(mat);
-        setDetalles(det);
-        calcularEstadisticas(mat, det, currentData);
-        setLoading(false);
-      }
-    };
-
-    // 1. Ejecución inicial al montar
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        processUser(session.user);
-      } else {
+      if (isMounted && session?.user) {
+        setUser(session.user);
+        cargarDatosUsuario(session.user.id);
+      } else if (isMounted) {
         setLoading(false);
       }
     });
 
-    // 2. Escuchar cambios de sesión (Login/Logout dinámico)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-        if (session?.user) processUser(session.user);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setMaterias({});
-        setDetalles({});
+      if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && isMounted && session?.user) {
+        setUser((prevUser: any) => {
+          if (prevUser?.id !== session.user.id) {
+            cargarDatosUsuario(session.user.id);
+          }
+          return session.user;
+        });
       }
     });
 
     return () => {
-      mounted = false;
+      isMounted = false;
       subscription.unsubscribe();
     };
-  }, [router]); // Removimos "pathname" a propósito para matar el bucle
+  }, []);
 
-  const cambiarEstadoMateria = (id: string, accion: string) => {
-    let nuevoEstadoMateria = { ...materias };
-    const estadoActual = materias[id] || 'available';
+  // --- ACCIONES ---
+  const setCarreraActiva = (id: string) => {
+    setCareerId(id);
+    localStorage.setItem('active_career_id', id);
+    const currentData = getCareerData(id);
+    const matEvaluadas = evaluarCorrelativas(materias, currentData);
+    setMaterias(matEvaluadas);
+    calcularEstadisticas(matEvaluadas, detalles, currentData);
+  };
 
-    if (accion === 'set_aprobada') nuevoEstadoMateria[id] = 'aprobada';
-    else if (accion === 'set_cursada') nuevoEstadoMateria[id] = 'cursada';
-    else if (accion === 'set_cursando') nuevoEstadoMateria[id] = 'cursando';
-    else if (accion === 'set_available') nuevoEstadoMateria[id] = 'available';
-    else if (accion === 'toggle_aprobada') nuevoEstadoMateria[id] = (estadoActual === 'aprobada') ? 'available' : 'aprobada';
-    else if (accion === 'cycle_cursada') {
-      if (estadoActual === 'cursando') nuevoEstadoMateria[id] = 'cursada';
-      else if (estadoActual === 'cursada') nuevoEstadoMateria[id] = 'available';
-      else nuevoEstadoMateria[id] = 'cursando';
+  const agregarCarrera = async (nuevaId: string) => {
+    if (!user || todasLasCarreras.includes(nuevaId)) return;
+    await supabase.from('usuario_carreras').insert({ user_id: user.id, carrera_id: nuevaId });
+    setTodasLasCarreras(prev => [...prev, nuevaId]);
+    setCarreraActiva(nuevaId);
+  };
+
+  // 🔥 NUEVA LÓGICA DE BORRADO DE CARRERA 🔥
+  const borrarCarrera = async (idAEliminar: string) => {
+    if (!user) return;
+    
+    // 1. Borramos de Supabase la relación de la carrera (La limpieza profunda de materias la dejamos como Deuda Técnica)
+    await supabase.from('usuario_carreras').delete().match({ user_id: user.id, carrera_id: idAEliminar });
+    
+    // 2. Actualizamos la lista local
+    const nuevasCarreras = todasLasCarreras.filter(id => id !== idAEliminar);
+    setTodasLasCarreras(nuevasCarreras);
+    
+    // 3. Si borró la carrera que estaba mirando, lo cambiamos a otra
+    if (careerId === idAEliminar && nuevasCarreras.length > 0) {
+      setCarreraActiva(nuevasCarreras[0]);
+    }
+  };
+
+  const cambiarEstadoMateria = async (id: string, accion: string) => {
+    let nuevasMaterias = { ...materias };
+    const actual = materias[id] || 'available';
+
+    if (accion === 'cycle_cursada') {
+      nuevasMaterias[id] = actual === 'cursando' ? 'cursada' : actual === 'cursada' ? 'available' : 'cursando';
+    } else if (accion === 'toggle_aprobada') {
+      nuevasMaterias[id] = actual === 'aprobada' ? 'available' : 'aprobada';
+    } else {
+      nuevasMaterias[id] = accion.replace('set_', '');
     }
 
-    nuevoEstadoMateria = evaluarCorrelativas(nuevoEstadoMateria, careerData);
-    setMaterias(nuevoEstadoMateria);
-    calcularEstadisticas(nuevoEstadoMateria, detalles, careerData);
-    guardarEnBDOptimizado(nuevoEstadoMateria, detalles);
+    nuevasMaterias = evaluarCorrelativas(nuevasMaterias, careerData);
+    setMaterias(nuevasMaterias);
+    calcularEstadisticas(nuevasMaterias, detalles, careerData);
+    await upsertMateria(id, nuevasMaterias[id], detalles[id] || {});
   };
 
-  const marcarMultiplesAprobadas = async (ids: string[]) => {
-    let nuevoEstadoMateria = { ...materias };
-    let huboCambios = false;
-
-    ids.forEach(id => {
-      const estadoActual = nuevoEstadoMateria[id] || 'available';
-      if (estadoActual !== 'disabled' && estadoActual !== 'aprobada') {
-        nuevoEstadoMateria[id] = 'aprobada';
-        huboCambios = true;
-      }
-    });
-
-    if (!huboCambios) return;
-
-    nuevoEstadoMateria = evaluarCorrelativas(nuevoEstadoMateria, careerData);
-    setMaterias(nuevoEstadoMateria);
-    calcularEstadisticas(nuevoEstadoMateria, detalles, careerData);
-    guardarEnBDOptimizado(nuevoEstadoMateria, detalles);
-  };
-
-  const actualizarDetalleMateria = (id: string, info: any) => {
+  const actualizarDetalleMateria = async (id: string, info: any) => {
     const nuevosDetalles = { ...detalles, [id]: info };
     setDetalles(nuevosDetalles);
     calcularEstadisticas(materias, nuevosDetalles, careerData);
-    guardarEnBDOptimizado(materias, nuevosDetalles);
+    await upsertMateria(id, materias[id], info);
+  };
+
+  const marcarMultiplesAprobadas = async (ids: string[]) => {
+    let nuevasMaterias = { ...materias };
+    for (const id of ids) {
+      if (nuevasMaterias[id] !== 'disabled') nuevasMaterias[id] = 'aprobada';
+    }
+    nuevasMaterias = evaluarCorrelativas(nuevasMaterias, careerData);
+    setMaterias(nuevasMaterias);
+    calcularEstadisticas(nuevasMaterias, detalles, careerData);
+    
+    const rows = ids.map(id => ({ user_id: user.id, materia_id: id, estado: 'aprobada', updated_at: new Date().toISOString() }));
+    await supabase.from('usuario_materias').upsert(rows, { onConflict: 'user_id,materia_id' });
   };
 
   const reiniciarProgreso = async () => {
-    setMaterias({}); setDetalles({}); calcularEstadisticas({}, {}, careerData);
-    if (user) await supabase.from('progreso_usuarios').update({ estado_materias: {}, detalles_materias: {} }).eq('id_usuario', user.id);
+    if (!user) return;
+    setMaterias({}); setDetalles({});
+    await supabase.from('usuario_materias').delete().eq('user_id', user.id);
+    await supabase.from('usuario_eventos').delete().eq('user_id', user.id);
+    cargarDatosUsuario(user.id);
   };
 
-  if (isOffline) {
-    return <MaintenanceScreen />;
-  }
+  if (isOffline) return <MaintenanceScreen />;
 
   return (
     <PlanContext.Provider value={{ 
-      materias, detalles, stats, user, loading, careerId, careerData,
-      cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas
+      materias, detalles, stats, user, loading, careerId, careerData, todasLasCarreras,
+      setCarreraActiva, agregarCarrera, borrarCarrera, cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas
     }}>
       {children}
     </PlanContext.Provider>
