@@ -17,7 +17,7 @@ interface PlanContextType {
   todasLasCarreras: string[];
   setCarreraActiva: (id: string) => void;
   agregarCarrera: (id: string) => Promise<void>;
-  borrarCarrera: (id: string) => Promise<void>; // 🔥 Nueva función agregada
+  borrarCarrera: (id: string) => Promise<void>; 
   cambiarEstadoMateria: (id: string, accion: string) => void;
   actualizarDetalleMateria: (id: string, info: any) => void;
   reiniciarProgreso: () => Promise<void>;
@@ -29,12 +29,10 @@ const PlanContext = createContext<PlanContextType | undefined>(undefined);
 export function PlanProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   
-  // --- ESTADOS DE CARRERA ---
   const [careerId, setCareerId] = useState('');
   const [todasLasCarreras, setTodasLasCarreras] = useState<string[]>([]);
   const careerData = getCareerData(careerId || 'utn-sistemas-2023');
 
-  // --- ESTADOS DE PROGRESO ---
   const [materias, setMaterias] = useState<any>({});
   const [detalles, setDetalles] = useState<any>({});
   const [user, setUser] = useState<any>(null);
@@ -44,7 +42,6 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     aprobadas: 0, cursadas: 0, cursando: 0, porcentaje: 0, promedio: 0, totalMaterias: 36
   });
 
-  // --- LÓGICA DE PERSISTENCIA ATÓMICA ---
   const upsertMateria = async (materiaId: string, estado: string, info: any = {}) => {
     if (!user) return;
     await supabase.from('usuario_materias').upsert({
@@ -54,11 +51,11 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       nota_final: info.notaFinal || null,
       dificultad: info.dificultad || null,
       comision: info.comision || null,
+      horarios_custom: info.horariosCustom || null, // 🔥 RECUPERAMOS EL GUARDADO DE HORARIOS 
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id,materia_id' });
   };
 
-  // --- CÁLCULOS Y CORRELATIVAS ---
   const evaluarCorrelativas = (estadosActuales: any, currentData: CareerData) => {
     const { ALL, ELECTIVAS } = currentData;
     let estados = { ...estadosActuales };
@@ -104,21 +101,21 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     const core = ALL.filter((s: any) => !s.isElectivePlaceholder && s.annualHours === undefined);
     const electivas = ALL.filter((s: any) => s.annualHours !== undefined);
 
-    const ap = ALL.filter(s => currentMaterias[s.id] === 'aprobada').length;
-    const cu = ALL.filter(s => currentMaterias[s.id] === 'cursada').length;
-    const cur = ALL.filter(s => currentMaterias[s.id] === 'cursando').length;
+    // 🔥 FIX DEL CONTADOR: Ignoramos explícitamente a 'ELEC' y cualquier placeholder
+    const ap = ALL.filter(s => currentMaterias[s.id] === 'aprobada' && !s.isElectivePlaceholder && s.id !== 'ELEC').length;
+    const cu = ALL.filter(s => currentMaterias[s.id] === 'cursada' && !s.isElectivePlaceholder && s.id !== 'ELEC').length;
+    const cur = ALL.filter(s => currentMaterias[s.id] === 'cursando' && !s.isElectivePlaceholder && s.id !== 'ELEC').length;
 
     const total = core.length + electivas.filter(s => ['cursada', 'aprobada'].includes(currentMaterias[s.id])).length;
     const pct = total > 0 ? Math.round((ap / total) * 100) : 0;
 
-    const notas = ALL.filter(s => currentMaterias[s.id] === 'aprobada' && currentDetalles[s.id]?.notaFinal)
+    const notas = ALL.filter(s => currentMaterias[s.id] === 'aprobada' && currentDetalles[s.id]?.notaFinal && !s.isElectivePlaceholder && s.id !== 'ELEC')
                      .map(s => currentDetalles[s.id].notaFinal);
     const promedio = notas.length > 0 ? (notas.reduce((a, b) => a + b, 0) / notas.length).toFixed(2) : 0;
 
     setStats({ aprobadas: ap, cursadas: cu, cursando: cur, porcentaje: pct, promedio: Number(promedio), totalMaterias: total });
   };
 
-  // --- CARGA DE DATOS ---
   const cargarDatosUsuario = async (userId: string) => {
     try {
       const [{ data: carreras }, { data: progreso }, { data: eventos }] = await Promise.all([
@@ -151,6 +148,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
           notaFinal: m.nota_final,
           dificultad: m.dificultad,
           comision: m.comision,
+          horariosCustom: m.horarios_custom || [], // 🔥 RECUPERAMOS LA LECTURA DE HORARIOS
           eventos: eventos?.filter(e => e.materia_id === m.materia_id) || []
         };
       });
@@ -196,7 +194,6 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // --- ACCIONES ---
   const setCarreraActiva = (id: string) => {
     setCareerId(id);
     localStorage.setItem('active_career_id', id);
@@ -213,18 +210,13 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     setCarreraActiva(nuevaId);
   };
 
-  // 🔥 NUEVA LÓGICA DE BORRADO DE CARRERA 🔥
   const borrarCarrera = async (idAEliminar: string) => {
     if (!user) return;
-    
-    // 1. Borramos de Supabase la relación de la carrera (La limpieza profunda de materias la dejamos como Deuda Técnica)
     await supabase.from('usuario_carreras').delete().match({ user_id: user.id, carrera_id: idAEliminar });
     
-    // 2. Actualizamos la lista local
     const nuevasCarreras = todasLasCarreras.filter(id => id !== idAEliminar);
     setTodasLasCarreras(nuevasCarreras);
     
-    // 3. Si borró la carrera que estaba mirando, lo cambiamos a otra
     if (careerId === idAEliminar && nuevasCarreras.length > 0) {
       setCarreraActiva(nuevasCarreras[0]);
     }
