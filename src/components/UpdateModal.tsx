@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 
-// 🔑 CLAVE DE VERSIÓN: cambiá este valor en cada nueva actualización para que
-// el modal vuelva a mostrarse a todos los usuarios.
+// 🔑 CLAVE DE VERSIÓN
 export const UPDATE_VERSION_KEY = 'seen_update_v2';
 
 interface UpdateModalProps {
@@ -111,11 +110,11 @@ export default function UpdateModal({ isOpen, onClose }: UpdateModalProps) {
         .update-modal {
           background: var(--panel);
           border: 1px solid var(--border);
-          border-radius: 20px;
-          width: 100%; max-width: 460px;
-          padding: 36px 32px 28px;
+          border-radius: 24px;
+          width: 100%; max-width: 440px;
+          padding: 32px 28px 20px;
           box-shadow: 0 24px 60px rgba(0,0,0,0.3);
-          display: flex; flex-direction: column; gap: 0;
+          display: flex; flex-direction: column;
           position: relative;
           animation: umSlideUp 0.3s cubic-bezier(.22,1,.36,1);
         }
@@ -130,9 +129,7 @@ export default function UpdateModal({ isOpen, onClose }: UpdateModalProps) {
           color: var(--cursando);
           margin-bottom: 10px;
         }
-        .update-modal-icon {
-          margin-bottom: 16px;
-        }
+        .update-modal-icon { margin-bottom: 16px; }
         .update-modal-title {
           color: var(--text-strong);
           font-size: 1.4rem;
@@ -144,54 +141,77 @@ export default function UpdateModal({ isOpen, onClose }: UpdateModalProps) {
           color: var(--muted);
           font-size: 0.95rem;
           line-height: 1.65;
-          margin: 0 0 28px 0;
-          min-height: 70px;
+          margin: 0 0 24px 0;
+          min-height: 80px;
         }
         .update-modal-dots {
-          display: flex; gap: 7px; align-items: center; margin-bottom: 24px;
+          display: flex; gap: 7px; align-items: center; margin-bottom: 28px; justify-content: center;
         }
         .update-modal-dot {
           width: 7px; height: 7px; border-radius: 50%;
           background: var(--border);
           transition: all 0.3s ease;
-          cursor: pointer;
           border: none; padding: 0;
         }
         .update-modal-dot.active {
           background: var(--cursando);
-          width: 22px;
+          width: 20px;
           border-radius: 4px;
         }
+
         .update-modal-actions {
-          display: flex; gap: 10px; justify-content: flex-end; align-items: center;
+          display: flex; flex-direction: column; gap: 12px;
         }
-        .update-modal-btn-skip {
-          background: transparent;
-          border: 1px solid var(--border);
-          color: var(--muted);
-          padding: 10px 18px;
-          border-radius: 10px;
-          font-size: 0.9rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-family: inherit;
+        .actions-row {
+          display: flex; gap: 12px;
         }
-        .update-modal-btn-skip:hover { color: var(--text-strong); border-color: var(--text-strong); }
-        .update-modal-btn-next {
+        
+        /* Botón Siguiente (Primario Azul) */
+        .btn-update-next {
+          flex: 2;
           background: var(--cursando);
           border: none;
           color: black;
-          padding: 10px 24px;
-          border-radius: 10px;
+          padding: 12px 20px;
+          border-radius: 12px;
           font-size: 0.95rem;
           font-weight: 700;
           cursor: pointer;
-          transition: all 0.2s ease;
-          font-family: inherit;
-          display: flex; align-items: center; gap: 7px;
+          transition: all 0.2s;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .update-modal-btn-next:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn-update-next:active { transform: scale(0.98); }
+
+        /* Botón Atrás (Secundario con Borde) */
+        .btn-update-back {
+          flex: 1;
+          background: transparent;
+          border: 1.5px solid var(--border);
+          color: var(--muted);
+          padding: 12px 16px;
+          border-radius: 12px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .btn-update-back:hover { color: var(--text-strong); border-color: var(--muted); }
+
+        /* Botón Saltar (Terciario/Texto) */
+        .btn-update-skip {
+          background: transparent;
+          border: none;
+          color: var(--muted);
+          padding: 8px;
+          font-size: 0.85rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          opacity: 0.7;
+        }
+        .btn-update-skip:hover { opacity: 1; color: var(--text-strong); }
 
         .update-modal-close {
           position: absolute; top: 18px; right: 18px;
@@ -201,13 +221,12 @@ export default function UpdateModal({ isOpen, onClose }: UpdateModalProps) {
           display: flex; align-items: center; justify-content: center;
           transition: color 0.2s, background 0.2s;
         }
-        .update-modal-close:hover { color: var(--text-strong); background: var(--glass-hover); }
       `}</style>
 
       <div className="update-modal-overlay" onClick={onClose}>
         <div className="update-modal" onClick={(e) => e.stopPropagation()}>
 
-          <button className="update-modal-close" onClick={onClose} title="Cerrar">
+          <button className="update-modal-close" onClick={onClose}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -220,45 +239,33 @@ export default function UpdateModal({ isOpen, onClose }: UpdateModalProps) {
 
           <div className="update-modal-dots">
             {slides.map((_, i) => (
-              <button
-                key={i}
-                className={`update-modal-dot ${i === current ? 'active' : ''}`}
-                onClick={() => setCurrent(i)}
-                aria-label={`Ir al slide ${i + 1}`}
-              />
+              <div key={i} className={`update-modal-dot ${i === current ? 'active' : ''}`} />
             ))}
           </div>
 
           <div className="update-modal-actions">
-            {current > 0 && (
-              <button className="update-modal-btn-skip" onClick={handlePrev}>
-                Anterior
-              </button>
-            )}
-            {!isLast && (
-              <button className="update-modal-btn-skip" onClick={onClose}>
-                Saltar
-              </button>
-            )}
-            <button className="update-modal-btn-next" onClick={handleNext}>
-              {isLast ? (
-                <>
-                  ¡Entendido!
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                </>
-              ) : (
-                <>
-                  Siguiente
+            <div className="actions-row">
+              {current > 0 && (
+                <button className="btn-update-back" onClick={handlePrev}>
+                  Atrás
+                </button>
+              )}
+              <button className="btn-update-next" onClick={handleNext}>
+                {isLast ? '¡Entendido!' : 'Siguiente'}
+                {!isLast && (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
                   </svg>
-                </>
-              )}
-            </button>
+                )}
+              </button>
+            </div>
+            
+            {!isLast && (
+              <button className="btn-update-skip" onClick={onClose}>
+                Saltar presentación
+              </button>
+            )}
           </div>
-
         </div>
       </div>
     </>
