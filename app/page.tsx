@@ -337,7 +337,8 @@ export default function Dashboard() {
                 </h3>
               }
               action={
-                <div className="schedule-toggle" style={{ display: 'flex', background: 'var(--panel)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                // 🔥 MODIFICADO: Background ajustado a var(--bg) para que el toggle destaque sutilmente dentro del nuevo panel unificado de HorarioCalendar
+                <div className="schedule-toggle" style={{ display: 'flex', background: 'var(--bg)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   {['1', '2'].map((opcion) => (
                     <div key={opcion} onClick={() => { setFiltroCuatri(opcion); localStorage.setItem('filtroCuatrimestre', opcion); }}
                       style={{ padding: '8px 20px', fontSize: '0.85rem', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', transition: '0.3s',

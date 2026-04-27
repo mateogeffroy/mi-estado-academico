@@ -4,11 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import WelcomeModal from './WelcomeModal';
+import UpdateModal, { UPDATE_VERSION_KEY } from './UpdateModal';
 import { supabase } from '../lib/supabase';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(true); 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasSession, setHasSession] = useState(false);
@@ -36,6 +36,11 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     setMounted(true);
+    // Mostrar modal de actualización si el usuario no lo vio aún
+    const alreadySeen = localStorage.getItem(UPDATE_VERSION_KEY);
+    if (!alreadySeen) {
+      setIsUpdateModalOpen(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -212,7 +217,11 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               {hasSession && pathname === '/' && (
                 <>
                   <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
-                  <button className="help-btn" onClick={() => window.dispatchEvent(new Event('start-home-tour'))} title="Guía de inicio">
+                  <button
+                    className="help-btn"
+                    onClick={() => setIsUpdateModalOpen(true)}
+                    title="Ver novedades"
+                  >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                   </button>
                   
@@ -374,7 +383,13 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         </div>
       </aside>
 
-      <WelcomeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <UpdateModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => {
+          localStorage.setItem(UPDATE_VERSION_KEY, 'true');
+          setIsUpdateModalOpen(false);
+        }}
+      />
 
       {/* Contenido principal de las páginas */}
       <div>{children}</div>

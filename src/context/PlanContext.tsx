@@ -210,18 +210,83 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     setCarreraActiva(nuevaId);
   };
 
-  const borrarCarrera = async (idAEliminar: string) => {
-    if (!user) return;
-    await supabase.from('usuario_carreras').delete().match({ user_id: user.id, carrera_id: idAEliminar });
-    
-    const nuevasCarreras = todasLasCarreras.filter(id => id !== idAEliminar);
-    setTodasLasCarreras(nuevasCarreras);
-    
-    if (careerId === idAEliminar && nuevasCarreras.length > 0) {
-      setCarreraActiva(nuevasCarreras[0]);
-    }
+  const getCareerPrefix = (careerId: string) => {
+    if (careerId.includes('sistemas')) return 'SIS-';
+    if (careerId.includes('industrial')) return 'IND-';
+    if (careerId.includes('mecanica')) return 'MEC-';
+    if (careerId.includes('civil')) return 'CIV-';
+    if (careerId.includes('electrica')) return 'ELE-';
+    if (careerId.includes('quimica')) return 'QUI-';
+    if (careerId.includes('sonido')) return 'TU'; // Tecnicatura en Sonido
+    if (careerId.includes('apu')) return 'A0'; // APU
+    if (careerId.includes('unlp-sistemas') || careerId.includes('informatica')) return 'M0';
+    return null;
   };
 
+  const borrarCarrera = async (idAEliminar: string) => {
+    console.log('--- 🚀 INICIANDO BORRADO EN CASCADA ---');
+    console.log('1️⃣ Carrera a eliminar:', idAEliminar);
+    
+    if (!user) {
+      console.error('❌ Error: No se detectó un usuario activo.');
+      return;
+    }
+
+    const prefix = getCareerPrefix(idAEliminar);
+    console.log('2️⃣ Prefijo detectado para la limpieza:', prefix);
+
+    try {
+      // 1. Borrado en cascada: Materias y Eventos EXCLUSIVOS
+      if (prefix) {
+        console.log(`⏳ Intentando borrar materias con prefijo: ${prefix}%`);
+        const { error: errMat } = await supabase.from('usuario_materias').delete().eq('user_id', user.id).like('materia_id', `${prefix}%`);
+        if (errMat) console.error('❌ Falló el borrado de materias exclusivas:', errMat.message, errMat.details);
+        else console.log('✅ Materias exclusivas eliminadas correctamente.');
+
+        console.log(`⏳ Intentando borrar eventos con prefijo: ${prefix}%`);
+        const { error: errEv } = await supabase.from('usuario_eventos').delete().eq('user_id', user.id).like('materia_id', `${prefix}%`);
+        if (errEv) console.error('❌ Falló el borrado de eventos exclusivos:', errEv.message, errEv.details);
+        else console.log('✅ Eventos exclusivos eliminados correctamente.');
+      } else {
+        console.warn('⚠️ No se encontró un prefijo válido. Se saltó la limpieza de exclusivas.');
+      }
+
+      // 2. Limpieza compartida UTN
+      const esUTN = idAEliminar.startsWith('utn-');
+      const otrasCarrerasUTN = todasLasCarreras.filter(id => id !== idAEliminar && id.startsWith('utn-'));
+      console.log(`3️⃣ ¿Es UTN?: ${esUTN}. Otras carreras UTN activas: ${otrasCarrerasUTN.length}`);
+
+      if (esUTN && otrasCarrerasUTN.length === 0) {
+        console.log('⏳ Borrando materias básicas compartidas (UTN-%)...');
+        const { error: errMatUTN } = await supabase.from('usuario_materias').delete().eq('user_id', user.id).like('materia_id', 'UTN-%');
+        if (errMatUTN) console.error('❌ Falló el borrado de materias UTN:', errMatUTN.message);
+        else console.log('✅ Materias UTN eliminadas.');
+
+        const { error: errEvUTN } = await supabase.from('usuario_eventos').delete().eq('user_id', user.id).like('materia_id', 'UTN-%');
+        if (errEvUTN) console.error('❌ Falló el borrado de eventos UTN:', errEvUTN.message);
+        else console.log('✅ Eventos UTN eliminados.');
+      }
+
+      // 3. Borramos la relación de la carrera
+      console.log('⏳ Eliminando la relación en usuario_carreras...');
+      const { error: errCarrera } = await supabase.from('usuario_carreras').delete().match({ user_id: user.id, carrera_id: idAEliminar });
+      if (errCarrera) console.error('❌ Falló el borrado del perfil:', errCarrera.message);
+      else console.log('✅ Relación de carrera eliminada de la cuenta.');
+      
+      // 4. Actualizamos la Interfaz
+      const nuevasCarreras = todasLasCarreras.filter(id => id !== idAEliminar);
+      setTodasLasCarreras(nuevasCarreras);
+      
+      if (careerId === idAEliminar && nuevasCarreras.length > 0) {
+        setCarreraActiva(nuevasCarreras[0]);
+      }
+      
+      console.log('--- ✨ BORRADO EN CASCADA FINALIZADO ---');
+
+    } catch (error) {
+      console.error('💥 Excepción crítica inesperada:', error);
+    }
+  };
   const cambiarEstadoMateria = async (id: string, accion: string) => {
     let nuevasMaterias = { ...materias };
     const actual = materias[id] || 'available';
