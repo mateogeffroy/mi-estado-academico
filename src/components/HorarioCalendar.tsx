@@ -239,18 +239,16 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
           max-width: none; 
           box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
           z-index: 100000; 
-          animation: legendFix 0.2s ease forwards; /* 🔥 Nueva animación exclusiva */
+          animation: legendFix 0.2s ease forwards; 
           cursor: default; 
           text-align: left;
         }
 
-        /* 🔥 Animación que respeta el centrado en PC */
         @keyframes legendFix {
           from { opacity: 0; transform: translateX(-50%) translateY(10px); }
           to   { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        /* 🔥 Blindaje total para celulares (evita que se vaya de la pantalla) */
         @media (max-width: 600px) {
           .legend-tooltip {
             position: fixed !important;
@@ -368,12 +366,10 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                     onMouseEnter={() => setShowLegend(true)} 
                     onMouseLeave={() => setShowLegend(false)}
                     onClick={() => setShowLegend(!showLegend)}
-                    /* Removido el title="Simbología" nativo del navegador */
                   >
                     ?
                   </button>
 
-                  {/* Tooltip con white-space: nowrap y flex-shrink: 0 para proteger su contenido */}
                   {showLegend && (
                     <div className="legend-tooltip" onMouseEnter={() => setShowLegend(true)} onMouseLeave={() => setShowLegend(false)}>
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-strong)' }}>
@@ -486,17 +482,23 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
               .custom-calendar-container { overflow-x: auto; overflow-y: hidden; }
               .calendar-inner { min-width: 800px; display: flex; flex-direction: column; }
               .calendar-header { display: grid; grid-template-columns: clamp(45px, 4vw, 60px) repeat(6, 1fr); border-bottom: 1px solid var(--border); background: var(--glass-bg); }
-              .header-cell { padding: clamp(10px, 1.5vh, 15px) 0; text-align: center; font-weight: 700; font-size: clamp(0.8rem, 1vw, 0.9rem); color: var(--text-strong); border-left: 1px solid var(--glass-border); }
+              .header-cell { padding: clamp(10px, 1.5vh, 15px) 0; text-align: center; font-weight: 700; font-size: clamp(0.8rem, 1vw, 0.9rem); color: var(--text-strong); border-left: 1px solid var(--glass-border); transition: all 0.3s; }
               .header-cell:first-child { border-left: none; }
               
+              /* 🔥 ESTILO PARA EL HEADER DEL DÍA ACTUAL 🔥 */
+              .header-cell.today-header { background: rgba(59, 130, 246, 0.1); border-top: 2px solid var(--cursando); }
+
               .calendar-body { display: grid; grid-template-columns: clamp(45px, 4vw, 60px) repeat(6, 1fr); position: relative; height: clamp(400px, 58vh, 750px); }
               
               .grid-lines { position: absolute; top: 0; left: clamp(45px, 4vw, 60px); right: 0; bottom: 0; display: flex; flex-direction: column; pointer-events: none; }
               .grid-line { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--glass-border); }
               .time-column { position: relative; border-right: 1px solid var(--border); background: var(--glass-bg); }
               .time-label { position: absolute; width: 100%; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: clamp(0.65rem, 0.8vw, 0.75rem); color: var(--muted); background: transparent; }
-              .day-column { position: relative; border-right: 1px solid var(--glass-border); }
+              .day-column { position: relative; border-right: 1px solid var(--glass-border); transition: background-color 0.3s; }
               .day-column:last-child { border-right: none; }
+
+              /* 🔥 ESTILO PARA LA COLUMNA DEL DÍA ACTUAL 🔥 */
+              .day-column.today-column { background: linear-gradient(to bottom, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0) 100%); }
               
               .event-card { position: absolute; left: 4px; right: 4px; border-radius: 8px; padding: clamp(4px, 1vh, 8px) clamp(6px, 1vw, 10px); display: flex; flex-direction: column; overflow: visible; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease; z-index: 10; backdrop-filter: blur(4px); cursor: pointer; }
               .event-card:hover, .event-card.mobile-active { transform: scale(1.03); z-index: 30; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
@@ -537,7 +539,8 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                   const dateStr = formatDateStr(datesOfWeek[idx]);
                   const isToday = dateStr === formatDateStr(new Date());
                   return (
-                    <div key={dia} className="header-cell" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '6px', color: isToday ? 'var(--cursando)' : 'inherit' }}>
+                    // 🔥 SE AGREGA LA CLASE today-header SI ES HOY 🔥
+                    <div key={dia} className={`header-cell ${isToday ? 'today-header' : ''}`} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '6px', color: isToday ? 'var(--cursando)' : 'inherit' }}>
                       <span>{dia}</span><span style={{ fontSize: '0.85rem', fontWeight: 'normal', opacity: 0.7 }}>{datesOfWeek[idx].getDate()}</span>
                     </div>
                   );
@@ -554,6 +557,7 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
 
                 {DIAS.map((dia, idx) => {
                   const dateStr = formatDateStr(datesOfWeek[idx]);
+                  const isToday = dateStr === formatDateStr(new Date()); // 🔥 EVALUAMOS SI ES HOY 🔥
                   const inhabil = INHABILES.find(i => i.fecha === dateStr);
                   const clasesHoy = horarios[dia] || [];
 
@@ -573,7 +577,8 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                   }
 
                   return (
-                    <div key={dia} className="day-column">
+                    // 🔥 SE AGREGA LA CLASE today-column SI ES HOY 🔥
+                    <div key={dia} className={`day-column ${isToday ? 'today-column' : ''}`}>
                       {inhabil && (() => {
                         const colores = getColoresInhabil(inhabil.tipo);
                         return (
