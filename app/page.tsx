@@ -30,6 +30,7 @@ export default function Dashboard() {
   
   const [nombreDinamico, setNombreDinamico] = useState('');
   const [filtroCuatri, setFiltroCuatri] = useState('1');
+  const [filtroMaterias, setFiltroMaterias] = useState('Ambos'); // 🔥 Nuevo estado para el filtro de materias
   const [tourStep, setTourStep] = useState(0);
 
   useEffect(() => {
@@ -45,6 +46,12 @@ export default function Dashboard() {
     const filtroGuardado = localStorage.getItem('filtroCuatrimestre');
     if (filtroGuardado && filtroGuardado !== 'Ambos') {
       setFiltroCuatri(filtroGuardado);
+    }
+
+    // 🔥 Recuperar filtro de materias si existe
+    const filtroMatGuardado = localStorage.getItem('filtroMaterias');
+    if (filtroMatGuardado) {
+      setFiltroMaterias(filtroMatGuardado);
     }
   }, []);
 
@@ -170,6 +177,35 @@ export default function Dashboard() {
 
   const ordenDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   const diasMostrar = ordenDias.filter(dia => horariosSemanales[dia].length > 0);
+
+  // 🔥 LÓGICA DEL NUEVO FILTRO DE MATERIAS 🔥
+  const getSubjectDuration = (m: any) => {
+    const tieneComisiones = m.comisiones && m.comisiones.length > 0;
+    if (tieneComisiones) {
+      const comisionId = detalles[m.id]?.comision;
+      if (comisionId) {
+        const comisionData = m.comisiones.find((c: any) => c.id === comisionId);
+        if (comisionData && comisionData.duration) return String(comisionData.duration);
+      }
+    } else {
+      const horariosCustom = detalles[m.id]?.horariosCustom;
+      if (horariosCustom && horariosCustom.length > 0) {
+        const hDur = horariosCustom[0].duracion || 'Anual';
+        if (hDur.includes('1º') || hDur === '1') return '1';
+        if (hDur.includes('2º') || hDur === '2') return '2';
+        return 'A';
+      }
+    }
+    // Fallback: si no tiene comisión elegida ni horario custom, lee la duración default de la materia
+    return m.duration ? String(m.duration) : 'A';
+  };
+
+  const cursandoFiltrado = cursando.filter((m: any) => {
+    if (filtroMaterias === 'Ambos') return true;
+    const dur = getSubjectDuration(m);
+    if (dur === 'A' || dur.toLowerCase() === 'anual') return true; // Las anuales se muestran siempre
+    return dur === filtroMaterias;
+  });
 
   return (
     <>
@@ -337,7 +373,6 @@ export default function Dashboard() {
                 </h3>
               }
               action={
-                // 🔥 MODIFICADO: Background ajustado a var(--bg) para que el toggle destaque sutilmente dentro del nuevo panel unificado de HorarioCalendar
                 <div className="schedule-toggle" style={{ display: 'flex', background: 'var(--bg)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   {['1', '2'].map((opcion) => (
                     <div key={opcion} onClick={() => { setFiltroCuatri(opcion); localStorage.setItem('filtroCuatrimestre', opcion); }}
@@ -381,15 +416,38 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* 🔥 SECCIÓN DE MATERIAS ACTUALIZADA CON TOGGLE Y CONTEO 🔥 */}
           <div>
-            <h3 style={{ color: 'var(--text-strong)', fontSize: '1.3rem', marginBottom: '20px', fontWeight: 'bold' }}>Materias</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '15px' }}>
+              
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <h3 style={{ color: 'var(--text-strong)', fontSize: '1.3rem', margin: 0, fontWeight: 'bold' }}>Materias</h3>
+                <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 600 }}>({cursandoFiltrado.length})</span>
+              </div>
+              
+              <div className="schedule-toggle" style={{ display: 'flex', background: 'var(--bg)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                {['1', 'Ambos', '2'].map((opcion) => (
+                  <div key={opcion} onClick={() => { setFiltroMaterias(opcion); localStorage.setItem('filtroMaterias', opcion); }}
+                    style={{ padding: '8px 16px', fontSize: '0.8rem', fontWeight: 'bold', borderRadius: '8px', cursor: 'pointer', transition: '0.3s',
+                      color: filtroMaterias === opcion ? '#fff' : 'var(--muted)',
+                      background: filtroMaterias === opcion ? 'var(--cursando)' : 'transparent'
+                    }}>
+                    {opcion === '1' ? '1º Cuatri' : opcion === '2' ? '2º Cuatri' : 'Ambos'}
+                  </div>
+                ))}
+              </div>
+
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-              {cursando.length === 0 ? (
+              {cursandoFiltrado.length === 0 ? (
                 <div style={{ gridColumn: '1 / -1', padding: '30px', textAlign: 'center', color: 'var(--muted)', background: 'var(--panel)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-                  No tenés materias marcadas como "Cursando" actualmente.
+                  {cursando.length === 0 
+                    ? 'No tenés materias marcadas como "Cursando" actualmente.' 
+                    : `No tenés materias marcadas en el ${filtroMaterias}º Cuatrimestre.`}
                 </div>
               ) : (
-                cursando.map((m: any) => {
+                cursandoFiltrado.map((m: any) => {
                   const comisionSeleccionada = detalles[m.id]?.comision;
                   const horariosCustom = detalles[m.id]?.horariosCustom;
                   
