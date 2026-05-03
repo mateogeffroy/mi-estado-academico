@@ -10,6 +10,10 @@ import { ThemeProvider } from '../src/components/ThemeProvider';
 export const metadata: Metadata = {
   title: 'Mi Estado Académico',
   description: 'Gestión inteligente, trazabilidad absoluta y control total de tu carrera universitaria. Organizá tus horarios, calculá tu promedio y llevá el seguimiento de tu plan de estudios.',
+  appleWebApp: {
+    title: 'Mi Estado Académico',
+    statusBarStyle: 'default',
+  },
   icons: {
     icon: '/icon.png',
     apple: '/icon.png',
