@@ -31,6 +31,9 @@ export const CALENDARIO_UTN: DiaInhabil[] = [
   // Exámenes y Días Institucionales
   { fecha: '2026-04-22', motivo: '1º Turno Examen Final', tipo: 'finales' },
   { fecha: '2026-05-02', motivo: 'Día del Docente Universitario', tipo: 'feriado' },
+  { fecha: '2026-05-19', motivo: 'Jornada de formación profesional', tipo: 'finales' },
+  { fecha: '2026-05-20', motivo: 'Jornada de formación profesional', tipo: 'finales' },
+  { fecha: '2026-05-21', motivo: 'Jornada de formación profesional', tipo: 'finales' },
   { fecha: '2026-05-27', motivo: '2º Turno Examen Final', tipo: 'finales' },
   { fecha: '2026-06-16', motivo: '3º Turno Examen Final', tipo: 'finales' },
   
