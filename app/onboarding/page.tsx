@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../src/lib/supabase';
 
-// 🔥 DICCIONARIOS DE UNIVERSIDADES Y CARRERAS
 const UNIVERSIDADES = [
   { id: 'utn', name: 'UTN (FRLP)' },
   { id: 'unlp', name: 'UNLP' }
@@ -91,14 +90,14 @@ export default function OnboardingPage() {
       return;
     }
 
-    // Insertamos la carrera en la BD
+    // Insertamos la carrera en la nueva BD relacional
     if (authData?.user) {
       await supabase
-        .from('progreso_usuarios')
-        .upsert({ 
-          id_usuario: authData.user.id,
+        .from('usuario_carreras')
+        .insert({ 
+          user_id: authData.user.id,
           carrera_id: carreraId
-        }, { onConflict: 'id_usuario' });
+        });
     }
 
     // Redirección dura al inicio para limpiar la caché de Next.js

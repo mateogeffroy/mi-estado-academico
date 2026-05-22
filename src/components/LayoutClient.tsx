@@ -58,13 +58,13 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     if (data.user) {
       const fullName = data.user.user_metadata?.full_name || data.user.email || 'Usuario';
       const avatarUrl = data.user.user_metadata?.avatar_url || '';
-      
-      const nameParts = fullName.split(' ');
+      const nameParts = fullName.trim().split(/\s+/);
       let initials = '';
-      if (nameParts.length >= 2) {
-        initials = (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+      if (nameParts.length === 1) {
+        initials = nameParts[0].substring(0, 2).toUpperCase();
       } else {
-        initials = fullName.substring(0, 2).toUpperCase();
+        // Agarra hasta 3 iniciales para que queden completas
+        initials = nameParts.slice(0, 3).map((word: string) => word[0]).join('').toUpperCase();
       }
 
       setUserProfile({ name: fullName, avatarUrl, initials });
@@ -287,7 +287,16 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                       {userProfile.avatarUrl ? (
                         <img src={userProfile.avatarUrl} alt="Avatar" />
                       ) : (
-                        <span>{userProfile.initials}</span>
+                        <span style={{ 
+                          fontSize: `calc(32px / ${Math.max(userProfile.initials.length, 2)})`,
+                          lineHeight: 1,
+                          letterSpacing: '-0.5px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {userProfile.initials}
+                        </span>
                       )}
                     </button>
 
