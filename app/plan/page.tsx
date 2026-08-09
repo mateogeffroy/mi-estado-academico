@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
 import { AccionMateria } from '../../src/application/useCases/actualizarProgreso';
+import { calcularDesbloqueos } from '../../src/domain/services/calcularDesbloqueos';
 import ConfirmModal from '../../src/components/ConfirmModal';
 import SimuladorModal from '../../src/components/SimuladorModal';
 import AdBanner from '../../src/components/AdBanner';
@@ -298,8 +299,42 @@ export default function PlanDeEstudios() {
     return <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>{lines}</div>;
   };
 
+  // "Qué destraba": solo tiene sentido para materias cursando/cursada, que
+  // son las que están a un paso de sumar un nuevo estado (cursada o
+  // aprobada) y potencialmente habilitar otras. Reusa calcularDesbloqueos
+  // (dominio), que a su vez reusa el mismo motor de correlatividades que ya
+  // corre en producción — así el hint nunca puede desincronizarse.
+  const buildDestrabaContent = (subject: any) => {
+    const { siCursada, siAprobadaAdicional } = calcularDesbloqueos(subject.id, materias, careerData);
+
+    if (siCursada.length === 0 && siAprobadaAdicional.length === 0) {
+      return <div style={{ fontStyle: 'italic', opacity: 0.8 }}>Todavía no destraba materias nuevas.</div>;
+    }
+
+    const arrowIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>;
+
+    const renderLista = (titulo: string, items: any[]) => (
+      <div style={{ marginTop: '4px' }}>
+        <b style={{ display: 'block', marginBottom: '2px', opacity: 0.9 }}>{titulo}</b>
+        {items.map((m: any) => (
+          <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+            {arrowIcon} <span>{m.name.replace(/\s*\(.*?\)/g, '')}</span>
+          </div>
+        ))}
+      </div>
+    );
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qué destraba</div>
+        {siCursada.length > 0 && renderLista('Si la marcás Cursada:', siCursada)}
+        {siAprobadaAdicional.length > 0 && renderLista('Si la apruebas, además:', siAprobadaAdicional)}
+      </div>
+    );
+  };
+
   const handleMouseMove = (e: React.MouseEvent, subject: any) => {
-    if (window.innerWidth <= 900) return; 
+    if (window.innerWidth <= 900) return;
 
     let x = e.clientX + 12;
     let y = e.clientY + 12;
@@ -307,7 +342,25 @@ export default function PlanDeEstudios() {
     if (y + 150 > window.innerHeight) y = e.clientY - 160;
     if (x < 12) x = 12;
     if (y < 12) y = 12;
-    setTooltip({ visible: true, content: buildTooltipContent(subject), x, y });
+    const sobreDestrabaBtn = (e.target as HTMLElement).closest('.destraba-btn');
+    const content = sobreDestrabaBtn ? buildDestrabaContent(subject) : buildTooltipContent(subject);
+    setTooltip({ visible: true, content, x, y });
+  };
+
+  const handleDestrabaClick = (e: React.MouseEvent, subject: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.innerWidth > 900) return; // en desktop ya lo cubre el hover del ícono
+
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    let posX = rect.left;
+    if (posX + 240 > window.innerWidth) posX = window.innerWidth - 250;
+    if (posX < 12) posX = 12;
+    let posY = rect.bottom + 8;
+    if (posY + 180 > window.innerHeight) posY = rect.top - 190;
+
+    setTooltip({ visible: true, content: buildDestrabaContent(subject), x: posX, y: posY });
+    setMenu((prev) => ({ ...prev, isOpen: false }));
   };
 
   const handleMouseLeave = () => {
@@ -493,6 +546,16 @@ export default function PlanDeEstudios() {
         onMouseLeave={handleMouseLeave}
         style={{ cursor: estadoActual === 'disabled' ? 'not-allowed' : 'pointer', display: 'flex', flexDirection: 'column' }}
       >
+        {(estadoActual === 'cursando' || estadoActual === 'cursada') && (
+          <button
+            className="destraba-btn"
+            onClick={(e) => handleDestrabaClick(e, subject)}
+            aria-label={`Ver qué materias destraba ${subject.name}`}
+            title="Qué destraba"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
+          </button>
+        )}
         <div className="subject-num">{subject.num}</div>
         <div className="subject-name">{subject.name}</div>
         {durationBadges}
@@ -544,6 +607,22 @@ export default function PlanDeEstudios() {
         .action-btn { background: transparent; color: var(--text-strong); border: none; padding: 10px 12px; text-align: left; border-radius: 4px; font-family: 'Syne', sans-serif; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; width: 100%; }
         .action-btn:hover { background: var(--glass-hover); }
         .subject-status-icon { position: absolute; bottom: 10px; right: 10px; opacity: 0.8; }
+
+        /* Hint "qué destraba": solo visible en cursando/cursada. Ícono chico
+           con hover en desktop (el mousemove de la tarjeta ya distingue si
+           el cursor está encima); en mobile es un botón con un target táctil
+           más grande, porque ahí no hay hover y tiene que ser tocable de verdad. */
+        .destraba-btn {
+          position: absolute; top: 8px; right: 8px; width: 20px; height: 20px;
+          border-radius: 50%; border: none; padding: 0; cursor: pointer;
+          background: rgba(0, 0, 0, 0.3); color: rgba(255, 255, 255, 0.9);
+          display: flex; align-items: center; justify-content: center;
+          transition: background 0.15s, transform 0.15s;
+        }
+        .destraba-btn:hover { background: rgba(0, 0, 0, 0.55); transform: scale(1.08); }
+        @media (max-width: 900px) {
+          .destraba-btn { width: 32px; height: 32px; top: 4px; right: 4px; }
+        }
         
         .mobile-ad-container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 16px; }
         @media (min-width: 1450px) { .mobile-ad-container { display: none; } }
