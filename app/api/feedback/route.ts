@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import * as Sentry from '@sentry/nextjs';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -24,6 +25,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(data);
   } catch (error) {
+    // Este catch devuelve una respuesta normal en vez de re-lanzar, así que
+    // el hook onRequestError de Next.js nunca lo ve: hay que capturarlo acá.
+    Sentry.captureException(error);
     return NextResponse.json({ error }, { status: 500 });
   }
 }

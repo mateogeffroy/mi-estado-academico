@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -110,8 +111,8 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           }
         }
       } catch (error) {
-        console.error("Error verificando sesión:", error);
-        if (isMounted) setIsChecking(false); 
+        Sentry.captureException(error);
+        if (isMounted) setIsChecking(false);
       }
     };
 

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import * as Sentry from '@sentry/nextjs';
 import { getCareerData, CareerData } from '../lib/data/registry';
 import { UsuarioAutenticado } from '../application/ports/AuthPort';
 import { DetalleMateria, DetallesMaterias, EstadisticasCarrera, MateriasEstado } from '../domain/entities/Progreso';
@@ -72,7 +73,8 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       setDetalles(resultado.detalles);
       setStats(calcularEstadisticas(resultado.materias, resultado.detalles, getCareerData(resultado.careerIdActiva)));
       setLoading(false);
-    } catch {
+    } catch (e) {
+      Sentry.captureException(e);
       setIsOffline(true);
     }
   };
@@ -133,6 +135,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         setCarreraActiva(nuevasCarreras[0]);
       }
     } catch (e) {
+      Sentry.captureException(e);
       setError(e instanceof Error ? e.message : 'No se pudo borrar la carrera.');
       throw e;
     }
@@ -146,6 +149,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       setMaterias(nuevasMaterias);
       setStats(nuevasStats);
     } catch (e) {
+      Sentry.captureException(e);
       setError(e instanceof Error ? e.message : 'No se pudo guardar el cambio.');
     }
   };
@@ -158,6 +162,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       setDetalles(nuevosDetalles);
       setStats(nuevasStats);
     } catch (e) {
+      Sentry.captureException(e);
       setError(e instanceof Error ? e.message : 'No se pudo guardar el cambio.');
     }
   };
@@ -171,6 +176,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       setMaterias(nuevasMaterias);
       setStats(nuevasStats);
     } catch (e) {
+      Sentry.captureException(e);
       setError(e instanceof Error ? e.message : 'No se pudieron guardar las materias.');
     }
   };

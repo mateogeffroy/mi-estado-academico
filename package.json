@@ -10,8 +10,10 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.69.0",
     "@supabase/supabase-js": "^2.99.1",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.35.2",
     "next": "^16.1.6",

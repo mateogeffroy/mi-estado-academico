@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { CareerData } from '../../domain/entities/Materia';
 
 // Importamos todas las carreras disponibles
@@ -36,7 +37,9 @@ export const careersRegistry: Record<string, CareerData> = {
 export const getCareerData = (careerId: string): CareerData => {
   const data = careersRegistry[careerId];
   if (!data) {
-    console.warn(`Carrera no encontrada: ${careerId}. Cargando plan por defecto.`);
+    // No debería pasar nunca con un careerId real (implica estado guardado
+    // corrupto o un id que ya no existe en el registry): vale la pena verlo.
+    Sentry.captureMessage(`Carrera no encontrada en el registry: ${careerId}`, 'warning');
     return careersRegistry['utn-sistemas-2023']; // Plan por defecto (fallback)
   }
   return data;
