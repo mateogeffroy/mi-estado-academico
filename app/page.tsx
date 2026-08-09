@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../src/context/PlanContext';
 import CountUp from '../src/components/CountUp';
+import SpotlightCard from '../src/components/SpotlightCard';
 import HorarioCalendar from '../src/components/HorarioCalendar';
 import { supabase } from '../src/lib/supabase';
 
@@ -178,6 +179,38 @@ export default function Dashboard() {
     if (tieneComisiones) return !detalles[m.id]?.comision;
     const horariosCustom = detalles[m.id]?.horariosCustom;
     return !horariosCustom || horariosCustom.length === 0;
+  });
+
+  // Duración (1°/2°/Anual) de una materia cursando, para filtrarla en la
+  // lista de abajo con el mismo criterio que ya usa el calendario: primero
+  // la comisión elegida o el horario custom, y si no hay ninguno cargado
+  // todavía, la duración default del catálogo.
+  const getSubjectDuration = (m: any) => {
+    const tieneComisiones = m.comisiones && m.comisiones.length > 0;
+    if (tieneComisiones) {
+      const comisionId = detalles[m.id]?.comision;
+      if (comisionId) {
+        const comisionData = m.comisiones.find((c: any) => c.id === comisionId);
+        if (comisionData && comisionData.duration) return String(comisionData.duration);
+      }
+    } else {
+      const horariosCustom = detalles[m.id]?.horariosCustom;
+      if (horariosCustom && horariosCustom.length > 0) {
+        const hDur = horariosCustom[0].duracion || 'Anual';
+        if (hDur.includes('1º') || hDur === '1') return '1';
+        if (hDur.includes('2º') || hDur === '2') return '2';
+        return 'A';
+      }
+    }
+    return m.duration ? String(m.duration) : 'A';
+  };
+
+  // Las anuales se muestran siempre, sin importar qué cuatrimestre esté
+  // seleccionado; el resto sigue al mismo filtro único del calendario.
+  const cursandoFiltrado = cursando.filter((m: any) => {
+    const dur = getSubjectDuration(m);
+    if (dur === 'A' || dur.toLowerCase() === 'anual') return true;
+    return dur === filtroCuatri;
   });
 
   return (
@@ -419,6 +452,61 @@ export default function Dashboard() {
           </div>
 
         </div>
+
+        {/* Lista de materias filtrada por el mismo cuatrimestre del calendario:
+            queda como acceso directo a una materia aunque no se vea su bloque
+            en el calendario (otra semana, sin horario, etc). */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '20px' }}>
+            <h3 style={{ color: 'var(--text-strong)', fontSize: '1.3rem', margin: 0, fontWeight: 'bold' }}>Materias</h3>
+            <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 600 }}>({cursandoFiltrado.length})</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+            {cursandoFiltrado.length === 0 ? (
+              <div style={{ gridColumn: '1 / -1', padding: '30px', textAlign: 'center', color: 'var(--muted)', background: 'var(--panel)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                {cursando.length === 0
+                  ? 'No tenés materias marcadas como "Cursando" actualmente.'
+                  : `No tenés materias marcadas en el ${filtroCuatri}º Cuatrimestre.`}
+              </div>
+            ) : (
+              cursandoFiltrado.map((m: any) => {
+                const comisionSeleccionada = detalles[m.id]?.comision;
+                const horariosCustom = detalles[m.id]?.horariosCustom;
+
+                return (
+                  <Link href={`/materia/${m.id}`} key={m.id} style={{ textDecoration: 'none' }}>
+                    <SpotlightCard className="premium-card" spotlightColor="rgba(59, 130, 246, 0.1)">
+                      <div style={{ fontSize: '0.7rem', color: 'var(--muted)', fontFamily: 'Space Mono', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        NIVEL {m.level}
+                      </div>
+                      <div style={{ fontWeight: 700, color: 'var(--text-strong)', marginTop: '8px', fontSize: '1.15rem' }}>
+                        {m.name}
+                      </div>
+
+                      <div style={{ marginTop: '16px', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                        {m.comisiones && m.comisiones.length > 0 ? (
+                          comisionSeleccionada ? (
+                            <span style={{ color: 'var(--cursando)' }}>Comisión: {comisionSeleccionada}</span>
+                          ) : (
+                            <span style={{ color: '#ef4444' }}>No hay comisión</span>
+                          )
+                        ) : (
+                          horariosCustom && horariosCustom.length > 0 ? (
+                            <span style={{ color: '#f59e0b' }}>Horario Personalizado</span>
+                          ) : (
+                            <span style={{ color: '#ef4444' }}>Sin horario asignado</span>
+                          )
+                        )}
+                      </div>
+                    </SpotlightCard>
+                  </Link>
+                );
+              })
+            )}
+          </div>
+        </div>
+
       </main>
     </>
   );
