@@ -29,7 +29,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const router = useRouter(); 
 
-  // Nueva lógica de rutas activas
   const isBlogActive = pathname?.startsWith('/blog');
 
   useEffect(() => {
@@ -298,7 +297,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                     </button>
                   </Link>
                   
-                  {/* 🔥 BOTÓN DE BLOG EN LUGAR DE CURSADA 🔥 */}
                   <Link href="/blog" style={{ textDecoration: 'none' }}>
                     <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
@@ -461,7 +459,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         </div>
       </footer>
 
-      {/* 🔥 MODAL DE OPINIÓN/FEEDBACK 🔥 */}
       <Modal
         isOpen={isFeedbackModalOpen}
         onClose={() => { setIsFeedbackModalOpen(false); setFeedbackStatus('idle'); }}

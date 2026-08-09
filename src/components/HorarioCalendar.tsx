@@ -247,7 +247,6 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
         .cm-dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .cm-events-list { padding: 10px 20px 20px 20px; max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
 
-        /* 🔥 LEYENDA BLINDADA Y CENTRADA 🔥 */
         .legend-btn { 
           background: transparent; 
           color: var(--muted); 
@@ -403,7 +402,6 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
           <div style={{ padding: '0 20px 10px 20px', borderBottom: '1px solid var(--border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               
-              {/* 🔥 Título y Botón de Leyenda reorganizados 🔥 */}
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <button 
@@ -530,7 +528,6 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
               .header-cell { padding: clamp(10px, 1.5vh, 15px) 0; text-align: center; font-weight: 700; font-size: clamp(0.8rem, 1vw, 0.9rem); color: var(--text-strong); border-left: 1px solid var(--glass-border); transition: all 0.3s; }
               .header-cell:first-child { border-left: none; }
               
-              /* 🔥 ESTILO PARA EL HEADER DEL DÍA ACTUAL 🔥 */
               .header-cell.today-header { background: rgba(59, 130, 246, 0.1); border-top: 2px solid var(--cursando); }
 
               .calendar-body { display: grid; grid-template-columns: clamp(45px, 4vw, 60px) repeat(6, 1fr); position: relative; height: clamp(400px, 58vh, 750px); }
@@ -542,7 +539,6 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
               .day-column { position: relative; border-right: 1px solid var(--glass-border); transition: background-color 0.3s; }
               .day-column:last-child { border-right: none; }
 
-              /* 🔥 ESTILO PARA LA COLUMNA DEL DÍA ACTUAL 🔥 */
               .day-column.today-column { background: linear-gradient(to bottom, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0) 100%); }
               
               .event-card { position: absolute; left: 4px; right: 4px; border-radius: 8px; padding: clamp(4px, 1vh, 8px) clamp(6px, 1vw, 10px); display: flex; flex-direction: column; overflow: visible; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease; z-index: 10; backdrop-filter: blur(4px); cursor: pointer; }
@@ -610,7 +606,6 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                   const dateStr = formatDateStr(datesOfWeek[idx]);
                   const isToday = dateStr === formatDateStr(new Date());
                   return (
-                    // 🔥 SE AGREGA LA CLASE today-header SI ES HOY 🔥
                     <div key={dia} className={`header-cell ${isToday ? 'today-header' : ''}`} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '6px', color: isToday ? 'var(--cursando)' : 'inherit' }}>
                       <span>{dia}</span><span style={{ fontSize: '0.85rem', fontWeight: 'normal', opacity: 0.7 }}>{datesOfWeek[idx].getDate()}</span>
                     </div>

@@ -93,7 +93,6 @@ export default function BlogIndex() {
                 ))}
               </div>
 
-              {/* 🔥 SECCIÓN: INVITACIÓN A APORTAR 🔥 */}
               <div style={{ marginTop: '40px', background: 'radial-gradient(circle at top left, rgba(59, 130, 246, 0.08) 0%, transparent 70%), var(--glass-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '15px' }}>
                 <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '12px', borderRadius: '50%' }}>
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>

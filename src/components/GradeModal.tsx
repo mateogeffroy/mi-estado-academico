@@ -7,7 +7,6 @@ interface GradeModalProps {
   onClose: () => void;
   onSubmit: (nota: number, dificultad: number | null) => void;
   materiaName: string;
-  // 🔥 Nuevas propiedades para recibir los datos previos 🔥
   initialNota?: number | null;
   initialDificultad?: number | null;
 }
@@ -53,7 +52,7 @@ export default function GradeModal({ isOpen, onClose, onSubmit, materiaName, ini
       animation: 'fadeIn 0.2s ease-out'
     }}>
       
-      {/* 🔥 Estilos para ocultar las flechas nativas del input number 🔥 */}
+      {/* Oculta las flechas nativas del input number (Chrome/Safari y Firefox usan reglas distintas). */}
       <style>{`
         .no-spinners::-webkit-outer-spin-button,
         .no-spinners::-webkit-inner-spin-button {

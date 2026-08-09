@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import AdBanner from '../../../src/components/AdBanner';
 
-// 🔥 MAGIA SEO: Esto es lo que Google mostrará en los resultados de búsqueda
 export const metadata = {
   title: 'Creando Frontends Premium con Antigravity + Skills | Blog UTN',
   description: 'Una guía metodológica para transformar los diseños aburridos de IA en interfaces estéticas y originales utilizando skills de desarrollo.',
@@ -53,7 +52,6 @@ export default function CreandoFrontendPost() {
           color: var(--text-strong);
         }
 
-        /* 🔥 NUEVOS ESTILOS PARA VIDEOS PREMIUM 🔥 */
         .video-container {
           width: 100%;
           margin: 40px 0;
@@ -262,7 +260,6 @@ export default function CreandoFrontendPost() {
                 Luego de varios minutos (sé paciente! no te desesperes ni intentes apurar el proceso), y tras haber terminado, vamos a verificar y ver el resultado final de este front corriéndolo en local. Generalmente, esto ocurre de manera automática, pero si no es así, podés pedírselo también (en este caso, tenía un simple único html, que fue abierto directamente en el navegador).
               </p>
 
-              {/* 🔥 VIDEO 1: AUTOPLAY, MUTED, LOOP, SIN CONTROLES 🔥 */}
               <div className="video-container">
                 <video 
                   className="video-player"
@@ -293,7 +290,6 @@ export default function CreandoFrontendPost() {
                 Nuevamente, una página obtenida en prácticamente un prompt. A diferencia del caso anterior, le pedí luego que al hero le colocara una imagen custom que generé, y que cambiara ciertos detalles de diseño con respecto a las cards rectangulares y detalles menores. El resto de la página fue obtenida por el prompt inicial. Otro resultado espectacular.
               </p>
 
-              {/* 🔥 VIDEO 2: AUTOPLAY, MUTED, LOOP, SIN CONTROLES 🔥 */}
               <div className="video-container">
                 <video 
                   className="video-player"
@@ -320,7 +316,6 @@ export default function CreandoFrontendPost() {
                 Y el resultado que obtuvimos, a pesar de tratarse de un modelo menos potente, fue impresionante. Tras el prompt inicial, únicamente cambié la imagen del hero por una de alta calidad que generé, y luego le pedí que corrija leves detalles en la aplicación general del CSS. Casi one-shooteado.
               </p>
 
-              {/* 🔥 VIDEO 3: AUTOPLAY, MUTED, LOOP, SIN CONTROLES 🔥 */}
               <div className="video-container">
                 <video 
                   className="video-player"

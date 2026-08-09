@@ -357,7 +357,8 @@ export default function MateriaPage() {
                   <form onSubmit={handleAgregarHorarioCustom} style={{ display: 'flex', flexDirection: 'column', gap: '14px', background: 'var(--glass-bg)', padding: '20px', borderRadius: '12px', border: '1px dashed var(--border)' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-strong)', textTransform: 'uppercase', display: 'block', marginBottom: '2px', letterSpacing: '0.5px' }}>+ Añadir bloque horario</span>
                     
-                    {/* 🔥 SELECTOR INTELIGENTE: Si es fija, no lo mostramos pero lo guarda internamente 🔥 */}
+                    {/* Si la duración de la materia ya es fija no se le pide elegirla,
+                        pero igual se guarda internamente para el horario custom. */}
                     {!isDuracionFija && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
                         <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Duración del cursado</label>

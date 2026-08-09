@@ -193,7 +193,6 @@ export default function Dashboard() {
         .dashboard-top-bar { display: flex; align-items: center; justify-content: space-between; gap: clamp(10px, 2vw, 20px); margin-top: clamp(0px, 1vh, 10px); background: var(--panel); padding: clamp(14px, 2vh, 24px) clamp(20px, 3vw, 35px); border-radius: 20px; border: 1px solid var(--border); flex-wrap: nowrap; overflow: hidden; }
         .dashboard-greeting { font-size: clamp(1.2rem, 2.5vw, 2rem); color: var(--text-strong); margin: 0; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
         
-        /* 🔥 Estilos para el selector de carrera 🔥 */
         .career-selector { background: var(--bg); border: 1px solid var(--border); color: var(--text-strong); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; outline: none; cursor: pointer; transition: all 0.2s; width: fit-content; max-width: 250px; text-overflow: ellipsis; }
         .career-selector:hover { border-color: var(--cursando); }
 
