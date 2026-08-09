@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import UpdateModal, { UPDATE_VERSION_KEY } from './UpdateModal';
+import Modal from './Modal';
 import { supabase } from '../lib/supabase';
 import { feedbackPort } from '../infrastructure/repositorios';
 
@@ -216,8 +217,8 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         .profile-dropdown-menu { position: absolute; top: calc(100% + 10px); right: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 8px; min-width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 4px; animation: fadeIn 0.2s ease-out; z-index: 1500; }
         .profile-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; color: var(--text-strong); cursor: pointer; text-decoration: none; transition: background 0.2s ease; background: transparent; border: none; width: 100%; text-align: left; }
         .profile-dropdown-item:hover { background: var(--glass-hover); }
-        .profile-dropdown-item.danger { color: #ef4444; }
-        .profile-dropdown-item.danger:hover { background: rgba(239, 68, 68, 0.1); }
+        .profile-dropdown-item.danger { color: var(--danger); }
+        .profile-dropdown-item.danger:hover { background: var(--danger-soft); }
         @media (max-width: 1150px) { .nav-full-menu { display: none !important; } .nav-burger-btn { display: flex !important; } }
         
         /* Modal de Feedback */
@@ -461,9 +462,13 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       </footer>
 
       {/* 🔥 MODAL DE OPINIÓN/FEEDBACK 🔥 */}
-      {isFeedbackModalOpen && (
-        <div className="feedback-modal-overlay" onClick={() => { setIsFeedbackModalOpen(false); setFeedbackStatus('idle'); }}>
-          <div className="feedback-modal" onClick={(e) => e.stopPropagation()}>
+      <Modal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => { setIsFeedbackModalOpen(false); setFeedbackStatus('idle'); }}
+        overlayClassName="feedback-modal-overlay"
+        className="feedback-modal"
+        ariaLabel="Dejanos tu opinión"
+      >
             <button
               onClick={() => { setIsFeedbackModalOpen(false); setFeedbackStatus('idle'); }}
               style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer', padding: '4px' }}
@@ -492,7 +497,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               </div>
 
               {feedbackStatus === 'error' && (
-                <p style={{ color: '#ef4444', fontSize: '0.85rem', margin: 0 }}>
+                <p style={{ color: 'var(--danger)', fontSize: '0.85rem', margin: 0 }}>
                   No pudimos enviar tu mensaje. Probá de nuevo en un momento.
                 </p>
               )}
@@ -506,9 +511,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                 {feedbackStatus === 'sending' ? 'Enviando...' : feedbackStatus === 'success' ? 'Enviado ✓' : 'Enviar mensaje'}
               </button>
             </form>
-          </div>
-        </div>
-      )}
+      </Modal>
 
     </>
   );

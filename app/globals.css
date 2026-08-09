@@ -31,6 +31,12 @@
   --aprobada-border: #16a34a;
   --aprobada-text: #001a08;
 
+  /* Peligro / borrado — antes repetido como #ef4444 / rgba(239,68,68,...) suelto en ~14 archivos */
+  --danger: #ef4444;
+  --danger-border: rgba(239, 68, 68, 0.3);
+  --danger-soft: rgba(239, 68, 68, 0.1);
+  --danger-soft-hover: rgba(239, 68, 68, 0.15);
+
   /* Transparencias (Efecto Glass) */
   --header-bg: rgba(255, 255, 255, 0.95);
   --glass-bg: rgba(0, 0, 0, 0.03);
@@ -615,10 +621,10 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
 .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
 
 .btn-danger-sidebar {
-  color: #ef4444 !important; border-color: rgba(239, 68, 68, 0.3) !important;
+  color: var(--danger) !important; border-color: var(--danger-border) !important;
   background: rgba(239, 68, 68, 0.05) !important;
 }
-.btn-danger-sidebar:hover { background: rgba(239, 68, 68, 0.15) !important; }
+.btn-danger-sidebar:hover { background: var(--danger-soft-hover) !important; }
 
 /* Legend inside sidebar (plan page) */
 .sidebar-legend {

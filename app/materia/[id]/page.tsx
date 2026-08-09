@@ -8,6 +8,7 @@ import { agregarEvento, borrarEvento } from '../../../src/application/useCases/g
 import { EventoAcademico, HorarioCustom } from '../../../src/domain/entities/Progreso';
 import Link from 'next/link';
 import CustomSelect from '../../../src/components/CustomSelect';
+import ConfirmModal from '../../../src/components/ConfirmModal';
 
 export default function MateriaPage() {
   const params = useParams();
@@ -48,6 +49,7 @@ export default function MateriaPage() {
     dia: 'Lunes', inicio: '18:00', fin: '22:00', duracion: getInitialDuracion()
   });
 
+  const [confirmacionBorrado, setConfirmacionBorrado] = useState<{ tipo: 'evento' | 'horario'; id: string } | null>(null);
   const [showDificultadInfo, setShowDificultadInfo] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [statsDificultad, setStatsDificultad] = useState({ promedio: 0, total: 0, loading: true });
@@ -108,6 +110,14 @@ export default function MateriaPage() {
   const handleBorrarHorarioCustom = (idHorario: string) => {
     const nuevosHorarios = horariosCustomGuardados.filter((h) => h.id !== idHorario);
     actualizarDetalleMateria(id, { ...detalles[id], horariosCustom: nuevosHorarios });
+  };
+
+  const confirmarBorrado = () => {
+    if (!confirmacionBorrado) return;
+    const { tipo, id: idABorrar } = confirmacionBorrado;
+    setConfirmacionBorrado(null);
+    if (tipo === 'evento') handleBorrarEvento(idABorrar);
+    else handleBorrarHorarioCustom(idABorrar);
   };
 
   const formatearFecha = (fechaISO: string) => {
@@ -234,7 +244,7 @@ export default function MateriaPage() {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                         <span style={{ fontFamily: 'Space Mono', color: 'var(--cursando)', background: 'rgba(59, 130, 246, 0.1)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.9rem' }}>{formatearFecha(ev.fecha)}</span>
-                        <button onClick={() => handleBorrarEvento(ev.id)} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', cursor: 'pointer', fontSize: '1.2rem', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', transition: 'all 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#ef4444'; }} title="Borrar evento">×</button>
+                        <button onClick={() => setConfirmacionBorrado({ tipo: 'evento', id: ev.id })} style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger-border)', color: 'var(--danger)', cursor: 'pointer', fontSize: '1.2rem', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', transition: 'all 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.background = 'var(--danger)'; e.currentTarget.style.color = 'white'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'var(--danger-soft)'; e.currentTarget.style.color = 'var(--danger)'; }} title="Borrar evento" aria-label={`Borrar evento ${ev.nombre}`}>×</button>
                       </div>
                     </div>
                   ))}
@@ -328,12 +338,13 @@ export default function MateriaPage() {
                               </span>
                             </div>
                             
-                            <button 
-                              onClick={() => handleBorrarHorarioCustom(h.id)} 
-                              style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '26px', height: '26px', borderRadius: '6px', transition: 'background 0.2s' }} 
-                              onMouseOver={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'} 
-                              onMouseOut={e => e.currentTarget.style.background = 'transparent'} 
+                            <button
+                              onClick={() => setConfirmacionBorrado({ tipo: 'horario', id: h.id })}
+                              style={{ background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '26px', height: '26px', borderRadius: '6px', transition: 'background 0.2s' }}
+                              onMouseOver={e => e.currentTarget.style.background = 'var(--danger-soft-hover)'}
+                              onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                               title="Eliminar horario"
+                              aria-label={`Eliminar horario ${h.dia} ${h.inicio} a ${h.fin}`}
                             >
                               ×
                             </button>
@@ -389,6 +400,20 @@ export default function MateriaPage() {
 
         </div>
       </main>
+
+      <ConfirmModal
+        isOpen={confirmacionBorrado !== null}
+        title={confirmacionBorrado?.tipo === 'evento' ? 'Borrar evento' : 'Eliminar horario'}
+        message={
+          confirmacionBorrado?.tipo === 'evento'
+            ? '¿Seguro que querés borrar este evento de la agenda de la materia?'
+            : '¿Seguro que querés eliminar este bloque horario de tu cursada?'
+        }
+        confirmText="Sí, borrar"
+        isDanger
+        onConfirm={confirmarBorrado}
+        onCancel={() => setConfirmacionBorrado(null)}
+      />
     </>
   );
 }
