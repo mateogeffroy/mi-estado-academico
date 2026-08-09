@@ -42,17 +42,6 @@ const getNombreCarrera = (id: string) => {
   return id;
 };
 
-// 🔥 Función auxiliar para determinar el prefijo de la carrera
-const getCareerPrefix = (careerId: string) => {
-  if (careerId.includes('sistemas')) return 'SIS-';
-  if (careerId.includes('industrial')) return 'IND-';
-  if (careerId.includes('mecanica')) return 'MEC-';
-  if (careerId.includes('civil')) return 'CIV-';
-  if (careerId.includes('electrica')) return 'ELE-';
-  if (careerId.includes('quimica')) return 'QUI-';
-  return null;
-};
-
 export default function PerfilPage() {
   const router = useRouter();
   // Traemos las nuevas funciones del Contexto Multi-Carrera
@@ -123,40 +112,17 @@ export default function PerfilPage() {
     setIsAddingMode(false);
   };
 
-  // 🔥 NUEVA LÓGICA: Borrado en Cascada Seguro 🔥
+  // El borrado en cascada (materias/eventos exclusivos + materias compartidas
+  // de UTN si corresponde + la relación de carrera) vive en PlanContext.borrarCarrera,
+  // que es la única fuente de verdad para esta lógica.
   const handleEliminarCarrera = async (idToBorrar: string) => {
     if (!window.confirm(`¿Seguro que querés desanotarte de ${getNombreCarrera(idToBorrar)}? Esto borrará tus datos exclusivos de esta carrera.`)) return;
 
     try {
-      const { data } = await supabase.auth.getUser();
-      const userId = data.user?.id;
-      const prefix = getCareerPrefix(idToBorrar);
-
-      if (prefix && userId) {
-        // 1. Limpiar materias exclusivas de esta carrera
-        const { error: errMaterias } = await supabase
-          .from('usuario_materias')
-          .delete()
-          .eq('user_id', userId)
-          .like('materia_id', `${prefix}%`);
-
-        if (errMaterias) console.error('Error limpiando materias:', errMaterias);
-
-        // 2. Limpiar eventos exclusivos de esta carrera
-        const { error: errEventos } = await supabase
-          .from('usuario_eventos')
-          .delete()
-          .eq('user_id', userId)
-          .like('materia_id', `${prefix}%`);
-
-        if (errEventos) console.error('Error limpiando eventos:', errEventos);
-      }
-
-      // Finalmente, la sacamos del array del perfil
       await borrarCarrera(idToBorrar);
-      
     } catch (error) {
-      console.error('Error crítico en borrado en cascada:', error);
+      console.error('Error en el borrado de la carrera:', error);
+      alert('No pudimos completar el borrado de la carrera. Probá de nuevo en un momento.');
     }
   };
 

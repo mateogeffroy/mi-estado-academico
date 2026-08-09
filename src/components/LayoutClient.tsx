@@ -15,9 +15,10 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
   // Estado para el modal de Feedback
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [userProfile, setUserProfile] = useState({ name: '', avatarUrl: '', initials: '' });
+  const [userProfile, setUserProfile] = useState({ name: '', email: '', avatarUrl: '', initials: '' });
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const { theme, setTheme } = useTheme();
@@ -67,7 +68,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         initials = nameParts.slice(0, 3).map((word: string) => word[0]).join('').toUpperCase();
       }
 
-      setUserProfile({ name: fullName, avatarUrl, initials });
+      setUserProfile({ name: fullName, email: data.user.email || '', avatarUrl, initials });
     }
   };
 
@@ -154,7 +155,39 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = '/login'; 
+    window.location.href = '/login';
+  };
+
+  const handleFeedbackSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const titulo = formData.get('titulo') as string;
+    const descripcion = formData.get('descripcion') as string;
+
+    setFeedbackStatus('sending');
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          titulo,
+          descripcion,
+          userName: userProfile.name || 'Usuario',
+          userEmail: userProfile.email || 'sin-email@desconocido.com',
+        }),
+      });
+      if (!res.ok) throw new Error('Error al enviar el feedback');
+
+      setFeedbackStatus('success');
+      form.reset();
+      setTimeout(() => {
+        setIsFeedbackModalOpen(false);
+        setFeedbackStatus('idle');
+      }, 1500);
+    } catch {
+      setFeedbackStatus('error');
+    }
   };
 
   const navBtnBase = {
@@ -433,15 +466,15 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
       {/* 🔥 MODAL DE OPINIÓN/FEEDBACK 🔥 */}
       {isFeedbackModalOpen && (
-        <div className="feedback-modal-overlay" onClick={() => setIsFeedbackModalOpen(false)}>
+        <div className="feedback-modal-overlay" onClick={() => { setIsFeedbackModalOpen(false); setFeedbackStatus('idle'); }}>
           <div className="feedback-modal" onClick={(e) => e.stopPropagation()}>
-            <button 
-              onClick={() => setIsFeedbackModalOpen(false)} 
+            <button
+              onClick={() => { setIsFeedbackModalOpen(false); setFeedbackStatus('idle'); }}
               style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer', padding: '4px' }}
             >
               ✕
             </button>
-            
+
             <div>
               <h2 style={{ color: 'var(--text-strong)', margin: '0 0 8px 0', fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -452,17 +485,29 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               </p>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); alert("¡Mensaje enviado!"); setIsFeedbackModalOpen(false); }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <form onSubmit={handleFeedbackSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Título Breve</label>
-                <input type="text" className="feedback-input" placeholder="Ej: Error en correlativas / Sugerencia visual" required />
+                <input type="text" name="titulo" className="feedback-input" placeholder="Ej: Error en correlativas / Sugerencia visual" required disabled={feedbackStatus === 'sending'} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Desarrollo de la crítica</label>
-                <textarea className="feedback-textarea" placeholder="Explicá detalladamente tu observación, qué estabas haciendo o qué te gustaría ver..." required></textarea>
+                <textarea name="descripcion" className="feedback-textarea" placeholder="Explicá detalladamente tu observación, qué estabas haciendo o qué te gustaría ver..." required disabled={feedbackStatus === 'sending'}></textarea>
               </div>
-              <button type="submit" className="btn-primary" style={{ padding: '14px', fontSize: '1rem', marginTop: '10px' }}>
-                Enviar mensaje
+
+              {feedbackStatus === 'error' && (
+                <p style={{ color: '#ef4444', fontSize: '0.85rem', margin: 0 }}>
+                  No pudimos enviar tu mensaje. Probá de nuevo en un momento.
+                </p>
+              )}
+              {feedbackStatus === 'success' && (
+                <p style={{ color: 'var(--aprobada)', fontSize: '0.85rem', margin: 0, fontWeight: 'bold' }}>
+                  ¡Gracias! Tu mensaje se envió correctamente.
+                </p>
+              )}
+
+              <button type="submit" className="btn-primary" style={{ padding: '14px', fontSize: '1rem', marginTop: '10px', opacity: feedbackStatus === 'sending' ? 0.7 : 1 }} disabled={feedbackStatus === 'sending' || feedbackStatus === 'success'}>
+                {feedbackStatus === 'sending' ? 'Enviando...' : feedbackStatus === 'success' ? 'Enviado ✓' : 'Enviar mensaje'}
               </button>
             </form>
           </div>

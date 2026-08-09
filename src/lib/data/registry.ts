@@ -56,3 +56,31 @@ export const getCareerData = (careerId: string): CareerData => {
   }
   return data;
 };
+
+// Prefijo de materia_id exclusivo de cada carrera, usado para el borrado en
+// cascada de "materias exclusivas" al desanotarse de una carrera.
+// null = no existe un prefijo que identifique de forma exclusiva a las
+// materias de esa carrera (sus IDs se solapan con los de otra carrera del
+// mismo registro, ej. unlp-sistemas-2021/unlp-informatica-2021/unlp-apu-2021
+// comparten literalmente los mismos ids como 'SI101' o 'CNE'). En esos casos
+// preferimos NO borrar nada por LIKE antes que arriesgarnos a borrar datos
+// de otra carrera del usuario. La solución real es la migración del catálogo
+// a tablas relacionales (ver auditoría), donde cada materia tiene su propia
+// carrera_id por FK en vez de inferirse por convención de nombres.
+export const CAREER_MATERIA_PREFIX: Record<string, string | null> = {
+  'utn-sistemas-2023': 'SIS-',
+  'utn-civil-2023': 'CIV-',
+  'utn-industrial-2008': 'IND-',
+  'utn-mecanica-2023': 'MEC-',
+  'utn-quimica-2008': 'QUI-',
+  'utn-electrica-2023': 'ELE-',
+  'unlp-sonido-2023': 'TU',
+  'unlp-sistemas-2021': null,
+  'unlp-informatica-2021': null,
+  'unlp-apu-2021': null,
+  'unlp-psicologia-2012': null,
+  'unlp-computacion-2024': null,
+};
+
+export const getCareerPrefix = (careerId: string): string | null =>
+  CAREER_MATERIA_PREFIX[careerId] ?? null;

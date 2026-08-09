@@ -103,8 +103,9 @@ export default function MateriaPage() {
   };
 
   const handleBorrarEvento = async (idEvento: string) => {
-    // 1. Borramos de la tabla relacional
-    await supabase.from('usuario_eventos').delete().eq('id', idEvento);
+    if (!user) return;
+    // 1. Borramos de la tabla relacional (filtrado también por user_id como defensa en profundidad)
+    await supabase.from('usuario_eventos').delete().eq('id', idEvento).eq('user_id', user.id);
 
     // 2. Actualizamos el estado local
     const nuevosEventos = eventosGuardados.filter((ev: any) => ev.id !== idEvento);
