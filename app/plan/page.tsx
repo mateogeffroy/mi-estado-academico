@@ -38,6 +38,13 @@ export default function PlanDeEstudios() {
 
   const [isSimuladorOpen, setIsSimuladorOpen] = useState(false);
 
+  // Progressive disclosure: por defecto los niveles completos arrancan
+  // cerrados, los que tienen algo en curso/disponible arrancan abiertos y
+  // los que todavía no se pueden cursar quedan cerrados. nivelesForzados
+  // guarda solo lo que el usuario tocó a mano, para no pisar ese default
+  // hasta que interactúe.
+  const [nivelesForzados, setNivelesForzados] = useState<Record<number, boolean>>({});
+
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
     title: '',
@@ -99,6 +106,27 @@ export default function PlanDeEstudios() {
   }, []);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const obtenerEstado = (subject: any): string => {
+    let estado = materias[subject.id];
+    if (!estado) estado = (subject.level === 1 || subject.isElective || subject.isElectivePlaceholder) ? 'available' : 'disabled';
+    return estado;
+  };
+
+  const cardsDeNivel = (lvl: number) => SUBJECTS.filter((s: any) => s.level === lvl);
+
+  type EstadoNivel = 'complete' | 'active' | 'locked';
+  const nivelStatus = (lvl: number): EstadoNivel => {
+    const cards = cardsDeNivel(lvl);
+    if (cards.length === 0) return 'active';
+    const estados = cards.map(obtenerEstado);
+    if (estados.every((e) => e === 'aprobada')) return 'complete';
+    if (estados.every((e) => e === 'disabled')) return 'locked';
+    return 'active';
+  };
+
+  const estaAbierto = (lvl: number) => nivelesForzados[lvl] ?? nivelStatus(lvl) === 'active';
+  const toggleNivel = (lvl: number) => setNivelesForzados((prev) => ({ ...prev, [lvl]: !estaAbierto(lvl) }));
 
   const marcarNivel = (lvl: number) => {
     const obligatorias = SUBJECTS.filter((s: any) =>
@@ -287,11 +315,7 @@ export default function PlanDeEstudios() {
   };
 
   const renderCard = (subject: any) => {
-    let estadoActual = materias[subject.id];
-
-    if (!estadoActual) {
-      estadoActual = (subject.level === 1 || subject.isElective || subject.isElectivePlaceholder) ? 'available' : 'disabled';
-    }
+    const estadoActual = obtenerEstado(subject);
 
     let displayHours = subject.hours;
     
@@ -483,6 +507,31 @@ export default function PlanDeEstudios() {
   return (
     <>
       <style>{`
+        /* Acordeón de niveles (progressive disclosure) */
+        .nivel-acordeon { border: 1px solid var(--border); border-radius: 12px; background: var(--panel); }
+        .nivel-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; user-select: none; min-height: 44px; }
+        .nivel-header:focus-visible { outline: 2px solid var(--cursando); outline-offset: -2px; border-radius: 10px; }
+        .nivel-chip { font-family: 'Space Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; }
+        .nivel-chip.complete { background: rgba(34, 197, 94, 0.12); color: var(--aprobada); }
+        .nivel-chip.active { background: rgba(59, 130, 246, 0.12); color: var(--cursando); }
+        .nivel-chip.locked { background: var(--disabled); color: var(--disabled-text); }
+        .nivel-chevron { color: var(--muted); transition: transform 0.3s cubic-bezier(.4,0,.2,1); flex-shrink: 0; margin-left: auto; }
+        .nivel-acordeon.open .nivel-chevron { transform: rotate(180deg); }
+        /* Grid 0fr→1fr: interpola contra el alto real del contenido, mucho más suave que animar max-height */
+        .nivel-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.32s cubic-bezier(.4,0,.2,1); }
+        .nivel-acordeon.open .nivel-body { grid-template-rows: 1fr; }
+        .nivel-body-inner { overflow: hidden; min-height: 0; padding: 0 16px 20px; }
+        .nivel-body-inner > * { opacity: 0; transform: translateY(-4px); transition: opacity 0.2s ease 0.04s, transform 0.2s ease 0.04s; }
+        .nivel-acordeon.open .nivel-body-inner > * { opacity: 1; transform: translateY(0); }
+        .nivel-acordeon.locked .nivel-body-inner { opacity: 0.55; }
+        .nivel-lock-note { display: flex; align-items: flex-start; gap: 6px; font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; }
+        .nivel-lock-note svg { flex-shrink: 0; margin-top: 1px; }
+        @media (max-width: 480px) {
+          .nivel-header { flex-wrap: wrap; row-gap: 8px; }
+          .nivel-header .mark-all-btn { order: 3; margin-left: auto; }
+          .nivel-header .nivel-chevron { order: 2; margin-left: 0; }
+        }
+
         .subject-card:hover, .subject-card.aprobada:hover, .subject-card.cursada:hover, .subject-card.available:hover { transform: none !important; }
         .subject-card.highlight-blocked { border-color: #ef4444 !important; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6) !important; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; z-index: 50; }
         @keyframes shake {
@@ -641,36 +690,77 @@ export default function PlanDeEstudios() {
           </div>
         </div>
 
-        {/* ... EL RESTO DEL CÓDIGO QUEDA IGUAL ... */}
         <div style={{ position: 'relative', width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {levels.map((lvl, index) => {
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {levels.map((lvl) => {
               const materiasObligatorias = SUBJECTS.filter((s: any) => s.level === lvl && !s.isElective && !s.isElectivePlaceholder);
               const electivas = ELECTIVAS?.[lvl as keyof typeof ELECTIVAS] || [];
               const placeholders = SUBJECTS.filter((s: any) => s.level === lvl && s.isElectivePlaceholder);
+              const status = nivelStatus(lvl);
+              const abierto = estaAbierto(lvl);
+              const cards = cardsDeNivel(lvl);
+              const aprobadasCount = cards.filter((s: any) => obtenerEstado(s) === 'aprobada').length;
 
               return (
-                <div key={lvl} style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div className="level-section" style={{ marginBottom: 0 }}>
-                    <div className="level-header" style={{ color: `var(--n${lvl})` }}>
-                      <div className="level-badge" style={{ borderColor: `var(--n${lvl})` }}>Nivel {lvl}</div>
-                      <button className="mark-all-btn" onClick={() => marcarNivel(lvl)}>Marcar todas</button>
-                      <div className="level-line" style={{ backgroundColor: `var(--n${lvl})` }}></div>
-                    </div>
-                    
-                    <div className="subject-grid">
-                      {materiasObligatorias.map(renderCard)}
-                      {placeholders.map(renderCard)}
-                    </div>
+                <div key={lvl} className={`nivel-acordeon ${abierto ? 'open' : ''} ${status === 'locked' ? 'locked' : ''}`}>
+                  <div
+                    className="nivel-header"
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={abierto}
+                    onClick={() => toggleNivel(lvl)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleNivel(lvl); } }}
+                    style={{ color: `var(--n${lvl})` }}
+                  >
+                    <div className="level-badge" style={{ borderColor: `var(--n${lvl})` }}>Nivel {lvl}</div>
 
-                    {electivas.length > 0 && (
-                      <>
-                        <div className="electivas-level-label" style={{ marginTop: '24px' }}>Electivas</div>
-                        <div className="subject-grid">
-                            {electivas.map(renderCard)}
-                        </div>
-                      </>
+                    {status === 'complete' ? (
+                      <span className="nivel-chip complete">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        Completo · {aprobadasCount}/{cards.length}
+                      </span>
+                    ) : status === 'locked' ? (
+                      <span className="nivel-chip locked">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                        Bloqueado
+                      </span>
+                    ) : (
+                      <span className="nivel-chip active">{aprobadasCount}/{cards.length}</span>
                     )}
+
+                    <button
+                      className="mark-all-btn"
+                      onClick={(e) => { e.stopPropagation(); marcarNivel(lvl); }}
+                    >
+                      Marcar todas
+                    </button>
+
+                    <svg className="nivel-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+                  </div>
+
+                  <div className="nivel-body">
+                    <div className="nivel-body-inner">
+                      {status === 'locked' && (
+                        <div className="nivel-lock-note">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                          Se habilita cuando tengas al día las correlativas del nivel anterior.
+                        </div>
+                      )}
+
+                      <div className="subject-grid">
+                        {materiasObligatorias.map(renderCard)}
+                        {placeholders.map(renderCard)}
+                      </div>
+
+                      {electivas.length > 0 && (
+                        <>
+                          <div className="electivas-level-label" style={{ marginTop: '24px' }}>Electivas</div>
+                          <div className="subject-grid">
+                              {electivas.map(renderCard)}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
