@@ -407,4 +407,4 @@ function getSubjectById(id: any) {
   return ALL.find((s: any) => s.id == id); 
 }
 
-export { ALL, SUBJECTS, ELECTIVAS, getSubjectById };
+export { ALL, ELECTIVAS, getSubjectById };
