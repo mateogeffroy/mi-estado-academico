@@ -66,6 +66,6 @@ export const ALL = [
   ...(ELECTIVAS[3] || [])
 ];
 
-export function getSubjectById(id: any) { 
-  return ALL.find((s: any) => s.id == id); 
+export function getSubjectById(id: string) {
+  return ALL.find((s) => s.id === id);
 }

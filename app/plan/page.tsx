@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
+import { AccionMateria } from '../../src/application/useCases/actualizarProgreso';
 import ConfirmModal from '../../src/components/ConfirmModal';
 import SimuladorModal from '../../src/components/SimuladorModal';
-import AdBanner from '../../src/components/AdBanner'; 
+import AdBanner from '../../src/components/AdBanner';
 
 const NOMBRES_CARRERAS: Record<string, string> = {
   'utn-sistemas-2023': 'Ingeniería en Sistemas',
@@ -115,7 +116,7 @@ export default function PlanDeEstudios() {
     }
   };
 
-  const ejecutarCambioEstado = (subjectId: string, accion: string) => {
+  const ejecutarCambioEstado = (subjectId: string, accion: AccionMateria) => {
     const estadoActual = materias[subjectId] || 'available';
     const tieneEventos = detalles[subjectId]?.eventos?.length > 0;
 
@@ -129,9 +130,7 @@ export default function PlanDeEstudios() {
         confirmText: 'Sí, aprobar y limpiar',
         isDanger: false,
         onConfirm: () => {
-          const infoLimpia = { ...detalles[subjectId] };
-          delete infoLimpia.eventos;
-          delete infoLimpia.comision;
+          const infoLimpia = { ...detalles[subjectId], eventos: [], comision: null };
           actualizarDetalleMateria(subjectId, infoLimpia);
           cambiarEstadoMateria(subjectId, accion);
           closeModal();
@@ -195,7 +194,7 @@ export default function PlanDeEstudios() {
     ejecutarCambioEstado(subjectId, 'cycle_cursada');
   };
 
-  const handleMenuAction = (e: React.MouseEvent, accionExacta: string) => {
+  const handleMenuAction = (e: React.MouseEvent, accionExacta: AccionMateria) => {
     e.stopPropagation();
     if (menu.subjectId) {
       ejecutarCambioEstado(menu.subjectId, accionExacta);
@@ -308,7 +307,7 @@ export default function PlanDeEstudios() {
       let globalAprobadaHoursIngenieria = 0;
 
       [3, 4, 5].forEach(lvl => {
-        const electivasNivel = ELECTIVAS[lvl as keyof typeof ELECTIVAS] || [];
+        const electivasNivel = ELECTIVAS?.[lvl as keyof typeof ELECTIVAS] || [];
         electivasNivel.forEach((el: any) => {
           if (materias[el.id] === 'aprobada') {
             globalAprobadaHoursIngenieria += el.annualHours || 0;
@@ -647,7 +646,7 @@ export default function PlanDeEstudios() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             {levels.map((lvl, index) => {
               const materiasObligatorias = SUBJECTS.filter((s: any) => s.level === lvl && !s.isElective && !s.isElectivePlaceholder);
-              const electivas = ELECTIVAS[lvl as keyof typeof ELECTIVAS] || [];
+              const electivas = ELECTIVAS?.[lvl as keyof typeof ELECTIVAS] || [];
               const placeholders = SUBJECTS.filter((s: any) => s.level === lvl && s.isElectivePlaceholder);
 
               return (

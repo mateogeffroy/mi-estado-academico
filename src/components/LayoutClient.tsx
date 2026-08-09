@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import UpdateModal, { UPDATE_VERSION_KEY } from './UpdateModal';
 import { supabase } from '../lib/supabase';
+import { feedbackPort } from '../infrastructure/repositorios';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -167,17 +168,12 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
     setFeedbackStatus('sending');
     try {
-      const res = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          titulo,
-          descripcion,
-          userName: userProfile.name || 'Usuario',
-          userEmail: userProfile.email || 'sin-email@desconocido.com',
-        }),
+      await feedbackPort.enviar({
+        titulo,
+        descripcion,
+        userName: userProfile.name || 'Usuario',
+        userEmail: userProfile.email || 'sin-email@desconocido.com',
       });
-      if (!res.ok) throw new Error('Error al enviar el feedback');
 
       setFeedbackStatus('success');
       form.reset();
