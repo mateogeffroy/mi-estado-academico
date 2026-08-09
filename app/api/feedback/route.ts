@@ -8,8 +8,8 @@ export async function POST(request: Request) {
     const { titulo, descripcion, userName, userEmail } = await request.json();
 
     const data = await resend.emails.send({
-      // 🔥 ACÁ ESTÁ EL CAMBIO: Usamos tu dominio verificado 🔥
-      from: 'Feedback App <noreply@miestadoacademico.com.ar>', 
+      // Resend exige que el remitente sea de un dominio verificado en su panel.
+      from: 'Feedback App <noreply@miestadoacademico.com.ar>',
       to: ['mateogeffroy.dev@gmail.com'],
       subject: `Nuevo Feedback: ${titulo}`,
       html: `

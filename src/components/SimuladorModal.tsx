@@ -18,7 +18,6 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
 
   const [activeRightId, setActiveRightId] = useState<string | null>(null);
 
-  // 🔥 NUEVOS ESTADOS PARA EL MODO DE SIMULACIÓN 🔥
   const [simMode, setSimMode] = useState<'todas' | 'individual'>('todas');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedSingleId, setSelectedSingleId] = useState<string | null>(null);
@@ -77,12 +76,14 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
 
   const materiasSimulables = ALL.filter(m => materias[m.id] === 'cursando' || materias[m.id] === 'cursada');
   
-  // 🔥 LÓGICA DE ESTADO COMBINADO INTELIGENTE 🔥
-  const estadoCombinado = simMode === 'todas' 
+  // En modo "todas" se simula con todo lo que el usuario tildó en el
+  // simulador; en modo "individual" solo se aplica la materia seleccionada
+  // en el select, para poder ver el efecto de aprobar una sola a la vez.
+  const estadoCombinado = simMode === 'todas'
     ? { ...materias, ...simulacion }
-    : { 
-        ...materias, 
-        ...(selectedSingleId ? { [selectedSingleId]: simulacion[selectedSingleId] || 'aprobada' } : {}) 
+    : {
+        ...materias,
+        ...(selectedSingleId ? { [selectedSingleId]: simulacion[selectedSingleId] || 'aprobada' } : {})
       };
 
   const evaluarDisponibilidad = (subject: any, mapaEstados: Record<string, string>) => {
@@ -269,7 +270,6 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
             <div>
               <h2 style={{ color: 'var(--text-strong)', margin: '0 0 4px 0', fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m12 16 4-4-4-4"/><path d="M8 12h8"/></svg>
-                {/* 🔥 TITULO ACTUALIZADO 🔥 */}
                 ¿Qué destrabo?
               </h2>
               <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>
@@ -310,7 +310,6 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
                 ))}
               </div>
 
-              {/* 🔥 CUSTOM SELECT (Solo en modo individual) 🔥 */}
               {simMode === 'individual' && (
                 <div className="custom-select-wrapper" style={{ position: 'relative', marginBottom: '10px' }}>
                   <div 

@@ -6,7 +6,6 @@ import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from '../src/components/ThemeProvider';
 
-// 🔥 METADATOS SEO OPTIMIZADOS PARA GOOGLE, BING Y REDES SOCIALES
 export const metadata: Metadata = {
   title: 'Mi Estado Académico',
   applicationName: 'Mi Estado Académico',
@@ -45,7 +44,6 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body style={{ position: 'relative' }}>
         
-        {/* 🔥 SCRIPT DE ADSENSE: Activo para que Google pueda verificar el sitio 🔥 */}
         <Script
           id="adsbygoogle-init"
           strategy="afterInteractive" 

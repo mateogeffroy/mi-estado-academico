@@ -20,7 +20,6 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // 🔥 HOOKS DEL TEMA 🔥
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   
@@ -315,8 +314,7 @@ export default function AuthPage() {
 
       <main id="login-main">
         
-        {/* 🔥 BOTÓN FLOTANTE TEMA 🔥 */}
-        <button 
+        <button
           className="floating-theme-btn" 
           title="Alternar tema"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

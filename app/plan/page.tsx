@@ -26,7 +26,6 @@ const NOMBRES_CARRERAS: Record<string, string> = {
 };
 
 export default function PlanDeEstudios() {
-  // 🔥 Incorporamos las funciones multi-carrera
   const { materias, detalles, cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas, stats, careerData, todasLasCarreras, careerId, setCarreraActiva } = usePlan();
   const { SUBJECTS, ELECTIVAS, getSubjectById, ALL } = careerData;
   const maxLevel = Math.max(...SUBJECTS.map((s: any) => s.level || 1));
@@ -267,7 +266,8 @@ export default function PlanDeEstudios() {
       ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
       : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 
-    // 🔥 FIX: Convertimos los IDs a String para que el filtro sea perfecto
+    // Los ids de correlativas a veces llegan como number y otras como string
+    // según el catálogo de origen; se normalizan a String antes de comparar.
     const aprobadasRequeridasStr = (subject.correlAprobada || []).map(String);
     const cursadasFiltradas = (subject.correlCursada || []).filter(
       (cid: any) => !aprobadasRequeridasStr.includes(String(cid))
@@ -641,7 +641,6 @@ export default function PlanDeEstudios() {
         .scatter-ad-left { right: 100%; margin-right: 40px; }
         .scatter-ad-right { left: 100%; margin-left: 40px; }
 
-        /* 🔥 Estilos para el selector de carrera 🔥 */
         .career-selector { background: var(--panel); border: 1px solid var(--border); color: var(--text-strong); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; outline: none; cursor: pointer; transition: all 0.2s; max-width: 250px; text-overflow: ellipsis; white-space: nowrap; }
         .career-selector:hover { border-color: var(--cursando); }
 
