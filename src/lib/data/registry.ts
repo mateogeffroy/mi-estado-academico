@@ -1,3 +1,5 @@
+import { CareerData } from '../../domain/entities/Materia';
+
 // Importamos todas las carreras disponibles
 import * as UtnSistemas2023 from './utn/sistemas-2023';
 import * as UtnCivil2023 from './utn/civil-2023';
@@ -12,24 +14,7 @@ import * as UnlpPsicologia2012 from './unlp/psicologia-2012';
 import * as UnlpComputacion2024 from './unlp/computacion-2024';
 import * as UnlpSonido2023 from './unlp/sonido-2019';
 
-// Definimos la estructura REAL de lo que devuelve una carrera
-export interface CareerData {
-  careerInfo: {
-    id: string;
-    universidad: string;
-    nombre: string;
-    plan: string;
-    tituloIntermedio: string;
-    tituloFinal: string;
-    creditosTotales: number;
-  };
-  ALL: any[];
-  SUBJECTS: any[];
-  ELECTIVAS: {
-    [key: number]: any[]; // Es un objeto con keys numéricos (3, 4, 5)
-  };
-  getSubjectById: (id: any) => any;
-}
+export type { CareerData };
 
 // Mapeamos el ID de la carrera con su archivo de datos
 export const careersRegistry: Record<string, CareerData> = {

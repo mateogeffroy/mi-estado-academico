@@ -3,14 +3,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePlan } from '../../../src/context/PlanContext';
-import { supabase } from '../../../src/lib/supabase';
+import { dificultadRepository, eventosRepository } from '../../../src/infrastructure/repositorios';
+import { agregarEvento, borrarEvento } from '../../../src/application/useCases/gestionarEventos';
+import { EventoAcademico, HorarioCustom } from '../../../src/domain/entities/Progreso';
 import Link from 'next/link';
 import CustomSelect from '../../../src/components/CustomSelect';
 
 export default function MateriaPage() {
   const params = useParams();
   const router = useRouter();
-  const { id } = params;
+  const id = params.id as string;
   const { detalles, actualizarDetalleMateria, careerData, user } = usePlan();
   const { getSubjectById } = careerData;
   const hoy = new Date().toISOString().split('T')[0];
@@ -52,12 +54,8 @@ export default function MateriaPage() {
 
   useEffect(() => {
     const fetchEstadisticas = async () => {
-      const { data, error } = await supabase.rpc('obtener_estadisticas_materia', { p_materia_id: id as string });
-      if (!error && data && data.length > 0) {
-        setStatsDificultad({ promedio: Number(data[0].promedio), total: Number(data[0].total_votos), loading: false });
-      } else {
-        setStatsDificultad({ promedio: 0, total: 0, loading: false });
-      }
+      const { promedio, total } = await dificultadRepository.obtenerEstadisticas(id);
+      setStatsDificultad({ promedio, total, loading: false });
     };
     if (id) fetchEstadisticas();
   }, [id]);
@@ -78,50 +76,38 @@ export default function MateriaPage() {
   );
 
   const handleSeleccionarComision = (comisionId: string) => {
-    actualizarDetalleMateria(id as string, { ...detalles[id as string], comision: comisionId });
+    actualizarDetalleMateria(id, { ...detalles[id], comision: comisionId });
   };
 
   const handleAgregarEvento = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nuevoEvento.nombre || !nuevoEvento.fecha || !user) return;
-    
-    const eventoID = crypto.randomUUID();
-    const eventoParaGuardar = { id: eventoID, ...nuevoEvento };
-    
-    await supabase.from('usuario_eventos').insert({
-      id: eventoID,
-      user_id: user.id,
-      materia_id: id as string,
-      nombre: nuevoEvento.nombre,
-      tipo: nuevoEvento.tipo,
-      fecha: nuevoEvento.fecha
-    });
 
-    const nuevosEventos = [...eventosGuardados, eventoParaGuardar];
-    actualizarDetalleMateria(id as string, { ...detalles[id as string], eventos: nuevosEventos });
+    const eventoCreado = await agregarEvento(user.id, { materiaId: id, ...nuevoEvento }, eventosRepository);
+
+    const nuevosEventos = [...eventosGuardados, eventoCreado];
+    actualizarDetalleMateria(id, { ...detalles[id], eventos: nuevosEventos });
     setNuevoEvento({ nombre: '', tipo: 'Parcial', fecha: hoy });
   };
 
   const handleBorrarEvento = async (idEvento: string) => {
     if (!user) return;
-    // 1. Borramos de la tabla relacional (filtrado también por user_id como defensa en profundidad)
-    await supabase.from('usuario_eventos').delete().eq('id', idEvento).eq('user_id', user.id);
+    await borrarEvento(user.id, idEvento, eventosRepository);
 
-    // 2. Actualizamos el estado local
-    const nuevosEventos = eventosGuardados.filter((ev: any) => ev.id !== idEvento);
-    actualizarDetalleMateria(id as string, { ...detalles[id as string], eventos: nuevosEventos });
+    const nuevosEventos = eventosGuardados.filter((ev) => ev.id !== idEvento);
+    actualizarDetalleMateria(id, { ...detalles[id], eventos: nuevosEventos });
   };
 
   const handleAgregarHorarioCustom = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nuevoHorario.inicio || !nuevoHorario.fin) return;
-    const nuevosHorarios = [...horariosCustomGuardados, { id: crypto.randomUUID(), ...nuevoHorario }];
-    actualizarDetalleMateria(id as string, { ...detalles[id as string], horariosCustom: nuevosHorarios });
+    const nuevosHorarios: HorarioCustom[] = [...horariosCustomGuardados, { id: crypto.randomUUID(), ...nuevoHorario }];
+    actualizarDetalleMateria(id, { ...detalles[id], horariosCustom: nuevosHorarios });
   };
 
   const handleBorrarHorarioCustom = (idHorario: string) => {
-    const nuevosHorarios = horariosCustomGuardados.filter((h: any) => h.id !== idHorario);
-    actualizarDetalleMateria(id as string, { ...detalles[id as string], horariosCustom: nuevosHorarios });
+    const nuevosHorarios = horariosCustomGuardados.filter((h) => h.id !== idHorario);
+    actualizarDetalleMateria(id, { ...detalles[id], horariosCustom: nuevosHorarios });
   };
 
   const formatearFecha = (fechaISO: string) => {
@@ -240,7 +226,7 @@ export default function MateriaPage() {
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {eventosGuardados.map((ev: any) => (
+                  {eventosGuardados.map((ev: EventoAcademico) => (
                     <div key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--panel)', border: '1px solid var(--border)', padding: '20px', borderRadius: '16px', transition: 'transform 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={(e) => e.currentTarget.style.transform = 'translateX(5px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateX(0)'}>
                       <div>
                         <div style={{ fontWeight: 'bold', color: 'var(--text-strong)', fontSize: '1.1rem' }}>{ev.nombre}</div>
@@ -268,7 +254,7 @@ export default function MateriaPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 5px 0' }}>Seleccioná tu comisión para organizar tus horarios:</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {materia.comisiones.map((comision: any) => {
+                    {(materia.comisiones ?? []).map((comision) => {
                       const duracion = comision.duration || 'A';
                       let labelDuracion = 'Anual';
                       let colorFondoDur = 'rgba(59, 130, 246, 0.15)'; let colorTextoDur = '#3b82f6';
@@ -299,7 +285,7 @@ export default function MateriaPage() {
                               {labelDuracion}
                             </span>
                           </div>
-                          {comision.dias.map((dia: any, index: number) => (
+                          {comision.dias.map((dia, index) => (
                             <div key={index} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px' }}>
                               <span style={{ color: 'var(--text-strong)' }}>{dia.nombre}</span>
                               <span>{dia.inicio} - {dia.fin}</span>
@@ -324,7 +310,7 @@ export default function MateriaPage() {
                         </span>
                       </div>
                       
-                      {horariosCustomGuardados.map((h: any) => {
+                      {horariosCustomGuardados.map((h: HorarioCustom) => {
                         // Respetamos los mismos colores visuales que en las comisiones oficiales
                         let colorTextoDur = '#3b82f6';
                         if (h.duracion?.includes('1º')) colorTextoDur = '#22c55e';

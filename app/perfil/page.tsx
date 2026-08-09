@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePlan } from '../../src/context/PlanContext';
-import { supabase } from '../../src/lib/supabase';
+import { authPort } from '../../src/infrastructure/repositorios';
 import GradeModal from '../../src/components/GradeModal';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
@@ -66,11 +66,10 @@ export default function PerfilPage() {
   useEffect(() => {
     setIsMounted(true);
     const fetchUserData = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        const currentName = data.user.user_metadata?.full_name || 'Usuario';
-        setNombre(currentName);
-        setTempNombre(currentName);
+      const usuario = await authPort.obtenerSesionActual();
+      if (usuario) {
+        setNombre(usuario.fullName);
+        setTempNombre(usuario.fullName);
       }
     };
     fetchUserData();
@@ -97,7 +96,7 @@ export default function PerfilPage() {
 
   const handleSaveName = async () => {
     if (!tempNombre.trim()) return;
-    await supabase.auth.updateUser({ data: { full_name: tempNombre } });
+    await authPort.actualizarNombre(tempNombre);
     setNombre(tempNombre);
     setIsEditingName(false);
   };
@@ -126,14 +125,14 @@ export default function PerfilPage() {
     }
   };
 
-  const aprobadasOrdenadas = ALL.filter((s: any) =>
+  const aprobadasOrdenadas = ALL.filter((s) =>
     materias[s.id] === 'aprobada' && !s.isElectivePlaceholder && s.id !== 'SEM' && s.id !== 'PPS'
   ).sort((a, b) => {
-    const nivelA = a.level || 99; 
+    const nivelA = a.level || 99;
     const nivelB = b.level || 99;
     if (nivelA !== nivelB) return nivelA - nivelB;
-    const numA = parseInt(a.num) || parseInt(a.id) || 999;
-    const numB = parseInt(b.num) || parseInt(b.id) || 999;
+    const numA = parseInt(a.num || '') || parseInt(a.id) || 999;
+    const numB = parseInt(b.num || '') || parseInt(b.id) || 999;
     return numA - numB;
   });
 
@@ -295,13 +294,16 @@ export default function PerfilPage() {
                           {detalles[m.id]?.notaFinal ? `Nota: ${detalles[m.id].notaFinal}` : 'Sin nota'}
                         </span>
                       </div>
-                      {detalles[m.id]?.dificultad && (
+                      {!!detalles[m.id]?.dificultad && (
                         <div className="stars-container" style={{ display: 'flex', gap: '2px', marginLeft: '15px', flexShrink: 0 }}>
-                          {[...Array(5)].map((_, i) => (
-                            <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < detalles[m.id].dificultad ? "var(--cursada)" : "none"} stroke={i < detalles[m.id].dificultad ? "var(--cursada)" : "var(--muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                            </svg>
-                          ))}
+                          {[...Array(5)].map((_, i) => {
+                            const dificultad = detalles[m.id].dificultad ?? 0;
+                            return (
+                              <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < dificultad ? "var(--cursada)" : "none"} stroke={i < dificultad ? "var(--cursada)" : "var(--muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                              </svg>
+                            );
+                          })}
                         </div>
                       )}
                     </div>

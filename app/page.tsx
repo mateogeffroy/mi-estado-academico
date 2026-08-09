@@ -74,7 +74,7 @@ export default function Dashboard() {
     localStorage.setItem('mea_tutorial_home_v3', 'true');
   };
 
-  const primerNombre = nombreDinamico || user?.user_metadata?.full_name?.split(' ')[0] || 'Estudiante';
+  const primerNombre = nombreDinamico || user?.fullName?.split(' ')[0] || 'Estudiante';
 
   const cursando = ALL.filter((s: any) => materias[s.id] === 'cursando');
 
