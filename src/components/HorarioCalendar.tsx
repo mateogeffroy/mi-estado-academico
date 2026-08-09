@@ -46,10 +46,20 @@ const formatDateStr = (date: Date) => {
 
 const getEventColor = (tipo: string) => {
   const t = tipo.toLowerCase();
-  if (t.includes('parcial')) return '#3b82f6'; 
-  if (t.includes('trabajo') || t.includes('tp') || t.includes('práctico')) return '#ef4444'; 
-  if (t.includes('exposi')) return '#22c55e'; 
-  return 'var(--cursando)'; 
+  if (t.includes('parcial')) return '#3b82f6';
+  if (t.includes('trabajo') || t.includes('tp') || t.includes('práctico')) return '#ef4444';
+  if (t.includes('exposi')) return '#22c55e';
+  return 'var(--cursando)';
+};
+
+// Versión de fondo tenue de getEventColor, para chips/badges (no concatena
+// alpha sobre un color hex porque el fallback es una custom property, no un hex).
+const getEventColorSoft = (tipo: string) => {
+  const t = tipo.toLowerCase();
+  if (t.includes('parcial')) return 'rgba(59, 130, 246, 0.15)';
+  if (t.includes('trabajo') || t.includes('tp') || t.includes('práctico')) return 'rgba(239, 68, 68, 0.15)';
+  if (t.includes('exposi')) return 'rgba(34, 197, 94, 0.15)';
+  return 'rgba(59, 130, 246, 0.15)';
 };
 
 export default function HorarioCalendar({ horarios, isEmpty, title, action, detalles, materiasData }: HorarioCalendarProps) {
@@ -65,6 +75,14 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
   const [modalDate, setModalDate] = useState(new Date());
   const [selectedDayStr, setSelectedDayStr] = useState<string>(formatDateStr(new Date()));
   const [showLegend, setShowLegend] = useState(false);
+
+  // Día activo en la vista de agenda (mobile). Arranca en "hoy" si cae de
+  // Lunes a Sábado (los únicos días que tiene la grilla); si no, en Lunes.
+  const [selectedAgendaDia, setSelectedAgendaDia] = useState<string>(() => {
+    const idxHoy = new Date().getDay();
+    const diaHoy = DIAS[idxHoy === 0 ? 6 : idxHoy - 1];
+    return idxHoy === 0 ? 'Lunes' : diaHoy;
+  });
 
   const monday = getMonday(baseDate);
   const datesOfWeek = DIAS.map((_, i) => addDays(monday, i));
@@ -99,6 +117,33 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
     const topNum = (minInicio / TOTAL_MINUTOS) * 100;
 
     return { top: `${topNum}%`, height: `${(duracion / TOTAL_MINUTOS) * 100}%`, topNum };
+  };
+
+  // Datos de un día de la semana visible (clases + "eventos fantasma": exámenes/TPs
+  // de materias que ese día no tienen clase agendada). Lo usan tanto la grilla
+  // desktop como la agenda mobile para no repetir la misma lógica dos veces.
+  const buildDayData = (dia: string, idx: number) => {
+    const dateStr = formatDateStr(datesOfWeek[idx]);
+    const isToday = dateStr === formatDateStr(new Date());
+    const inhabil = INHABILES.find((i: any) => i.fecha === dateStr);
+    const clasesHoy = horarios[dia] || [];
+
+    const eventosFantasma: any[] = [];
+    if (detalles && materiasData) {
+      Object.keys(detalles).forEach(matId => {
+        const evs = detalles[matId]?.eventos?.filter((ev: any) => ev.fecha === dateStr) || [];
+        if (evs.length > 0) {
+          const tieneClase = clasesHoy.some(c => c.materiaId === matId);
+          if (!tieneClase) {
+            const matData = materiasData.find((m: any) => m.id == matId);
+            const nombreLimpio = matData ? matData.name.replace(/\s*\([^)]*\)/g, '').trim() : 'Examen';
+            eventosFantasma.push({ materiaId: matId, nombreLimpio, eventos: evs });
+          }
+        }
+      });
+    }
+
+    return { dateStr, isToday, inhabil, clasesHoy, eventosFantasma };
   };
 
   const getColoresInhabil = (tipo: string) => {
@@ -527,12 +572,38 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
               .custom-calendar-container::-webkit-scrollbar-track { background: var(--panel); border-radius: 0 0 16px 16px; }
               .custom-calendar-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
               .custom-calendar-container::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-              
+
               .inhabilitado-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: center; pointer-events: none; }
               .inhabilitado-badge { padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transform: rotate(-90deg); white-space: nowrap; }
+
+              /* La grilla horizontal-scroll solo tiene sentido con espacio de sobra: en
+                 mobile se reemplaza por la agenda vertical de abajo. */
+              .agenda-view { display: none; }
+              @media (max-width: 768px) {
+                .week-grid-view { display: none; }
+                .agenda-view { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
+                .custom-calendar-container { overflow: visible; }
+              }
+
+              .agenda-day-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+              .agenda-tab { flex: 1 0 auto; min-width: 44px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 6px; border-radius: 12px; border: 1px solid var(--border); background: var(--glass-bg); color: var(--muted); cursor: pointer; transition: all 0.2s; }
+              .agenda-tab-day { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+              .agenda-tab-date { font-size: 0.9rem; font-weight: 700; font-family: 'Space Mono', monospace; }
+              .agenda-tab-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cursando); }
+              .agenda-tab.active { background: var(--cursando); border-color: var(--cursando); color: #fff; }
+              .agenda-tab.today:not(.active) { border-color: var(--cursando); color: var(--cursando); }
+
+              .agenda-item { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; background: var(--panel); border: 1px solid var(--border); border-left: 4px solid var(--cursando); border-radius: 10px; cursor: pointer; }
+              .agenda-item.ghost { border-left-color: #f59e0b; border-style: dashed; }
+              .agenda-item-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+              .agenda-item-title { font-weight: 700; color: var(--text-strong); font-size: 0.9rem; }
+              .agenda-item-time { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--muted); flex-shrink: 0; }
+              .agenda-item-meta { font-size: 0.7rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+              .agenda-event-chip { font-size: 0.65rem; padding: 2px 8px; border-radius: 999px; font-weight: 700; text-transform: uppercase; }
+              .agenda-empty { padding: 24px; text-align: center; color: var(--muted); font-size: 0.9rem; }
             `}</style>
 
-            <div className="calendar-inner">
+            <div className="calendar-inner week-grid-view">
               <div className="calendar-header">
                 <div className="header-cell" style={{ borderLeft: 'none', background: 'transparent' }}></div>
                 {DIAS.map((dia, idx) => {
@@ -556,28 +627,9 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                 </div>
 
                 {DIAS.map((dia, idx) => {
-                  const dateStr = formatDateStr(datesOfWeek[idx]);
-                  const isToday = dateStr === formatDateStr(new Date()); // 🔥 EVALUAMOS SI ES HOY 🔥
-                  const inhabil = INHABILES.find(i => i.fecha === dateStr);
-                  const clasesHoy = horarios[dia] || [];
-
-                  const eventosFantasma: any[] = [];
-                  if (detalles && materiasData) {
-                    Object.keys(detalles).forEach(matId => {
-                      const evs = detalles[matId]?.eventos?.filter((ev: any) => ev.fecha === dateStr) || [];
-                      if (evs.length > 0) {
-                        const tieneClase = clasesHoy.some(c => c.materiaId === matId);
-                        if (!tieneClase) {
-                          const matData = materiasData.find((m: any) => m.id == matId);
-                          const nombreLimpio = matData ? matData.name.replace(/\s*\([^)]*\)/g, '').trim() : 'Examen';
-                          eventosFantasma.push({ materiaId: matId, nombreLimpio, eventos: evs });
-                        }
-                      }
-                    });
-                  }
+                  const { dateStr, isToday, inhabil, clasesHoy, eventosFantasma } = buildDayData(dia, idx);
 
                   return (
-                    // 🔥 SE AGREGA LA CLASE today-column SI ES HOY 🔥
                     <div key={dia} className={`day-column ${isToday ? 'today-column' : ''}`}>
                       {inhabil && (() => {
                         const colores = getColoresInhabil(inhabil.tipo);
@@ -621,7 +673,7 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                           const isNearTop = topNum < 20;
 
                           return (
-                            <div key={clase.id} className={`event-card ${tappedCard === clase.id ? 'mobile-active' : ''}`} style={{ top, height, background: clase.colorFondo, border: `1px solid ${clase.colorBorde}`, borderLeft: `4px solid ${clase.colorBorde}` }}
+                            <div key={clase.id} className={`event-card ${tappedCard === clase.id ? 'mobile-active' : ''}`} style={{ top, height, background: 'var(--panel)', border: '1px solid var(--border)', borderLeft: '4px solid var(--cursando)' }}
                               onClick={() => {
                                 if (window.innerWidth <= 768 && eventosHoy.length > 0) {
                                   if (tappedCard !== clase.id) setTappedCard(clase.id); 
@@ -649,6 +701,7 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                                 </>
                               )}
                               <div style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-strong)', lineHeight: 1.2, marginBottom: 'auto', paddingRight: eventosHoy.length > 0 ? '20px' : '0' }}>{clase.materiaLimpia}</div>
+                              <div style={{ fontSize: '0.6rem', color: 'var(--muted)', fontWeight: 600, marginTop: '2px' }}>{clase.cuatrimestre}</div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
                                 <span style={{ fontFamily: 'Space Mono, monospace', fontSize: '0.65rem', color: 'var(--text-strong)', opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: '4px' }}>{clase.comision}</span>
                                 <span style={{ fontFamily: 'Space Mono, monospace', fontSize: '0.65rem', color: 'var(--text-strong)', opacity: 0.6, fontWeight: 'bold', flexShrink: 0 }}>{clase.inicio}-{clase.fin}</span>
@@ -661,6 +714,88 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                   );
                 })}
               </div>
+            </div>
+
+            {/* --- AGENDA MOBILE: día por día en vez de grilla con scroll horizontal --- */}
+            <div className="agenda-view">
+              <div className="agenda-day-tabs">
+                {DIAS.map((dia, idx) => {
+                  const dateStr = formatDateStr(datesOfWeek[idx]);
+                  const isToday = dateStr === formatDateStr(new Date());
+                  const tieneItems = (horarios[dia] && horarios[dia].length > 0) || getEventsForDate(dateStr).length > 0;
+                  return (
+                    <button
+                      key={dia}
+                      className={`agenda-tab ${selectedAgendaDia === dia ? 'active' : ''} ${isToday ? 'today' : ''}`}
+                      onClick={() => setSelectedAgendaDia(dia)}
+                    >
+                      <span className="agenda-tab-day">{DIAS_CORTOS[idx]}</span>
+                      <span className="agenda-tab-date">{datesOfWeek[idx].getDate()}</span>
+                      {tieneItems && <span className="agenda-tab-dot" />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {(() => {
+                const diaIdx = DIAS.indexOf(selectedAgendaDia);
+                const { inhabil, clasesHoy, eventosFantasma } = buildDayData(selectedAgendaDia, diaIdx);
+                const clasesOrdenadas = [...clasesHoy].sort((a, b) => {
+                  const [ah, am] = a.inicio.split(':').map(Number);
+                  const [bh, bm] = b.inicio.split(':').map(Number);
+                  return (ah * 60 + am) - (bh * 60 + bm);
+                });
+
+                if (inhabil) {
+                  const colores = getColoresInhabil(inhabil.tipo);
+                  return (
+                    <div className="agenda-empty" style={{ background: colores.bg, border: `1px solid ${colores.border}`, color: colores.text, borderRadius: '10px' }}>
+                      {inhabil.motivo}
+                    </div>
+                  );
+                }
+
+                if (clasesOrdenadas.length === 0 && eventosFantasma.length === 0) {
+                  return <div className="agenda-empty">Sin clases ni eventos este día.</div>;
+                }
+
+                return (
+                  <>
+                    {eventosFantasma.map((fantasma, fIdx) => (
+                      <div key={`ghost-${fantasma.materiaId}-${fIdx}`} className="agenda-item ghost" onClick={() => router.push(`/materia/${fantasma.materiaId}`)}>
+                        <div className="agenda-item-top">
+                          <span className="agenda-item-title">{fantasma.nombreLimpio}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          {fantasma.eventos.map((ev: any, i: number) => (
+                            <span key={i} className="agenda-event-chip" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>{ev.tipo}</span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    {clasesOrdenadas.map(clase => {
+                      const eventosHoy = detalles?.[clase.materiaId]?.eventos?.filter((ev: any) => ev.fecha === formatDateStr(datesOfWeek[diaIdx])) || [];
+                      return (
+                        <div key={clase.id} className="agenda-item" onClick={() => router.push(`/materia/${clase.materiaId}`)}>
+                          <div className="agenda-item-top">
+                            <span className="agenda-item-title">{clase.materiaLimpia}</span>
+                            <span className="agenda-item-time">{clase.inicio}-{clase.fin}</span>
+                          </div>
+                          <div className="agenda-item-meta">{clase.comision} · {clase.cuatrimestre}</div>
+                          {eventosHoy.length > 0 && (
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+                              {eventosHoy.map((ev: any, i: number) => (
+                                <span key={i} className="agenda-event-chip" style={{ background: getEventColorSoft(ev.tipo), color: getEventColor(ev.tipo) }}>{ev.tipo}: {ev.nombre}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}
