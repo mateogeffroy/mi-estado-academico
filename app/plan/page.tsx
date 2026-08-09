@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
 import { AccionMateria } from '../../src/application/useCases/actualizarProgreso';
 import { calcularDesbloqueos } from '../../src/domain/services/calcularDesbloqueos';
+import { Materia } from '../../src/domain/entities/Materia';
 import ConfirmModal from '../../src/components/ConfirmModal';
 import SimuladorModal from '../../src/components/SimuladorModal';
 import AdBanner from '../../src/components/AdBanner';
@@ -304,7 +305,7 @@ export default function PlanDeEstudios() {
   // aprobada) y potencialmente habilitar otras. Reusa calcularDesbloqueos
   // (dominio), que a su vez reusa el mismo motor de correlatividades que ya
   // corre en producción — así el hint nunca puede desincronizarse.
-  const buildDestrabaContent = (subject: any) => {
+  const buildDestrabaContent = (subject: Materia) => {
     const { siCursada, siAprobadaAdicional } = calcularDesbloqueos(subject.id, materias, careerData);
 
     if (siCursada.length === 0 && siAprobadaAdicional.length === 0) {
@@ -313,10 +314,10 @@ export default function PlanDeEstudios() {
 
     const arrowIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>;
 
-    const renderLista = (titulo: string, items: any[]) => (
+    const renderLista = (titulo: string, items: Materia[]) => (
       <div style={{ marginTop: '4px' }}>
         <b style={{ display: 'block', marginBottom: '2px', opacity: 0.9 }}>{titulo}</b>
-        {items.map((m: any) => (
+        {items.map((m) => (
           <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
             {arrowIcon} <span>{m.name.replace(/\s*\(.*?\)/g, '')}</span>
           </div>
@@ -347,7 +348,7 @@ export default function PlanDeEstudios() {
     setTooltip({ visible: true, content, x, y });
   };
 
-  const handleDestrabaClick = (e: React.MouseEvent, subject: any) => {
+  const handleDestrabaClick = (e: React.MouseEvent, subject: Materia) => {
     e.preventDefault();
     e.stopPropagation();
     if (window.innerWidth > 900) return; // en desktop ya lo cubre el hover del ícono
