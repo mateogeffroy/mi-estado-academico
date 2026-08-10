@@ -3,9 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
+import { AccionMateria } from '../../src/application/useCases/actualizarProgreso';
+import { calcularDesbloqueos } from '../../src/domain/services/calcularDesbloqueos';
+import { Materia } from '../../src/domain/entities/Materia';
 import ConfirmModal from '../../src/components/ConfirmModal';
 import SimuladorModal from '../../src/components/SimuladorModal';
-import AdBanner from '../../src/components/AdBanner'; 
+import AdBanner from '../../src/components/AdBanner';
 
 const NOMBRES_CARRERAS: Record<string, string> = {
   'utn-sistemas-2023': 'Ingeniería en Sistemas',
@@ -23,7 +26,6 @@ const NOMBRES_CARRERAS: Record<string, string> = {
 };
 
 export default function PlanDeEstudios() {
-  // 🔥 Incorporamos las funciones multi-carrera
   const { materias, detalles, cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas, stats, careerData, todasLasCarreras, careerId, setCarreraActiva } = usePlan();
   const { SUBJECTS, ELECTIVAS, getSubjectById, ALL } = careerData;
   const maxLevel = Math.max(...SUBJECTS.map((s: any) => s.level || 1));
@@ -36,6 +38,13 @@ export default function PlanDeEstudios() {
   const [blockedShake, setBlockedShake] = useState<string | null>(null);
 
   const [isSimuladorOpen, setIsSimuladorOpen] = useState(false);
+
+  // Progressive disclosure: por defecto los niveles completos arrancan
+  // cerrados, los que tienen algo en curso/disponible arrancan abiertos y
+  // los que todavía no se pueden cursar quedan cerrados. nivelesForzados
+  // guarda solo lo que el usuario tocó a mano, para no pisar ese default
+  // hasta que interactúe.
+  const [nivelesForzados, setNivelesForzados] = useState<Record<number, boolean>>({});
 
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
@@ -99,6 +108,27 @@ export default function PlanDeEstudios() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  const obtenerEstado = (subject: any): string => {
+    let estado = materias[subject.id];
+    if (!estado) estado = (subject.level === 1 || subject.isElective || subject.isElectivePlaceholder) ? 'available' : 'disabled';
+    return estado;
+  };
+
+  const cardsDeNivel = (lvl: number) => SUBJECTS.filter((s: any) => s.level === lvl);
+
+  type EstadoNivel = 'complete' | 'active' | 'locked';
+  const nivelStatus = (lvl: number): EstadoNivel => {
+    const cards = cardsDeNivel(lvl);
+    if (cards.length === 0) return 'active';
+    const estados = cards.map(obtenerEstado);
+    if (estados.every((e) => e === 'aprobada')) return 'complete';
+    if (estados.every((e) => e === 'disabled')) return 'locked';
+    return 'active';
+  };
+
+  const estaAbierto = (lvl: number) => nivelesForzados[lvl] ?? nivelStatus(lvl) === 'active';
+  const toggleNivel = (lvl: number) => setNivelesForzados((prev) => ({ ...prev, [lvl]: !estaAbierto(lvl) }));
+
   const marcarNivel = (lvl: number) => {
     const obligatorias = SUBJECTS.filter((s: any) =>
       s.level === lvl && !s.isElective && !s.isElectivePlaceholder && !s.isSeminario && s.id !== 'PPS'
@@ -115,7 +145,7 @@ export default function PlanDeEstudios() {
     }
   };
 
-  const ejecutarCambioEstado = (subjectId: string, accion: string) => {
+  const ejecutarCambioEstado = (subjectId: string, accion: AccionMateria) => {
     const estadoActual = materias[subjectId] || 'available';
     const tieneEventos = detalles[subjectId]?.eventos?.length > 0;
 
@@ -129,9 +159,7 @@ export default function PlanDeEstudios() {
         confirmText: 'Sí, aprobar y limpiar',
         isDanger: false,
         onConfirm: () => {
-          const infoLimpia = { ...detalles[subjectId] };
-          delete infoLimpia.eventos;
-          delete infoLimpia.comision;
+          const infoLimpia = { ...detalles[subjectId], eventos: [], comision: null };
           actualizarDetalleMateria(subjectId, infoLimpia);
           cambiarEstadoMateria(subjectId, accion);
           closeModal();
@@ -195,7 +223,7 @@ export default function PlanDeEstudios() {
     ejecutarCambioEstado(subjectId, 'cycle_cursada');
   };
 
-  const handleMenuAction = (e: React.MouseEvent, accionExacta: string) => {
+  const handleMenuAction = (e: React.MouseEvent, accionExacta: AccionMateria) => {
     e.stopPropagation();
     if (menu.subjectId) {
       ejecutarCambioEstado(menu.subjectId, accionExacta);
@@ -238,7 +266,8 @@ export default function PlanDeEstudios() {
       ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
       : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 
-    // 🔥 FIX: Convertimos los IDs a String para que el filtro sea perfecto
+    // Los ids de correlativas a veces llegan como number y otras como string
+    // según el catálogo de origen; se normalizan a String antes de comparar.
     const aprobadasRequeridasStr = (subject.correlAprobada || []).map(String);
     const cursadasFiltradas = (subject.correlCursada || []).filter(
       (cid: any) => !aprobadasRequeridasStr.includes(String(cid))
@@ -271,8 +300,42 @@ export default function PlanDeEstudios() {
     return <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>{lines}</div>;
   };
 
+  // "Qué destraba": solo tiene sentido para materias cursando/cursada, que
+  // son las que están a un paso de sumar un nuevo estado (cursada o
+  // aprobada) y potencialmente habilitar otras. Reusa calcularDesbloqueos
+  // (dominio), que a su vez reusa el mismo motor de correlatividades que ya
+  // corre en producción — así el hint nunca puede desincronizarse.
+  const buildDestrabaContent = (subject: Materia) => {
+    const { siCursada, siAprobadaAdicional } = calcularDesbloqueos(subject.id, materias, careerData);
+
+    if (siCursada.length === 0 && siAprobadaAdicional.length === 0) {
+      return <div style={{ fontStyle: 'italic', opacity: 0.8 }}>Todavía no destraba materias nuevas.</div>;
+    }
+
+    const arrowIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>;
+
+    const renderLista = (titulo: string, items: Materia[]) => (
+      <div style={{ marginTop: '4px' }}>
+        <b style={{ display: 'block', marginBottom: '2px', opacity: 0.9 }}>{titulo}</b>
+        {items.map((m) => (
+          <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+            {arrowIcon} <span>{m.name.replace(/\s*\(.*?\)/g, '')}</span>
+          </div>
+        ))}
+      </div>
+    );
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qué destraba</div>
+        {siCursada.length > 0 && renderLista('Si la marcás Cursada:', siCursada)}
+        {siAprobadaAdicional.length > 0 && renderLista('Si la apruebas, además:', siAprobadaAdicional)}
+      </div>
+    );
+  };
+
   const handleMouseMove = (e: React.MouseEvent, subject: any) => {
-    if (window.innerWidth <= 900) return; 
+    if (window.innerWidth <= 900) return;
 
     let x = e.clientX + 12;
     let y = e.clientY + 12;
@@ -280,7 +343,25 @@ export default function PlanDeEstudios() {
     if (y + 150 > window.innerHeight) y = e.clientY - 160;
     if (x < 12) x = 12;
     if (y < 12) y = 12;
-    setTooltip({ visible: true, content: buildTooltipContent(subject), x, y });
+    const sobreDestrabaBtn = (e.target as HTMLElement).closest('.destraba-btn');
+    const content = sobreDestrabaBtn ? buildDestrabaContent(subject) : buildTooltipContent(subject);
+    setTooltip({ visible: true, content, x, y });
+  };
+
+  const handleDestrabaClick = (e: React.MouseEvent, subject: Materia) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.innerWidth > 900) return; // en desktop ya lo cubre el hover del ícono
+
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    let posX = rect.left;
+    if (posX + 240 > window.innerWidth) posX = window.innerWidth - 250;
+    if (posX < 12) posX = 12;
+    let posY = rect.bottom + 8;
+    if (posY + 180 > window.innerHeight) posY = rect.top - 190;
+
+    setTooltip({ visible: true, content: buildDestrabaContent(subject), x: posX, y: posY });
+    setMenu((prev) => ({ ...prev, isOpen: false }));
   };
 
   const handleMouseLeave = () => {
@@ -288,11 +369,7 @@ export default function PlanDeEstudios() {
   };
 
   const renderCard = (subject: any) => {
-    let estadoActual = materias[subject.id];
-
-    if (!estadoActual) {
-      estadoActual = (subject.level === 1 || subject.isElective || subject.isElectivePlaceholder) ? 'available' : 'disabled';
-    }
+    const estadoActual = obtenerEstado(subject);
 
     let displayHours = subject.hours;
     
@@ -308,7 +385,7 @@ export default function PlanDeEstudios() {
       let globalAprobadaHoursIngenieria = 0;
 
       [3, 4, 5].forEach(lvl => {
-        const electivasNivel = ELECTIVAS[lvl as keyof typeof ELECTIVAS] || [];
+        const electivasNivel = ELECTIVAS?.[lvl as keyof typeof ELECTIVAS] || [];
         electivasNivel.forEach((el: any) => {
           if (materias[el.id] === 'aprobada') {
             globalAprobadaHoursIngenieria += el.annualHours || 0;
@@ -470,6 +547,16 @@ export default function PlanDeEstudios() {
         onMouseLeave={handleMouseLeave}
         style={{ cursor: estadoActual === 'disabled' ? 'not-allowed' : 'pointer', display: 'flex', flexDirection: 'column' }}
       >
+        {(estadoActual === 'cursando' || estadoActual === 'cursada') && (
+          <button
+            className="destraba-btn"
+            onClick={(e) => handleDestrabaClick(e, subject)}
+            aria-label={`Ver qué materias destraba ${subject.name}`}
+            title="Qué destraba"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
+          </button>
+        )}
         <div className="subject-num">{subject.num}</div>
         <div className="subject-name">{subject.name}</div>
         {durationBadges}
@@ -484,6 +571,31 @@ export default function PlanDeEstudios() {
   return (
     <>
       <style>{`
+        /* Acordeón de niveles (progressive disclosure) */
+        .nivel-acordeon { border: 1px solid var(--border); border-radius: 12px; background: var(--panel); }
+        .nivel-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; user-select: none; min-height: 44px; }
+        .nivel-header:focus-visible { outline: 2px solid var(--cursando); outline-offset: -2px; border-radius: 10px; }
+        .nivel-chip { font-family: 'Space Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; }
+        .nivel-chip.complete { background: rgba(34, 197, 94, 0.12); color: var(--aprobada); }
+        .nivel-chip.active { background: rgba(59, 130, 246, 0.12); color: var(--cursando); }
+        .nivel-chip.locked { background: var(--disabled); color: var(--disabled-text); }
+        .nivel-chevron { color: var(--muted); transition: transform 0.3s cubic-bezier(.4,0,.2,1); flex-shrink: 0; margin-left: auto; }
+        .nivel-acordeon.open .nivel-chevron { transform: rotate(180deg); }
+        /* Grid 0fr→1fr: interpola contra el alto real del contenido, mucho más suave que animar max-height */
+        .nivel-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.32s cubic-bezier(.4,0,.2,1); }
+        .nivel-acordeon.open .nivel-body { grid-template-rows: 1fr; }
+        .nivel-body-inner { overflow: hidden; min-height: 0; padding: 0 16px 20px; }
+        .nivel-body-inner > * { opacity: 0; transform: translateY(-4px); transition: opacity 0.2s ease 0.04s, transform 0.2s ease 0.04s; }
+        .nivel-acordeon.open .nivel-body-inner > * { opacity: 1; transform: translateY(0); }
+        .nivel-acordeon.locked .nivel-body-inner { opacity: 0.55; }
+        .nivel-lock-note { display: flex; align-items: flex-start; gap: 6px; font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; }
+        .nivel-lock-note svg { flex-shrink: 0; margin-top: 1px; }
+        @media (max-width: 480px) {
+          .nivel-header { flex-wrap: wrap; row-gap: 8px; }
+          .nivel-header .mark-all-btn { order: 3; margin-left: auto; }
+          .nivel-header .nivel-chevron { order: 2; margin-left: 0; }
+        }
+
         .subject-card:hover, .subject-card.aprobada:hover, .subject-card.cursada:hover, .subject-card.available:hover { transform: none !important; }
         .subject-card.highlight-blocked { border-color: #ef4444 !important; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6) !important; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; z-index: 50; }
         @keyframes shake {
@@ -496,6 +608,22 @@ export default function PlanDeEstudios() {
         .action-btn { background: transparent; color: var(--text-strong); border: none; padding: 10px 12px; text-align: left; border-radius: 4px; font-family: 'Syne', sans-serif; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; width: 100%; }
         .action-btn:hover { background: var(--glass-hover); }
         .subject-status-icon { position: absolute; bottom: 10px; right: 10px; opacity: 0.8; }
+
+        /* Hint "qué destraba": solo visible en cursando/cursada. Ícono chico
+           con hover en desktop (el mousemove de la tarjeta ya distingue si
+           el cursor está encima); en mobile es un botón con un target táctil
+           más grande, porque ahí no hay hover y tiene que ser tocable de verdad. */
+        .destraba-btn {
+          position: absolute; top: 8px; right: 8px; width: 20px; height: 20px;
+          border-radius: 50%; border: none; padding: 0; cursor: pointer;
+          background: rgba(0, 0, 0, 0.3); color: rgba(255, 255, 255, 0.9);
+          display: flex; align-items: center; justify-content: center;
+          transition: background 0.15s, transform 0.15s;
+        }
+        .destraba-btn:hover { background: rgba(0, 0, 0, 0.55); transform: scale(1.08); }
+        @media (max-width: 900px) {
+          .destraba-btn { width: 32px; height: 32px; top: 4px; right: 4px; }
+        }
         
         .mobile-ad-container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 16px; }
         @media (min-width: 1450px) { .mobile-ad-container { display: none; } }
@@ -513,7 +641,6 @@ export default function PlanDeEstudios() {
         .scatter-ad-left { right: 100%; margin-right: 40px; }
         .scatter-ad-right { left: 100%; margin-left: 40px; }
 
-        /* 🔥 Estilos para el selector de carrera 🔥 */
         .career-selector { background: var(--panel); border: 1px solid var(--border); color: var(--text-strong); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; outline: none; cursor: pointer; transition: all 0.2s; max-width: 250px; text-overflow: ellipsis; white-space: nowrap; }
         .career-selector:hover { border-color: var(--cursando); }
 
@@ -642,36 +769,77 @@ export default function PlanDeEstudios() {
           </div>
         </div>
 
-        {/* ... EL RESTO DEL CÓDIGO QUEDA IGUAL ... */}
         <div style={{ position: 'relative', width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {levels.map((lvl, index) => {
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {levels.map((lvl) => {
               const materiasObligatorias = SUBJECTS.filter((s: any) => s.level === lvl && !s.isElective && !s.isElectivePlaceholder);
-              const electivas = ELECTIVAS[lvl as keyof typeof ELECTIVAS] || [];
+              const electivas = ELECTIVAS?.[lvl as keyof typeof ELECTIVAS] || [];
               const placeholders = SUBJECTS.filter((s: any) => s.level === lvl && s.isElectivePlaceholder);
+              const status = nivelStatus(lvl);
+              const abierto = estaAbierto(lvl);
+              const cards = cardsDeNivel(lvl);
+              const aprobadasCount = cards.filter((s: any) => obtenerEstado(s) === 'aprobada').length;
 
               return (
-                <div key={lvl} style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div className="level-section" style={{ marginBottom: 0 }}>
-                    <div className="level-header" style={{ color: `var(--n${lvl})` }}>
-                      <div className="level-badge" style={{ borderColor: `var(--n${lvl})` }}>Nivel {lvl}</div>
-                      <button className="mark-all-btn" onClick={() => marcarNivel(lvl)}>Marcar todas</button>
-                      <div className="level-line" style={{ backgroundColor: `var(--n${lvl})` }}></div>
-                    </div>
-                    
-                    <div className="subject-grid">
-                      {materiasObligatorias.map(renderCard)}
-                      {placeholders.map(renderCard)}
-                    </div>
+                <div key={lvl} className={`nivel-acordeon ${abierto ? 'open' : ''} ${status === 'locked' ? 'locked' : ''}`}>
+                  <div
+                    className="nivel-header"
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={abierto}
+                    onClick={() => toggleNivel(lvl)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleNivel(lvl); } }}
+                    style={{ color: `var(--n${lvl})` }}
+                  >
+                    <div className="level-badge" style={{ borderColor: `var(--n${lvl})` }}>Nivel {lvl}</div>
 
-                    {electivas.length > 0 && (
-                      <>
-                        <div className="electivas-level-label" style={{ marginTop: '24px' }}>Electivas</div>
-                        <div className="subject-grid">
-                            {electivas.map(renderCard)}
-                        </div>
-                      </>
+                    {status === 'complete' ? (
+                      <span className="nivel-chip complete">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        Completo · {aprobadasCount}/{cards.length}
+                      </span>
+                    ) : status === 'locked' ? (
+                      <span className="nivel-chip locked">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                        Bloqueado
+                      </span>
+                    ) : (
+                      <span className="nivel-chip active">{aprobadasCount}/{cards.length}</span>
                     )}
+
+                    <button
+                      className="mark-all-btn"
+                      onClick={(e) => { e.stopPropagation(); marcarNivel(lvl); }}
+                    >
+                      Marcar todas
+                    </button>
+
+                    <svg className="nivel-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+                  </div>
+
+                  <div className="nivel-body">
+                    <div className="nivel-body-inner">
+                      {status === 'locked' && (
+                        <div className="nivel-lock-note">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                          Se habilita cuando tengas al día las correlativas del nivel anterior.
+                        </div>
+                      )}
+
+                      <div className="subject-grid">
+                        {materiasObligatorias.map(renderCard)}
+                        {placeholders.map(renderCard)}
+                      </div>
+
+                      {electivas.length > 0 && (
+                        <>
+                          <div className="electivas-level-label" style={{ marginTop: '24px' }}>Electivas</div>
+                          <div className="subject-grid">
+                              {electivas.map(renderCard)}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

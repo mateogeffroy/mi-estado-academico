@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePlan } from '../../src/context/PlanContext';
-import { supabase } from '../../src/lib/supabase';
+import { authPort } from '../../src/infrastructure/repositorios';
 import GradeModal from '../../src/components/GradeModal';
+import ConfirmModal from '../../src/components/ConfirmModal';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
@@ -42,17 +43,6 @@ const getNombreCarrera = (id: string) => {
   return id;
 };
 
-// 🔥 Función auxiliar para determinar el prefijo de la carrera
-const getCareerPrefix = (careerId: string) => {
-  if (careerId.includes('sistemas')) return 'SIS-';
-  if (careerId.includes('industrial')) return 'IND-';
-  if (careerId.includes('mecanica')) return 'MEC-';
-  if (careerId.includes('civil')) return 'CIV-';
-  if (careerId.includes('electrica')) return 'ELE-';
-  if (careerId.includes('quimica')) return 'QUI-';
-  return null;
-};
-
 export default function PerfilPage() {
   const router = useRouter();
   // Traemos las nuevas funciones del Contexto Multi-Carrera
@@ -74,14 +64,15 @@ export default function PerfilPage() {
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
   const [selectedMateria, setSelectedMateria] = useState<{ id: string; name: string } | null>(null);
 
+  const [carreraABorrar, setCarreraABorrar] = useState<string | null>(null);
+
   useEffect(() => {
     setIsMounted(true);
     const fetchUserData = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        const currentName = data.user.user_metadata?.full_name || 'Usuario';
-        setNombre(currentName);
-        setTempNombre(currentName);
+      const usuario = await authPort.obtenerSesionActual();
+      if (usuario) {
+        setNombre(usuario.fullName);
+        setTempNombre(usuario.fullName);
       }
     };
     fetchUserData();
@@ -108,7 +99,7 @@ export default function PerfilPage() {
 
   const handleSaveName = async () => {
     if (!tempNombre.trim()) return;
-    await supabase.auth.updateUser({ data: { full_name: tempNombre } });
+    await authPort.actualizarNombre(tempNombre);
     setNombre(tempNombre);
     setIsEditingName(false);
   };
@@ -123,51 +114,29 @@ export default function PerfilPage() {
     setIsAddingMode(false);
   };
 
-  // 🔥 NUEVA LÓGICA: Borrado en Cascada Seguro 🔥
-  const handleEliminarCarrera = async (idToBorrar: string) => {
-    if (!window.confirm(`¿Seguro que querés desanotarte de ${getNombreCarrera(idToBorrar)}? Esto borrará tus datos exclusivos de esta carrera.`)) return;
-
+  // El borrado en cascada (materias/eventos exclusivos + materias compartidas
+  // de UTN si corresponde + la relación de carrera) vive en PlanContext.borrarCarrera,
+  // que es la única fuente de verdad para esta lógica.
+  const confirmarEliminarCarrera = async () => {
+    if (!carreraABorrar) return;
+    const idToBorrar = carreraABorrar;
+    setCarreraABorrar(null);
     try {
-      const { data } = await supabase.auth.getUser();
-      const userId = data.user?.id;
-      const prefix = getCareerPrefix(idToBorrar);
-
-      if (prefix && userId) {
-        // 1. Limpiar materias exclusivas de esta carrera
-        const { error: errMaterias } = await supabase
-          .from('usuario_materias')
-          .delete()
-          .eq('user_id', userId)
-          .like('materia_id', `${prefix}%`);
-
-        if (errMaterias) console.error('Error limpiando materias:', errMaterias);
-
-        // 2. Limpiar eventos exclusivos de esta carrera
-        const { error: errEventos } = await supabase
-          .from('usuario_eventos')
-          .delete()
-          .eq('user_id', userId)
-          .like('materia_id', `${prefix}%`);
-
-        if (errEventos) console.error('Error limpiando eventos:', errEventos);
-      }
-
-      // Finalmente, la sacamos del array del perfil
       await borrarCarrera(idToBorrar);
-      
     } catch (error) {
-      console.error('Error crítico en borrado en cascada:', error);
+      console.error('Error en el borrado de la carrera:', error);
+      alert('No pudimos completar el borrado de la carrera. Probá de nuevo en un momento.');
     }
   };
 
-  const aprobadasOrdenadas = ALL.filter((s: any) =>
+  const aprobadasOrdenadas = ALL.filter((s) =>
     materias[s.id] === 'aprobada' && !s.isElectivePlaceholder && s.id !== 'SEM' && s.id !== 'PPS'
   ).sort((a, b) => {
-    const nivelA = a.level || 99; 
+    const nivelA = a.level || 99;
     const nivelB = b.level || 99;
     if (nivelA !== nivelB) return nivelA - nivelB;
-    const numA = parseInt(a.num) || parseInt(a.id) || 999;
-    const numB = parseInt(b.num) || parseInt(b.id) || 999;
+    const numA = parseInt(a.num || '') || parseInt(a.id) || 999;
+    const numB = parseInt(b.num || '') || parseInt(b.id) || 999;
     return numA - numB;
   });
 
@@ -274,14 +243,15 @@ export default function PerfilPage() {
                         </button>
                       )}
                       
-                      {/* 🔥 Tacho de basura ahora usa el borrado en cascada 🔥 */}
+                      {/* El borrado en cascada corre en PlanContext.borrarCarrera, ver confirmarEliminarCarrera */}
                       {todasLasCarreras.length > 1 && (
-                        <button 
-                          onClick={() => handleEliminarCarrera(id)}
-                          style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '6px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                        <button
+                          onClick={() => setCarreraABorrar(id)}
+                          style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger-border)', color: 'var(--danger)', padding: '6px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
                           title="Desanotarse"
-                          onMouseOver={e => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = '#fff'; }}
-                          onMouseOut={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#ef4444'; }}
+                          aria-label={`Desanotarse de ${getNombreCarrera(id)}`}
+                          onMouseOver={e => { e.currentTarget.style.background = 'var(--danger)'; e.currentTarget.style.color = '#fff'; }}
+                          onMouseOut={e => { e.currentTarget.style.background = 'var(--danger-soft)'; e.currentTarget.style.color = 'var(--danger)'; }}
                         >
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                         </button>
@@ -329,13 +299,16 @@ export default function PerfilPage() {
                           {detalles[m.id]?.notaFinal ? `Nota: ${detalles[m.id].notaFinal}` : 'Sin nota'}
                         </span>
                       </div>
-                      {detalles[m.id]?.dificultad && (
+                      {!!detalles[m.id]?.dificultad && (
                         <div className="stars-container" style={{ display: 'flex', gap: '2px', marginLeft: '15px', flexShrink: 0 }}>
-                          {[...Array(5)].map((_, i) => (
-                            <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < detalles[m.id].dificultad ? "var(--cursada)" : "none"} stroke={i < detalles[m.id].dificultad ? "var(--cursada)" : "var(--muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                            </svg>
-                          ))}
+                          {[...Array(5)].map((_, i) => {
+                            const dificultad = detalles[m.id].dificultad ?? 0;
+                            return (
+                              <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < dificultad ? "var(--cursada)" : "none"} stroke={i < dificultad ? "var(--cursada)" : "var(--muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                              </svg>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -392,7 +365,17 @@ export default function PerfilPage() {
                 ...detalles[selectedMateria.id], notaFinal: nota, dificultad: dificultad 
               }); 
             } 
-          }} 
+          }}
+        />
+
+        <ConfirmModal
+          isOpen={carreraABorrar !== null}
+          title="Desanotarse de la carrera"
+          message={carreraABorrar ? `¿Seguro que querés desanotarte de ${getNombreCarrera(carreraABorrar)}? Esto borrará tus datos exclusivos de esta carrera.` : ''}
+          confirmText="Sí, desanotarme"
+          isDanger
+          onConfirm={confirmarEliminarCarrera}
+          onCancel={() => setCarreraABorrar(null)}
         />
       </main>
     </>

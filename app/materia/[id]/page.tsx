@@ -3,14 +3,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePlan } from '../../../src/context/PlanContext';
-import { supabase } from '../../../src/lib/supabase';
-import Link from 'next/link';
+import { dificultadRepository, eventosRepository } from '../../../src/infrastructure/repositorios';
+import { agregarEvento, borrarEvento } from '../../../src/application/useCases/gestionarEventos';
+import { EventoAcademico, HorarioCustom } from '../../../src/domain/entities/Progreso';
 import CustomSelect from '../../../src/components/CustomSelect';
+import ConfirmModal from '../../../src/components/ConfirmModal';
 
 export default function MateriaPage() {
   const params = useParams();
   const router = useRouter();
-  const { id } = params;
+  const id = params.id as string;
   const { detalles, actualizarDetalleMateria, careerData, user } = usePlan();
   const { getSubjectById } = careerData;
   const hoy = new Date().toISOString().split('T')[0];
@@ -46,18 +48,19 @@ export default function MateriaPage() {
     dia: 'Lunes', inicio: '18:00', fin: '22:00', duracion: getInitialDuracion()
   });
 
+  const [confirmacionBorrado, setConfirmacionBorrado] = useState<{ tipo: 'evento' | 'horario'; id: string } | null>(null);
   const [showDificultadInfo, setShowDificultadInfo] = useState(false);
+  // Los formularios de agendar evento / agregar horario custom arrancan
+  // colapsados: son acciones secundarias, no lo primero que se ve al entrar.
+  const [showEventoForm, setShowEventoForm] = useState(false);
+  const [showHorarioForm, setShowHorarioForm] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [statsDificultad, setStatsDificultad] = useState({ promedio: 0, total: 0, loading: true });
 
   useEffect(() => {
     const fetchEstadisticas = async () => {
-      const { data, error } = await supabase.rpc('obtener_estadisticas_materia', { p_materia_id: id as string });
-      if (!error && data && data.length > 0) {
-        setStatsDificultad({ promedio: Number(data[0].promedio), total: Number(data[0].total_votos), loading: false });
-      } else {
-        setStatsDificultad({ promedio: 0, total: 0, loading: false });
-      }
+      const { promedio, total } = await dificultadRepository.obtenerEstadisticas(id);
+      setStatsDificultad({ promedio, total, loading: false });
     };
     if (id) fetchEstadisticas();
   }, [id]);
@@ -78,49 +81,48 @@ export default function MateriaPage() {
   );
 
   const handleSeleccionarComision = (comisionId: string) => {
-    actualizarDetalleMateria(id as string, { ...detalles[id as string], comision: comisionId });
+    actualizarDetalleMateria(id, { ...detalles[id], comision: comisionId });
   };
 
   const handleAgregarEvento = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nuevoEvento.nombre || !nuevoEvento.fecha || !user) return;
-    
-    const eventoID = crypto.randomUUID();
-    const eventoParaGuardar = { id: eventoID, ...nuevoEvento };
-    
-    await supabase.from('usuario_eventos').insert({
-      id: eventoID,
-      user_id: user.id,
-      materia_id: id as string,
-      nombre: nuevoEvento.nombre,
-      tipo: nuevoEvento.tipo,
-      fecha: nuevoEvento.fecha
-    });
 
-    const nuevosEventos = [...eventosGuardados, eventoParaGuardar];
-    actualizarDetalleMateria(id as string, { ...detalles[id as string], eventos: nuevosEventos });
+    const eventoCreado = await agregarEvento(user.id, { materiaId: id, ...nuevoEvento }, eventosRepository);
+
+    const nuevosEventos = [...eventosGuardados, eventoCreado];
+    actualizarDetalleMateria(id, { ...detalles[id], eventos: nuevosEventos });
     setNuevoEvento({ nombre: '', tipo: 'Parcial', fecha: hoy });
+    setShowEventoForm(false);
   };
 
   const handleBorrarEvento = async (idEvento: string) => {
-    // 1. Borramos de la tabla relacional
-    await supabase.from('usuario_eventos').delete().eq('id', idEvento);
+    if (!user) return;
+    await borrarEvento(user.id, idEvento, eventosRepository);
 
-    // 2. Actualizamos el estado local
-    const nuevosEventos = eventosGuardados.filter((ev: any) => ev.id !== idEvento);
-    actualizarDetalleMateria(id as string, { ...detalles[id as string], eventos: nuevosEventos });
+    const nuevosEventos = eventosGuardados.filter((ev) => ev.id !== idEvento);
+    actualizarDetalleMateria(id, { ...detalles[id], eventos: nuevosEventos });
   };
 
   const handleAgregarHorarioCustom = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nuevoHorario.inicio || !nuevoHorario.fin) return;
-    const nuevosHorarios = [...horariosCustomGuardados, { id: crypto.randomUUID(), ...nuevoHorario }];
-    actualizarDetalleMateria(id as string, { ...detalles[id as string], horariosCustom: nuevosHorarios });
+    const nuevosHorarios: HorarioCustom[] = [...horariosCustomGuardados, { id: crypto.randomUUID(), ...nuevoHorario }];
+    actualizarDetalleMateria(id, { ...detalles[id], horariosCustom: nuevosHorarios });
+    setShowHorarioForm(false);
   };
 
   const handleBorrarHorarioCustom = (idHorario: string) => {
-    const nuevosHorarios = horariosCustomGuardados.filter((h: any) => h.id !== idHorario);
-    actualizarDetalleMateria(id as string, { ...detalles[id as string], horariosCustom: nuevosHorarios });
+    const nuevosHorarios = horariosCustomGuardados.filter((h) => h.id !== idHorario);
+    actualizarDetalleMateria(id, { ...detalles[id], horariosCustom: nuevosHorarios });
+  };
+
+  const confirmarBorrado = () => {
+    if (!confirmacionBorrado) return;
+    const { tipo, id: idABorrar } = confirmacionBorrado;
+    setConfirmacionBorrado(null);
+    if (tipo === 'evento') handleBorrarEvento(idABorrar);
+    else handleBorrarHorarioCustom(idABorrar);
   };
 
   const formatearFecha = (fechaISO: string) => {
@@ -142,13 +144,20 @@ export default function MateriaPage() {
         .event-input-type { flex: 1 1 calc(50% - 10px); min-width: 140px; }
         .event-input-date { flex: 1 1 calc(50% - 10px); padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--glass-bg); color: var(--text-strong); outline: none; cursor: pointer; font-family: inherit; }
         .event-btn { flex: 1 1 100%; padding: 12px 28px; border-radius: 8px; font-weight: bold; }
-        
+
         @media (min-width: 900px) {
           .event-input-name { flex: 2 1 200px; }
           .event-input-type { flex: 1 1 150px; }
           .event-input-date { flex: 1 1 140px; }
           .event-btn { flex: 0 0 auto; }
         }
+
+        /* Los formularios secundarios (agendar evento, agregar horario) arrancan
+           colapsados y se despliegan con un botón, en vez de ocupar espacio siempre. */
+        .add-toggle-btn { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1px dashed var(--border); color: var(--cursando); padding: 7px 14px; border-radius: 9px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .add-toggle-btn:hover { background: rgba(59, 130, 246, 0.08); border-color: var(--cursando); }
+        .collapse-panel { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
+        .collapse-panel.open { max-height: 500px; }
       `}</style>
 
       <main style={{ paddingTop: '120px', paddingBottom: '40px', paddingLeft: '20px', paddingRight: '20px', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '40px', minHeight: '100vh' }}>
@@ -204,59 +213,17 @@ export default function MateriaPage() {
             </div>
           </div>
 
-          <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <button className="btn-secondary" style={{ whiteSpace: 'nowrap' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-              Volver a Cursada
-            </button>
-          </Link>
+          <button className="btn-secondary" style={{ whiteSpace: 'nowrap', flexShrink: 0 }} onClick={() => router.back()}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            Volver
+          </button>
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', alignItems: 'flex-start' }}>
-          
-          <section style={{ flex: '1 1 60%', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
-            
-            <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-              <h2 style={{ color: 'var(--text-strong)', fontSize: '1.2rem', marginBottom: '25px', fontWeight: 'bold' }}>+ Agendar Nuevo Evento</h2>
-              <form onSubmit={handleAgregarEvento} className="event-form">
-                <input type="text" placeholder="Ej: 1er Parcial..." value={nuevoEvento.nombre} onChange={(e) => setNuevoEvento({...nuevoEvento, nombre: e.target.value})} className="event-input-name" required />
-                <div className="event-input-type">
-                  <CustomSelect value={nuevoEvento.tipo} options={['Parcial', 'Trabajo Práctico', 'Exposición']} onChange={(val) => setNuevoEvento({...nuevoEvento, tipo: val})} />
-                </div>
-                <input type="date" value={nuevoEvento.fecha} onChange={(e) => setNuevoEvento({...nuevoEvento, fecha: e.target.value})} className="event-input-date" required />
-                <button type="submit" className="btn-primary event-btn">Guardar</button>
-              </form>
-            </div>
 
-            <div style={{ background: 'transparent' }}>
-              <h3 style={{ color: 'var(--cursando)', marginBottom: '15px', fontSize: '1.2rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Agenda de la materia
-              </h3>
-              {eventosGuardados.length === 0 ? (
-                <div style={{ background: 'var(--panel)', padding: '30px', borderRadius: '16px', border: '1px dashed var(--border)', textAlign: 'center' }}>
-                  <p style={{ color: 'var(--muted)', fontStyle: 'italic', margin: 0 }}>No hay eventos agendados todavía.</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {eventosGuardados.map((ev: any) => (
-                    <div key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--panel)', border: '1px solid var(--border)', padding: '20px', borderRadius: '16px', transition: 'transform 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={(e) => e.currentTarget.style.transform = 'translateX(5px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateX(0)'}>
-                      <div>
-                        <div style={{ fontWeight: 'bold', color: 'var(--text-strong)', fontSize: '1.1rem' }}>{ev.nombre}</div>
-                        <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: '6px' }}>{ev.tipo}</div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <span style={{ fontFamily: 'Space Mono', color: 'var(--cursando)', background: 'rgba(59, 130, 246, 0.1)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.9rem' }}>{formatearFecha(ev.fecha)}</span>
-                        <button onClick={() => handleBorrarEvento(ev.id)} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', cursor: 'pointer', fontSize: '1.2rem', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', transition: 'all 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#ef4444'; }} title="Borrar evento">×</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section style={{ flex: '1 1 35%', minWidth: '300px' }}>
+          {/* Horarios de Cursada es el propósito central de esta página, así que
+              va primero y en la columna más ancha (antes estaba al revés). */}
+          <section style={{ flex: '1 1 60%', minWidth: '300px' }}>
             <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
               <h2 style={{ color: 'var(--text-strong)', fontSize: '1.2rem', marginBottom: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -267,18 +234,11 @@ export default function MateriaPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 5px 0' }}>Seleccioná tu comisión para organizar tus horarios:</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {materia.comisiones.map((comision: any) => {
+                    {(materia.comisiones ?? []).map((comision) => {
                       const duracion = comision.duration || 'A';
                       let labelDuracion = 'Anual';
-                      let colorFondoDur = 'rgba(59, 130, 246, 0.15)'; let colorTextoDur = '#3b82f6';
-
-                      if (duracion === '1') {
-                        labelDuracion = '1º Cuatrimestre';
-                        colorFondoDur = 'rgba(34, 197, 94, 0.15)'; colorTextoDur = '#22c55e';
-                      } else if (duracion === '2') {
-                        labelDuracion = '2º Cuatrimestre';
-                        colorFondoDur = 'rgba(244, 63, 94, 0.15)'; colorTextoDur = '#f43f5e';
-                      }
+                      if (duracion === '1') labelDuracion = '1º Cuatrimestre';
+                      else if (duracion === '2') labelDuracion = '2º Cuatrimestre';
 
                       return (
                         <button
@@ -294,11 +254,13 @@ export default function MateriaPage() {
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '12px' }}>
                             <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: comisionGuardada === comision.id ? 'var(--cursando)' : 'var(--text-strong)' }}>Comisión {comision.id}</span>
-                            <span style={{ background: colorFondoDur, color: colorTextoDur, padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', border: `1px solid ${colorTextoDur}40` }}>
+                            {/* Texto plano en vez de badge de color: el color queda reservado
+                                para el estado de selección, no para la duración. */}
+                            <span style={{ color: 'var(--muted)', fontSize: '0.7rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                               {labelDuracion}
                             </span>
                           </div>
-                          {comision.dias.map((dia: any, index: number) => (
+                          {comision.dias.map((dia, index) => (
                             <div key={index} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px' }}>
                               <span style={{ color: 'var(--text-strong)' }}>{dia.nombre}</span>
                               <span>{dia.inicio} - {dia.fin}</span>
@@ -322,86 +284,148 @@ export default function MateriaPage() {
                           Mi Comisión Personalizada
                         </span>
                       </div>
-                      
-                      {horariosCustomGuardados.map((h: any) => {
-                        // Respetamos los mismos colores visuales que en las comisiones oficiales
-                        let colorTextoDur = '#3b82f6';
-                        if (h.duracion?.includes('1º')) colorTextoDur = '#22c55e';
-                        if (h.duracion?.includes('2º')) colorTextoDur = '#f43f5e';
 
-                        return (
-                          <div key={h.id} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '10px' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                <span style={{ color: 'var(--text-strong)', fontWeight: 'bold', minWidth: '80px' }}>{h.dia}</span>
-                                <span>{h.inicio} - {h.fin}</span>
-                              </div>
-                              <span style={{ fontSize: '0.75rem', color: colorTextoDur, fontWeight: 'bold', textTransform: 'uppercase' }}>
-                                {h.duracion || 'Anual'}
-                              </span>
+                      {horariosCustomGuardados.map((h: HorarioCustom) => (
+                        <div key={h.id} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '10px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                              <span style={{ color: 'var(--text-strong)', fontWeight: 'bold', minWidth: '80px' }}>{h.dia}</span>
+                              <span>{h.inicio} - {h.fin}</span>
                             </div>
-                            
-                            <button 
-                              onClick={() => handleBorrarHorarioCustom(h.id)} 
-                              style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '26px', height: '26px', borderRadius: '6px', transition: 'background 0.2s' }} 
-                              onMouseOver={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'} 
-                              onMouseOut={e => e.currentTarget.style.background = 'transparent'} 
-                              title="Eliminar horario"
-                            >
-                              ×
-                            </button>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                              {h.duracion || 'Anual'}
+                            </span>
                           </div>
-                        );
-                      })}
+
+                          <button
+                            onClick={() => setConfirmacionBorrado({ tipo: 'horario', id: h.id })}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '26px', height: '26px', borderRadius: '6px', transition: 'background 0.2s' }}
+                            onMouseOver={e => e.currentTarget.style.background = 'var(--danger-soft-hover)'}
+                            onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                            title="Eliminar horario"
+                            aria-label={`Eliminar horario ${h.dia} ${h.inicio} a ${h.fin}`}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
 
-                  <form onSubmit={handleAgregarHorarioCustom} style={{ display: 'flex', flexDirection: 'column', gap: '14px', background: 'var(--glass-bg)', padding: '20px', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-strong)', textTransform: 'uppercase', display: 'block', marginBottom: '2px', letterSpacing: '0.5px' }}>+ Añadir bloque horario</span>
-                    
-                    {/* 🔥 SELECTOR INTELIGENTE: Si es fija, no lo mostramos pero lo guarda internamente 🔥 */}
-                    {!isDuracionFija && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
-                        <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Duración del cursado</label>
-                        <CustomSelect 
-                          value={nuevoHorario.duracion} 
-                          options={getOpcionesDuracion()} 
-                          onChange={(val) => setNuevoHorario({...nuevoHorario, duracion: val})} 
-                        />
-                      </div>
-                    )}
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
-                      <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Día de la semana</label>
-                      <CustomSelect 
-                        value={nuevoHorario.dia} 
-                        options={['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']} 
-                        onChange={(val) => setNuevoHorario({...nuevoHorario, dia: val})} 
-                      />
-                    </div>
-                    
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Hora Inicio</label>
-                        <input type="time" value={nuevoHorario.inicio} onChange={e => setNuevoHorario({...nuevoHorario, inicio: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'Space Mono' }} required />
-                      </div>
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Hora Fin</label>
-                        <input type="time" value={nuevoHorario.fin} onChange={e => setNuevoHorario({...nuevoHorario, fin: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'Space Mono' }} required />
-                      </div>
-                    </div>
-                    
-                    <button type="submit" className="btn-secondary" style={{ marginTop: '10px', width: '100%', borderStyle: 'dashed' }}>
-                      Agregar a mi cursada
+                  <div>
+                    <button type="button" className="add-toggle-btn" onClick={() => setShowHorarioForm(!showHorarioForm)}>
+                      {showHorarioForm ? '– Cerrar' : '+ Añadir bloque horario'}
                     </button>
-                  </form>
+                    <div className={`collapse-panel ${showHorarioForm ? 'open' : ''}`}>
+                      <form onSubmit={handleAgregarHorarioCustom} style={{ display: 'flex', flexDirection: 'column', gap: '14px', background: 'var(--glass-bg)', padding: '20px', borderRadius: '12px', border: '1px dashed var(--border)', marginTop: '14px' }}>
+                        {/* Si la duración de la materia ya es fija no se le pide elegirla,
+                            pero igual se guarda internamente para el horario custom. */}
+                        {!isDuracionFija && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+                            <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Duración del cursado</label>
+                            <CustomSelect
+                              value={nuevoHorario.duracion}
+                              options={getOpcionesDuracion()}
+                              onChange={(val) => setNuevoHorario({...nuevoHorario, duracion: val})}
+                            />
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+                          <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Día de la semana</label>
+                          <CustomSelect
+                            value={nuevoHorario.dia}
+                            options={['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']}
+                            onChange={(val) => setNuevoHorario({...nuevoHorario, dia: val})}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Hora Inicio</label>
+                            <input type="time" value={nuevoHorario.inicio} onChange={e => setNuevoHorario({...nuevoHorario, inicio: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'Space Mono' }} required />
+                          </div>
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Hora Fin</label>
+                            <input type="time" value={nuevoHorario.fin} onChange={e => setNuevoHorario({...nuevoHorario, fin: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'Space Mono' }} required />
+                          </div>
+                        </div>
+
+                        <button type="submit" className="btn-secondary" style={{ marginTop: '10px', width: '100%', borderStyle: 'dashed' }}>
+                          Agregar a mi cursada
+                        </button>
+                      </form>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           </section>
 
+          <section style={{ flex: '1 1 35%', minWidth: '300px' }}>
+            <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                <h2 style={{ color: 'var(--text-strong)', fontSize: '1.2rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  Agenda
+                </h2>
+                <button type="button" className="add-toggle-btn" onClick={() => setShowEventoForm(!showEventoForm)}>
+                  {showEventoForm ? '– Cerrar' : '+ Agendar evento'}
+                </button>
+              </div>
+
+              <div className={`collapse-panel ${showEventoForm ? 'open' : ''}`}>
+                <form onSubmit={handleAgregarEvento} className="event-form" style={{ marginTop: '16px', background: 'var(--glass-bg)', padding: '18px', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                  <input type="text" placeholder="Ej: 1er Parcial..." value={nuevoEvento.nombre} onChange={(e) => setNuevoEvento({...nuevoEvento, nombre: e.target.value})} className="event-input-name" required />
+                  <div className="event-input-type">
+                    <CustomSelect value={nuevoEvento.tipo} options={['Parcial', 'Trabajo Práctico', 'Exposición']} onChange={(val) => setNuevoEvento({...nuevoEvento, tipo: val})} />
+                  </div>
+                  <input type="date" value={nuevoEvento.fecha} onChange={(e) => setNuevoEvento({...nuevoEvento, fecha: e.target.value})} className="event-input-date" required />
+                  <button type="submit" className="btn-primary event-btn">Guardar</button>
+                </form>
+              </div>
+
+              <div style={{ marginTop: '16px' }}>
+                {eventosGuardados.length === 0 ? (
+                  <div style={{ background: 'var(--glass-bg)', padding: '24px', borderRadius: '12px', border: '1px dashed var(--border)', textAlign: 'center' }}>
+                    <p style={{ color: 'var(--muted)', fontStyle: 'italic', margin: 0, fontSize: '0.9rem' }}>No hay eventos agendados todavía.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {eventosGuardados.map((ev: EventoAcademico) => (
+                      <div key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--glass-bg)', border: '1px solid var(--border)', padding: '16px', borderRadius: '12px' }}>
+                        <div>
+                          <div style={{ fontWeight: 'bold', color: 'var(--text-strong)', fontSize: '0.95rem' }}>{ev.nombre}</div>
+                          <div style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: '4px' }}>{ev.tipo}</div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span style={{ fontFamily: 'Space Mono', color: 'var(--cursando)', background: 'rgba(59, 130, 246, 0.1)', padding: '5px 10px', borderRadius: '6px', fontSize: '0.82rem' }}>{formatearFecha(ev.fecha)}</span>
+                          <button onClick={() => setConfirmacionBorrado({ tipo: 'evento', id: ev.id })} style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger-border)', color: 'var(--danger)', cursor: 'pointer', fontSize: '1.1rem', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', transition: 'all 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.background = 'var(--danger)'; e.currentTarget.style.color = 'white'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'var(--danger-soft)'; e.currentTarget.style.color = 'var(--danger)'; }} title="Borrar evento" aria-label={`Borrar evento ${ev.nombre}`}>×</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
         </div>
       </main>
+
+      <ConfirmModal
+        isOpen={confirmacionBorrado !== null}
+        title={confirmacionBorrado?.tipo === 'evento' ? 'Borrar evento' : 'Eliminar horario'}
+        message={
+          confirmacionBorrado?.tipo === 'evento'
+            ? '¿Seguro que querés borrar este evento de la agenda de la materia?'
+            : '¿Seguro que querés eliminar este bloque horario de tu cursada?'
+        }
+        confirmText="Sí, borrar"
+        isDanger
+        onConfirm={confirmarBorrado}
+        onCancel={() => setConfirmacionBorrado(null)}
+      />
     </>
   );
 }

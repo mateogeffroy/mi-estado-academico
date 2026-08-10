@@ -403,8 +403,8 @@ const ALL = [
   ...ELECTIVAS[3], ...ELECTIVAS[4], ...ELECTIVAS[5]
 ];
 
-function getSubjectById(id: any) { 
-  return ALL.find((s: any) => s.id == id); 
+function getSubjectById(id: string) {
+  return ALL.find((s) => s.id === id);
 }
 
-export { ALL, SUBJECTS, ELECTIVAS, getSubjectById };
+export { ALL, ELECTIVAS, getSubjectById };

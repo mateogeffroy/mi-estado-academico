@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import UpdateModal, { UPDATE_VERSION_KEY } from './UpdateModal';
+import Modal from './Modal';
 import { supabase } from '../lib/supabase';
+import { feedbackPort } from '../infrastructure/repositorios';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -15,9 +18,10 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
   // Estado para el modal de Feedback
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [userProfile, setUserProfile] = useState({ name: '', avatarUrl: '', initials: '' });
+  const [userProfile, setUserProfile] = useState({ name: '', email: '', avatarUrl: '', initials: '' });
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const { theme, setTheme } = useTheme();
@@ -26,7 +30,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const router = useRouter(); 
 
-  // Nueva lógica de rutas activas
   const isBlogActive = pathname?.startsWith('/blog');
 
   useEffect(() => {
@@ -67,7 +70,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         initials = nameParts.slice(0, 3).map((word: string) => word[0]).join('').toUpperCase();
       }
 
-      setUserProfile({ name: fullName, avatarUrl, initials });
+      setUserProfile({ name: fullName, email: data.user.email || '', avatarUrl, initials });
     }
   };
 
@@ -108,8 +111,8 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           }
         }
       } catch (error) {
-        console.error("Error verificando sesión:", error);
-        if (isMounted) setIsChecking(false); 
+        Sentry.captureException(error);
+        if (isMounted) setIsChecking(false);
       }
     };
 
@@ -154,7 +157,34 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = '/login'; 
+    window.location.href = '/login';
+  };
+
+  const handleFeedbackSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const titulo = formData.get('titulo') as string;
+    const descripcion = formData.get('descripcion') as string;
+
+    setFeedbackStatus('sending');
+    try {
+      await feedbackPort.enviar({
+        titulo,
+        descripcion,
+        userName: userProfile.name || 'Usuario',
+        userEmail: userProfile.email || 'sin-email@desconocido.com',
+      });
+
+      setFeedbackStatus('success');
+      form.reset();
+      setTimeout(() => {
+        setIsFeedbackModalOpen(false);
+        setFeedbackStatus('idle');
+      }, 1500);
+    } catch {
+      setFeedbackStatus('error');
+    }
   };
 
   const navBtnBase = {
@@ -187,8 +217,8 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         .profile-dropdown-menu { position: absolute; top: calc(100% + 10px); right: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 8px; min-width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 4px; animation: fadeIn 0.2s ease-out; z-index: 1500; }
         .profile-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; color: var(--text-strong); cursor: pointer; text-decoration: none; transition: background 0.2s ease; background: transparent; border: none; width: 100%; text-align: left; }
         .profile-dropdown-item:hover { background: var(--glass-hover); }
-        .profile-dropdown-item.danger { color: #ef4444; }
-        .profile-dropdown-item.danger:hover { background: rgba(239, 68, 68, 0.1); }
+        .profile-dropdown-item.danger { color: var(--danger); }
+        .profile-dropdown-item.danger:hover { background: var(--danger-soft); }
         @media (max-width: 1150px) { .nav-full-menu { display: none !important; } .nav-burger-btn { display: flex !important; } }
         
         /* Modal de Feedback */
@@ -268,7 +298,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                     </button>
                   </Link>
                   
-                  {/* 🔥 BOTÓN DE BLOG EN LUGAR DE CURSADA 🔥 */}
                   <Link href="/blog" style={{ textDecoration: 'none' }}>
                     <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
@@ -431,17 +460,20 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         </div>
       </footer>
 
-      {/* 🔥 MODAL DE OPINIÓN/FEEDBACK 🔥 */}
-      {isFeedbackModalOpen && (
-        <div className="feedback-modal-overlay" onClick={() => setIsFeedbackModalOpen(false)}>
-          <div className="feedback-modal" onClick={(e) => e.stopPropagation()}>
-            <button 
-              onClick={() => setIsFeedbackModalOpen(false)} 
+      <Modal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => { setIsFeedbackModalOpen(false); setFeedbackStatus('idle'); }}
+        overlayClassName="feedback-modal-overlay"
+        className="feedback-modal"
+        ariaLabel="Dejanos tu opinión"
+      >
+            <button
+              onClick={() => { setIsFeedbackModalOpen(false); setFeedbackStatus('idle'); }}
               style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer', padding: '4px' }}
             >
               ✕
             </button>
-            
+
             <div>
               <h2 style={{ color: 'var(--text-strong)', margin: '0 0 8px 0', fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -452,22 +484,32 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               </p>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); alert("¡Mensaje enviado!"); setIsFeedbackModalOpen(false); }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <form onSubmit={handleFeedbackSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Título Breve</label>
-                <input type="text" className="feedback-input" placeholder="Ej: Error en correlativas / Sugerencia visual" required />
+                <input type="text" name="titulo" className="feedback-input" placeholder="Ej: Error en correlativas / Sugerencia visual" required disabled={feedbackStatus === 'sending'} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Desarrollo de la crítica</label>
-                <textarea className="feedback-textarea" placeholder="Explicá detalladamente tu observación, qué estabas haciendo o qué te gustaría ver..." required></textarea>
+                <textarea name="descripcion" className="feedback-textarea" placeholder="Explicá detalladamente tu observación, qué estabas haciendo o qué te gustaría ver..." required disabled={feedbackStatus === 'sending'}></textarea>
               </div>
-              <button type="submit" className="btn-primary" style={{ padding: '14px', fontSize: '1rem', marginTop: '10px' }}>
-                Enviar mensaje
+
+              {feedbackStatus === 'error' && (
+                <p style={{ color: 'var(--danger)', fontSize: '0.85rem', margin: 0 }}>
+                  No pudimos enviar tu mensaje. Probá de nuevo en un momento.
+                </p>
+              )}
+              {feedbackStatus === 'success' && (
+                <p style={{ color: 'var(--aprobada)', fontSize: '0.85rem', margin: 0, fontWeight: 'bold' }}>
+                  ¡Gracias! Tu mensaje se envió correctamente.
+                </p>
+              )}
+
+              <button type="submit" className="btn-primary" style={{ padding: '14px', fontSize: '1rem', marginTop: '10px', opacity: feedbackStatus === 'sending' ? 0.7 : 1 }} disabled={feedbackStatus === 'sending' || feedbackStatus === 'success'}>
+                {feedbackStatus === 'sending' ? 'Enviando...' : feedbackStatus === 'success' ? 'Enviado ✓' : 'Enviar mensaje'}
               </button>
             </form>
-          </div>
-        </div>
-      )}
+      </Modal>
 
     </>
   );

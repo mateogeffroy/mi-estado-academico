@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import * as Sentry from '@sentry/nextjs';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -8,8 +9,8 @@ export async function POST(request: Request) {
     const { titulo, descripcion, userName, userEmail } = await request.json();
 
     const data = await resend.emails.send({
-      // 🔥 ACÁ ESTÁ EL CAMBIO: Usamos tu dominio verificado 🔥
-      from: 'Feedback App <noreply@miestadoacademico.com.ar>', 
+      // Resend exige que el remitente sea de un dominio verificado en su panel.
+      from: 'Feedback App <noreply@miestadoacademico.com.ar>',
       to: ['mateogeffroy.dev@gmail.com'],
       subject: `Nuevo Feedback: ${titulo}`,
       html: `
@@ -24,6 +25,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(data);
   } catch (error) {
+    // Este catch devuelve una respuesta normal en vez de re-lanzar, así que
+    // el hook onRequestError de Next.js nunca lo ve: hay que capturarlo acá.
+    Sentry.captureException(error);
     return NextResponse.json({ error }, { status: 500 });
   }
 }

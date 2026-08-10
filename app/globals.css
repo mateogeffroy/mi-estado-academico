@@ -31,6 +31,12 @@
   --aprobada-border: #16a34a;
   --aprobada-text: #001a08;
 
+  /* Peligro / borrado — antes repetido como #ef4444 / rgba(239,68,68,...) suelto en ~14 archivos */
+  --danger: #ef4444;
+  --danger-border: rgba(239, 68, 68, 0.3);
+  --danger-soft: rgba(239, 68, 68, 0.1);
+  --danger-soft-hover: rgba(239, 68, 68, 0.15);
+
   /* Transparencias (Efecto Glass) */
   --header-bg: rgba(255, 255, 255, 0.95);
   --glass-bg: rgba(0, 0, 0, 0.03);
@@ -252,10 +258,15 @@ main {
   opacity: 0.15;
 }
 
+/* Mobile-first: la base es la grilla de teléfono (2 columnas, tarjeta a
+   ancho completo); recién a partir de 901px se pasa al flex-wrap de
+   escritorio con tarjetas de ancho fijo. Ver el media query min-width más
+   abajo, junto a la definición de .subject-card. */
 .subject-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
 }
 
 .subject-card {
@@ -265,8 +276,10 @@ main {
   background: var(--disabled);
   color: var(--disabled-text);
   padding: 10px 14px;
-  width: 200px;
+  width: 100%;
   min-width: 0;
+  min-height: 90px;
+  box-sizing: border-box;
   cursor: default;
   transition: all 0.2s ease;
   user-select: none;
@@ -275,6 +288,11 @@ main {
   font-weight: 600;
   overflow-wrap: break-word;
   word-break: break-word;
+}
+
+@media (min-width: 901px) {
+  .subject-grid { display: flex; flex-wrap: wrap; gap: 10px; width: auto; }
+  .subject-card { width: 200px; min-height: 0; }
 }
 
 .subject-card.available {
@@ -615,10 +633,10 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
 .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
 
 .btn-danger-sidebar {
-  color: #ef4444 !important; border-color: rgba(239, 68, 68, 0.3) !important;
+  color: var(--danger) !important; border-color: var(--danger-border) !important;
   background: rgba(239, 68, 68, 0.05) !important;
 }
-.btn-danger-sidebar:hover { background: rgba(239, 68, 68, 0.15) !important; }
+.btn-danger-sidebar:hover { background: var(--danger-soft-hover) !important; }
 
 /* Legend inside sidebar (plan page) */
 .sidebar-legend {
@@ -681,12 +699,6 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
   .event-card-modern { padding: 14px 16px; flex-direction: column; align-items: flex-start; gap: 8px; }
   .event-card-modern:hover { transform: none; }
 
-  .subject-grid {
-    display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    width: 100% !important; gap: 8px !important;
-  }
-  .subject-card { width: 100% !important; min-height: 90px !important; }
-
   .stats-bar {
     flex-wrap: nowrap !important;
     padding: 10px 12px !important;
@@ -705,7 +717,6 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
    ============================================================ */
 @media (max-width: 480px) {
   .logo-landing { font-size: clamp(1.4rem, 8vw, 1.8rem) !important; }
-  .subject-grid { grid-template-columns: 1fr 1fr !important; }
   .premium-card { padding: 14px !important; }
   .list-row { padding: 10px 12px; gap: 10px; }
 }

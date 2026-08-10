@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Modal from './Modal';
 
 // 🔑 CLAVE DE VERSIÓN
 export const UPDATE_VERSION_KEY = 'seen_update_v2';
@@ -223,8 +224,7 @@ export default function UpdateModal({ isOpen, onClose }: UpdateModalProps) {
         }
       `}</style>
 
-      <div className="update-modal-overlay" onClick={onClose}>
-        <div className="update-modal" onClick={(e) => e.stopPropagation()}>
+      <Modal isOpen={isOpen} onClose={onClose} overlayClassName="update-modal-overlay" className="update-modal" ariaLabel={slide.title}>
 
           <button className="update-modal-close" onClick={onClose}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -266,8 +266,7 @@ export default function UpdateModal({ isOpen, onClose }: UpdateModalProps) {
               </button>
             )}
           </div>
-        </div>
-      </div>
+      </Modal>
     </>
   );
 }

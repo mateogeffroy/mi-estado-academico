@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import AdBanner from '../../../src/components/AdBanner';
 
-// 🔥 MAGIA SEO
 export const metadata = {
   title: 'Correlatividades UTN Plan 2023 | Guía para no trabarte',
   description: 'Análisis de los cuellos de botella y materias críticas del Plan 2023 de Ingeniería en Sistemas en la UTN FRLP.',

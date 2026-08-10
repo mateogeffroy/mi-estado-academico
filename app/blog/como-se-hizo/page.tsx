@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import AdBanner from '../../../src/components/AdBanner';
 
-// 🔥 MAGIA SEO: Esto es lo que Google mostrará en los resultados de búsqueda
 export const metadata = {
   title: 'Cómo construí Mi Estado Académico | Blog UTN',
   description: 'Descubrí cómo pasamos de un HTML estático a una plataforma Full-Stack en Next.js y Supabase para los alumnos de Sistemas de la UTN FRLP.',

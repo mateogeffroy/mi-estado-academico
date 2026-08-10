@@ -212,6 +212,6 @@ export const ELECTIVAS = {
 
 export const ALL = [ ...SUBJECTS, ...Object.values(ELECTIVAS).flat() ];
 
-export const getSubjectById = (id: any) => {
-  return ALL.find(subject => subject.id.toString() === id.toString());
+export const getSubjectById = (id: string) => {
+  return ALL.find(subject => subject.id === id);
 };
