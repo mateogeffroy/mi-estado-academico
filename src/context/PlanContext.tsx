@@ -54,7 +54,11 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<EstadisticasCarrera>(STATS_INICIALES);
 
-  const cargarDatosUsuario = async (userId: string) => {
+  // Cada caso de uso se envuelve en su propio span (op: "usecase") para que
+  // en Sentry Performance las métricas RED queden agrupadas por operación de
+  // negocio (ej. "usecase.cargarEstadoAcademico") en vez de por URL cruda de
+  // Supabase; las llamadas HTTP que dispara cada uno cuelgan como hijas.
+  const cargarDatosUsuario = async (userId: string) => Sentry.startSpan({ name: 'usecase.cargarEstadoAcademico', op: 'usecase' }, async () => {
     try {
       const activeIdGuardado = localStorage.getItem('active_career_id');
       const resultado = await cargarEstadoAcademico(userId, activeIdGuardado, {
@@ -77,7 +81,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       Sentry.captureException(e);
       setIsOffline(true);
     }
-  };
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -86,6 +90,9 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       if (!isMounted) return;
       if (usuario) {
         setUser(usuario);
+        // Solo el id: alcanza para correlacionar errores/traces de una misma
+        // sesión en Sentry sin mandarle datos personales (mail, nombre).
+        Sentry.setUser({ id: usuario.id });
         cargarDatosUsuario(usuario.id);
       } else {
         setLoading(false);
@@ -99,6 +106,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
           if (prevUser?.id !== usuario.id) cargarDatosUsuario(usuario.id);
           return usuario;
         });
+        Sentry.setUser({ id: usuario.id });
       }
     });
 
@@ -119,21 +127,25 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
   const agregarCarrera = async (nuevaId: string) => {
     if (!user || todasLasCarreras.includes(nuevaId)) return;
-    const nuevasCarreras = await agregarCarreraUseCase(user.id, nuevaId, todasLasCarreras, carrerasRepository);
-    setTodasLasCarreras(nuevasCarreras);
-    setCarreraActiva(nuevaId);
+    return Sentry.startSpan({ name: 'usecase.agregarCarrera', op: 'usecase' }, async () => {
+      const nuevasCarreras = await agregarCarreraUseCase(user.id, nuevaId, todasLasCarreras, carrerasRepository);
+      setTodasLasCarreras(nuevasCarreras);
+      setCarreraActiva(nuevaId);
+    });
   };
 
   const borrarCarrera = async (idAEliminar: string) => {
     if (!user) return;
     try {
-      const nuevasCarreras = await borrarCarreraUseCase(user.id, idAEliminar, todasLasCarreras, {
-        carrerasRepository, progresoRepository, eventosRepository,
+      await Sentry.startSpan({ name: 'usecase.borrarCarrera', op: 'usecase' }, async () => {
+        const nuevasCarreras = await borrarCarreraUseCase(user.id, idAEliminar, todasLasCarreras, {
+          carrerasRepository, progresoRepository, eventosRepository,
+        });
+        setTodasLasCarreras(nuevasCarreras);
+        if (careerId === idAEliminar && nuevasCarreras.length > 0) {
+          setCarreraActiva(nuevasCarreras[0]);
+        }
       });
-      setTodasLasCarreras(nuevasCarreras);
-      if (careerId === idAEliminar && nuevasCarreras.length > 0) {
-        setCarreraActiva(nuevasCarreras[0]);
-      }
     } catch (e) {
       Sentry.captureException(e);
       setError(e instanceof Error ? e.message : 'No se pudo borrar la carrera.');
@@ -143,11 +155,13 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
   const cambiarEstadoMateria = async (id: string, accion: AccionMateria) => {
     try {
-      const { materias: nuevasMaterias, stats: nuevasStats } = await cambiarEstadoMateriaUseCase(
-        user!.id, id, accion, materias, detalles, careerData, progresoRepository
-      );
-      setMaterias(nuevasMaterias);
-      setStats(nuevasStats);
+      await Sentry.startSpan({ name: 'usecase.cambiarEstadoMateria', op: 'usecase', attributes: { materiaId: id, accion } }, async () => {
+        const { materias: nuevasMaterias, stats: nuevasStats } = await cambiarEstadoMateriaUseCase(
+          user!.id, id, accion, materias, detalles, careerData, progresoRepository
+        );
+        setMaterias(nuevasMaterias);
+        setStats(nuevasStats);
+      });
     } catch (e) {
       Sentry.captureException(e);
       setError(e instanceof Error ? e.message : 'No se pudo guardar el cambio.');
@@ -156,11 +170,13 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
   const actualizarDetalleMateria = async (id: string, info: DetalleMateria) => {
     try {
-      const { detalles: nuevosDetalles, stats: nuevasStats } = await actualizarDetalleMateriaUseCase(
-        user!.id, id, info, materias, detalles, careerData, progresoRepository
-      );
-      setDetalles(nuevosDetalles);
-      setStats(nuevasStats);
+      await Sentry.startSpan({ name: 'usecase.actualizarDetalleMateria', op: 'usecase', attributes: { materiaId: id } }, async () => {
+        const { detalles: nuevosDetalles, stats: nuevasStats } = await actualizarDetalleMateriaUseCase(
+          user!.id, id, info, materias, detalles, careerData, progresoRepository
+        );
+        setDetalles(nuevosDetalles);
+        setStats(nuevasStats);
+      });
     } catch (e) {
       Sentry.captureException(e);
       setError(e instanceof Error ? e.message : 'No se pudo guardar el cambio.');
@@ -170,11 +186,13 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const marcarMultiplesAprobadas = async (ids: string[]) => {
     if (!user) return;
     try {
-      const { materias: nuevasMaterias, stats: nuevasStats } = await marcarMultiplesAprobadasUseCase(
-        user.id, ids, materias, detalles, careerData, progresoRepository
-      );
-      setMaterias(nuevasMaterias);
-      setStats(nuevasStats);
+      await Sentry.startSpan({ name: 'usecase.marcarMultiplesAprobadas', op: 'usecase', attributes: { cantidad: ids.length } }, async () => {
+        const { materias: nuevasMaterias, stats: nuevasStats } = await marcarMultiplesAprobadasUseCase(
+          user.id, ids, materias, detalles, careerData, progresoRepository
+        );
+        setMaterias(nuevasMaterias);
+        setStats(nuevasStats);
+      });
     } catch (e) {
       Sentry.captureException(e);
       setError(e instanceof Error ? e.message : 'No se pudieron guardar las materias.');
@@ -183,10 +201,12 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
   const reiniciarProgreso = async () => {
     if (!user) return;
-    await reiniciarProgresoUseCase(user.id, progresoRepository, eventosRepository);
-    setMaterias({});
-    setDetalles({});
-    cargarDatosUsuario(user.id);
+    await Sentry.startSpan({ name: 'usecase.reiniciarProgreso', op: 'usecase' }, async () => {
+      await reiniciarProgresoUseCase(user.id, progresoRepository, eventosRepository);
+      setMaterias({});
+      setDetalles({});
+      cargarDatosUsuario(user.id);
+    });
   };
 
   if (isOffline) return <MaintenanceScreen />;
