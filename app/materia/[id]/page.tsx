@@ -335,7 +335,7 @@ export default function MateriaPage() {
                           <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Día de la semana</label>
                           <CustomSelect
                             value={nuevoHorario.dia}
-                            options={['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']}
+                            options={['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']}
                             onChange={(val) => setNuevoHorario({...nuevoHorario, dia: val})}
                           />
                         </div>

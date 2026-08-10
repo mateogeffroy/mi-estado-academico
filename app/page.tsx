@@ -116,7 +116,7 @@ export default function Dashboard() {
     return 'var(--cursando)'; 
   };
 
-  const horariosSemanales: Record<string, any[]> = { 'Lunes': [], 'Martes': [], 'Miércoles': [], 'Jueves': [], 'Viernes': [], 'Sábado': [] };
+  const horariosSemanales: Record<string, any[]> = { 'Lunes': [], 'Martes': [], 'Miércoles': [], 'Jueves': [], 'Viernes': [], 'Sábado': [], 'Domingo': [] };
   
   cursando.forEach((m: any) => {
     const tieneComisiones = m.comisiones && m.comisiones.length > 0;
@@ -168,7 +168,7 @@ export default function Dashboard() {
     }
   });
 
-  const ordenDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const ordenDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   const diasMostrar = ordenDias.filter(dia => horariosSemanales[dia].length > 0);
 
   // Materias "cursando" que no tienen ninguna forma de horario cargado (ni
