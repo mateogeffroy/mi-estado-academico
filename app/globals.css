@@ -364,6 +364,12 @@ main {
   transition: width 0.4s ease;
   border-radius: 2px;
 }
+
+/* En mobile hay una bottom-tab-bar (60px + safe area) fija debajo de esto;
+   se corre hacia arriba para que no quede tapada por los tabs. */
+@media (max-width: 1150px) {
+  .stats-bar { bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
+}
 /* ============================================================
    BOTONES Y COMPONENTES
    ============================================================ */
@@ -434,6 +440,9 @@ button {
 }
 .scroll-top-btn.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
 .scroll-top-btn:hover { background-color: var(--border); color: var(--text-strong); }
+@media (max-width: 1150px) {
+  .scroll-top-btn { bottom: calc(140px + env(safe-area-inset-bottom, 0px)); }
+}
 
 .mark-all-btn {
   background: transparent; color: var(--muted); border: none;
@@ -530,88 +539,6 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
    ============================================================ */
 .mobile-only  { display: none !important; }
 .desktop-only { display: flex !important; }
-
-/* Hamburger button */
-.hamburger-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  width: 40px;
-  height: 40px;
-}
-.hamburger-btn:hover { background: var(--border); color: var(--text-strong); }
-
-/* Hamburger icon lines */
-.hamburger-icon {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: 18px;
-}
-.hamburger-icon span {
-  display: block;
-  height: 2px;
-  background: currentColor;
-  border-radius: 2px;
-  transition: all 0.3s ease;
-  transform-origin: center;
-}
-.hamburger-icon.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.hamburger-icon.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-.hamburger-icon.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-/* Overlay */
-.sidebar-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: var(--overlay-bg); backdrop-filter: blur(4px);
-  z-index: 1500; opacity: 0; pointer-events: none;
-  transition: opacity 0.3s ease;
-  visibility: hidden;
-}
-.sidebar-overlay.active { opacity: 1; pointer-events: auto; visibility: visible; }
-
-/* Sidebar drawer */
-.sidebar {
-  position: fixed; top: 0; right: 0; width: 280px; height: 100%;
-  background: var(--panel); border-left: 1px solid var(--border);
-  z-index: 1600; box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
-  transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex; flex-direction: column;
-  visibility: hidden;
-  pointer-events: none;
-}
-.sidebar.active {
-  transform: translateX(0);
-  visibility: visible;
-  pointer-events: auto;
-}
-
-.sidebar-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 20px 20px 16px;
-  border-bottom: 1px solid var(--border);
-}
-.sidebar-header h3 { color: var(--text-strong); font-size: 1rem; margin: 0; font-weight: 700; }
-
-.close-sidebar-btn {
-  background: transparent; border: 1px solid var(--border); color: var(--muted);
-  cursor: pointer; border-radius: 8px; width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s ease; font-size: 1.2rem; padding: 0;
-}
-.close-sidebar-btn:hover { background: var(--border); color: var(--text-strong); }
-
-.sidebar-content {
-  padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto;
-}
 
 .sidebar-action-btn {
   background: var(--glass-bg);
