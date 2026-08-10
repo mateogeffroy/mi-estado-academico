@@ -15,7 +15,7 @@ interface HorarioCalendarProps {
   materiasData?: any[]; 
 }
 
-const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DIAS_CORTOS = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'];
 
@@ -76,12 +76,11 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
   const [selectedDayStr, setSelectedDayStr] = useState<string>(formatDateStr(new Date()));
   const [showLegend, setShowLegend] = useState(false);
 
-  // Día activo en la vista de agenda (mobile). Arranca en "hoy" si cae de
-  // Lunes a Sábado (los únicos días que tiene la grilla); si no, en Lunes.
+  // Día activo en la vista de agenda (mobile): siempre arranca en "hoy",
+  // la grilla ahora cubre los 7 días de la semana.
   const [selectedAgendaDia, setSelectedAgendaDia] = useState<string>(() => {
-    const idxHoy = new Date().getDay();
-    const diaHoy = DIAS[idxHoy === 0 ? 6 : idxHoy - 1];
-    return idxHoy === 0 ? 'Lunes' : diaHoy;
+    const idxHoy = new Date().getDay(); // 0 = domingo, 1 = lunes, ... 6 = sábado
+    return DIAS[idxHoy === 0 ? 6 : idxHoy - 1];
   });
 
   const monday = getMonday(baseDate);
@@ -493,7 +492,7 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
             
             <div className="hc-nav-text">
               <span style={{ color: 'var(--text-strong)', fontWeight: '700', fontSize: '0.95rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                {monday.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })} al {datesOfWeek[5].toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
+                {monday.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })} al {datesOfWeek[6].toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
               </span>
               <button onClick={handleCurrentWeek} style={{ background: 'none', border: 'none', color: 'var(--cursando)', fontSize: '0.75rem', cursor: 'pointer', padding: '2px 5px', fontWeight: '700', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity=0.7} onMouseOut={e => e.currentTarget.style.opacity=1}>Ir a hoy</button>
             </div>
@@ -523,14 +522,14 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
           <div className="custom-calendar-container">
             <style>{`
               .custom-calendar-container { overflow-x: auto; overflow-y: hidden; }
-              .calendar-inner { min-width: 800px; display: flex; flex-direction: column; }
-              .calendar-header { display: grid; grid-template-columns: clamp(45px, 4vw, 60px) repeat(6, 1fr); border-bottom: 1px solid var(--border); background: var(--glass-bg); }
+              .calendar-inner { min-width: 920px; display: flex; flex-direction: column; }
+              .calendar-header { display: grid; grid-template-columns: clamp(45px, 4vw, 60px) repeat(7, 1fr); border-bottom: 1px solid var(--border); background: var(--glass-bg); }
               .header-cell { padding: clamp(10px, 1.5vh, 15px) 0; text-align: center; font-weight: 700; font-size: clamp(0.8rem, 1vw, 0.9rem); color: var(--text-strong); border-left: 1px solid var(--glass-border); transition: all 0.3s; }
               .header-cell:first-child { border-left: none; }
               
               .header-cell.today-header { background: rgba(59, 130, 246, 0.1); border-top: 2px solid var(--cursando); }
 
-              .calendar-body { display: grid; grid-template-columns: clamp(45px, 4vw, 60px) repeat(6, 1fr); position: relative; height: clamp(400px, 58vh, 750px); }
+              .calendar-body { display: grid; grid-template-columns: clamp(45px, 4vw, 60px) repeat(7, 1fr); position: relative; height: clamp(400px, 58vh, 750px); }
               
               .grid-lines { position: absolute; top: 0; left: clamp(45px, 4vw, 60px); right: 0; bottom: 0; display: flex; flex-direction: column; pointer-events: none; }
               .grid-line { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--glass-border); }
