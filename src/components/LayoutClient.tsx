@@ -12,8 +12,7 @@ import { feedbackPort } from '../infrastructure/repositorios';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [isChecking, setIsChecking] = useState(true); 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
   const [hasSession, setHasSession] = useState(false);
 
   // Estado para el modal de Feedback
@@ -33,7 +32,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
   const isBlogActive = pathname?.startsWith('/blog');
 
   useEffect(() => {
-    setIsSidebarOpen(false);
     setIsProfileMenuOpen(false);
   }, [pathname]);
 
@@ -205,7 +203,6 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     <>
       <style>{`
         .nav-full-menu { display: flex; }
-        .nav-burger-btn { display: none; }
         .sidebar-action-btn-custom { padding: 12px 14px !important; transition: all 0.4s ease !important; }
         .theme-toggle-btn { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: transparent; border: none; color: var(--muted); cursor: pointer; transition: all 0.4s ease; padding: 0; }
         .theme-toggle-btn:hover { color: var(--text-strong); background: var(--glass-hover); }
@@ -219,8 +216,31 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         .profile-dropdown-item:hover { background: var(--glass-hover); }
         .profile-dropdown-item.danger { color: var(--danger); }
         .profile-dropdown-item.danger:hover { background: var(--danger-soft); }
-        @media (max-width: 1150px) { .nav-full-menu { display: none !important; } .nav-burger-btn { display: flex !important; } }
-        
+        @media (max-width: 1150px) { .nav-full-menu { display: none !important; } }
+
+        /* Navegación inferior mobile: reemplaza al menú hamburguesa por tabs
+           siempre visibles y alcanzables con el pulgar, como en una app nativa. */
+        .bottom-tab-bar { display: none; }
+        @media (max-width: 1150px) {
+          .bottom-tab-bar {
+            display: flex;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 60px;
+            z-index: 1500;
+            background: var(--panel);
+            border-top: 1px solid var(--border);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+          }
+        }
+        .bottom-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); text-decoration: none; font-size: 0.65rem; font-weight: 700; transition: color 0.2s; }
+        .bottom-tab:active { background: var(--glass-hover); }
+        .bottom-tab.active { color: var(--cursando); }
+        .bottom-tab svg { flex-shrink: 0; }
+        @media (max-width: 1150px) {
+          .app-footer { padding-bottom: calc(30px + 60px + env(safe-area-inset-bottom, 0px)) !important; }
+        }
+
         /* Modal de Feedback */
         .feedback-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--overlay-bg); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; animation: fadeIn 0.2s forwards; padding: 20px; }
         .feedback-modal { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 500px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 20px; position: relative; }
@@ -266,160 +286,127 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             </div>
           </div>
 
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-            <div className="nav-full-menu" style={{ gap: '10px', alignItems: 'center' }}>
-              <button className="theme-toggle-btn" title="Alternar tema" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-                {mounted && theme === 'dark' ? (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '24px', height: '24px' }}>
-                    <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '24px', height: '24px' }}>
-                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-                  </svg>
-                )}
-              </button>
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px' }}>
+            {hasSession && (
+              <div className="nav-full-menu" style={{ gap: '10px', alignItems: 'center' }}>
+                <button className="theme-toggle-btn" title="Alternar tema" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                  {mounted && theme === 'dark' ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '24px', height: '24px' }}>
+                      <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, width: '24px', height: '24px' }}>
+                      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                    </svg>
+                  )}
+                </button>
 
-              <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
+                <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
 
-              {hasSession ? (
-                <>
-                  <Link href="/" style={{ textDecoration: 'none' }}>
-                    <button style={{ ...navBtnBase, background: pathname === '/' ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname === '/' ? 'black' : 'var(--text-strong)', border: pathname === '/' ? 'none' : '1px solid var(--border)' }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                      Inicio
+                <Link href="/" style={{ textDecoration: 'none' }}>
+                  <button style={{ ...navBtnBase, background: pathname === '/' ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname === '/' ? 'black' : 'var(--text-strong)', border: pathname === '/' ? 'none' : '1px solid var(--border)' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    Inicio
+                  </button>
+                </Link>
+
+                <Link href="/plan" style={{ textDecoration: 'none' }}>
+                  <button style={{ ...navBtnBase, background: pathname === '/plan' ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname === '/plan' ? 'black' : 'var(--text-strong)', border: pathname === '/plan' ? 'none' : '1px solid var(--border)' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+                    Plan de estudios
+                  </button>
+                </Link>
+
+                <Link href="/blog" style={{ textDecoration: 'none' }}>
+                  <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                    Blog
+                  </button>
+                </Link>
+
+                <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
+              </div>
+            )}
+
+            {/* Avatar (con sesión) o Blog/Login (sin sesión): a diferencia del
+                resto del nav-full-menu, esto queda visible también en mobile
+                porque no tiene equivalente en la barra de tabs de abajo. */}
+            {hasSession ? (
+              <div style={{ position: 'relative' }} ref={profileMenuRef}>
+                <button
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  className={`avatar-btn ${pathname === '/perfil' ? 'active-profile' : ''}`}
+                  title="Mi Perfil"
+                >
+                  {userProfile.avatarUrl ? (
+                    <img src={userProfile.avatarUrl} alt="Avatar" />
+                  ) : (
+                    <span style={{
+                      fontSize: `calc(32px / ${Math.max(userProfile.initials.length, 2)})`,
+                      lineHeight: 1,
+                      letterSpacing: '-0.5px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      {userProfile.initials}
+                    </span>
+                  )}
+                </button>
+
+                {isProfileMenuOpen && (
+                  <div className="profile-dropdown-menu">
+                    <Link href="/perfil" className="profile-dropdown-item">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      Mi Perfil
+                    </Link>
+                    <div style={{ height: '1px', background: 'var(--border)', margin: '2px 0' }}></div>
+                    <button onClick={handleLogout} className="profile-dropdown-item danger">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                      Cerrar Sesión
                     </button>
-                  </Link>
-                  
-                  <Link href="/plan" style={{ textDecoration: 'none' }}>
-                    <button style={{ ...navBtnBase, background: pathname === '/plan' ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname === '/plan' ? 'black' : 'var(--text-strong)', border: pathname === '/plan' ? 'none' : '1px solid var(--border)' }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-                      Plan de estudios
-                    </button>
-                  </Link>
-                  
-                  <Link href="/blog" style={{ textDecoration: 'none' }}>
-                    <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
-                      Blog
-                    </button>
-                  </Link>
-
-                  <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
-
-                  <div style={{ position: 'relative' }} ref={profileMenuRef}>
-                    <button 
-                      onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                      className={`avatar-btn ${pathname === '/perfil' ? 'active-profile' : ''}`}
-                      title="Mi Perfil"
-                    >
-                      {userProfile.avatarUrl ? (
-                        <img src={userProfile.avatarUrl} alt="Avatar" />
-                      ) : (
-                        <span style={{ 
-                          fontSize: `calc(32px / ${Math.max(userProfile.initials.length, 2)})`,
-                          lineHeight: 1,
-                          letterSpacing: '-0.5px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          {userProfile.initials}
-                        </span>
-                      )}
-                    </button>
-
-                    {isProfileMenuOpen && (
-                      <div className="profile-dropdown-menu">
-                        <Link href="/perfil" className="profile-dropdown-item">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                          Mi Perfil
-                        </Link>
-                        <div style={{ height: '1px', background: 'var(--border)', margin: '2px 0' }}></div>
-                        <button onClick={handleLogout} className="profile-dropdown-item danger">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                          Cerrar Sesión
-                        </button>
-                      </div>
-                    )}
                   </div>
-                </>
-              ) : (
-                <>
-                  <Link href="/blog" style={{ textDecoration: 'none' }}>
-                    <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
-                      Blog y Novedades
-                    </button>
-                  </Link>
-                  <Link href="/login" style={{ textDecoration: 'none' }}>
-                    <button style={{ ...navBtnBase, background: 'var(--cursando)', color: 'black', border: 'none' }}>
-                      Iniciar Sesión / Registrarse
-                    </button>
-                  </Link>
-                </>
-              )}
-            </div>
-
-            <button className="nav-burger-btn hamburger-btn" onClick={() => setIsSidebarOpen(true)}>
-              <div className={`hamburger-icon ${isSidebarOpen ? 'open' : ''}`}><span></span><span></span><span></span></div>
-            </button>
+                )}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <Link href="/blog" style={{ textDecoration: 'none' }}>
+                  <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                    Blog y Novedades
+                  </button>
+                </Link>
+                <Link href="/login" style={{ textDecoration: 'none' }}>
+                  <button style={{ ...navBtnBase, background: 'var(--cursando)', color: 'black', border: 'none' }}>
+                    Iniciar Sesión / Registrarse
+                  </button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      <div className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
-      
-      <aside className={`sidebar ${isSidebarOpen ? 'active' : ''}`}>
-        <div className="sidebar-header">
-          <h3>Menú</h3>
-          <button className="close-sidebar-btn" onClick={() => setIsSidebarOpen(false)}>✕</button>
-        </div>
-        
-        <div className="sidebar-content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '16px', gap: '0' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-            {hasSession ? (
-              <>
-                <Link href="/" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname === '/' ? 'active-route' : ''}`}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                  Inicio
-                </Link>
-                <Link href="/plan" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname === '/plan' ? 'active-route' : ''}`}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-                  Plan de Estudios
-                </Link>
-                <Link href="/blog" className={`sidebar-action-btn sidebar-action-btn-custom ${isBlogActive ? 'active-route' : ''}`}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
-                  Blog
-                </Link>
-                <Link href="/perfil" className={`sidebar-action-btn sidebar-action-btn-custom ${pathname === '/perfil' ? 'active-route' : ''}`}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  Mi Perfil
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/blog" className={`sidebar-action-btn sidebar-action-btn-custom ${isBlogActive ? 'active-route' : ''}`}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
-                  Blog y Novedades
-                </Link>
-                <div className="sidebar-divider" style={{ margin: '10px 0' }}></div>
-                <Link href="/login" className="sidebar-action-btn sidebar-action-btn-custom" style={{ background: 'var(--cursando)', color: 'black', justifyContent: 'center' }}>
-                  Iniciar Sesión / Registrarse
-                </Link>
-              </>
-            )}
-          </div>
-          <div style={{ marginTop: 'auto' }}>
-            {hasSession && (
-              <button className="sidebar-action-btn sidebar-action-btn-custom btn-danger-sidebar" onClick={handleLogout} style={{ width: '100%', marginTop: '10px' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Cerrar Sesión
-              </button>
-            )}
-          </div>
-        </div>
-      </aside>
+      {hasSession && (
+        <nav className="bottom-tab-bar">
+          <Link href="/" className={`bottom-tab ${pathname === '/' ? 'active' : ''}`}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Inicio
+          </Link>
+          <Link href="/plan" className={`bottom-tab ${pathname === '/plan' ? 'active' : ''}`}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+            Plan
+          </Link>
+          <Link href="/blog" className={`bottom-tab ${isBlogActive ? 'active' : ''}`}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+            Blog
+          </Link>
+          <Link href="/perfil" className={`bottom-tab ${pathname === '/perfil' ? 'active' : ''}`}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Perfil
+          </Link>
+        </nav>
+      )}
 
       <UpdateModal
         isOpen={isUpdateModalOpen}
@@ -433,7 +420,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       <div>{children}</div>
 
       {/* FOOTER ACTUALIZADO CON BOTÓN DE SUGERENCIAS */}
-      <footer style={{ background: 'var(--panel)', borderTop: '1px solid var(--border)', padding: '30px 20px', marginTop: 'auto' }}>
+      <footer className="app-footer" style={{ background: 'var(--panel)', borderTop: '1px solid var(--border)', padding: '30px 20px', marginTop: 'auto' }}>
         <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
           <div style={{ color: 'var(--muted)', fontSize: '0.8rem', textAlign: 'center', flex: '1 1 auto' }}>
             © {new Date().getFullYear()} Mateo Geffroy - <strong>Mi Estado Académico</strong>
