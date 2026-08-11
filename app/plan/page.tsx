@@ -379,34 +379,20 @@ export default function PlanDeEstudios() {
     }
 
     if (subject.isElectivePlaceholder) {
-      let globalCursadaHoursAnalista = 0;
-      let globalAprobadaHoursAnalista = 0;
-      let globalCursadaHoursIngenieria = 0;
-      let globalAprobadaHoursIngenieria = 0;
-
-      [3, 4, 5].forEach(lvl => {
-        const electivasNivel = ELECTIVAS?.[lvl as keyof typeof ELECTIVAS] || [];
-        electivasNivel.forEach((el: any) => {
-          if (materias[el.id] === 'aprobada') {
-            globalAprobadaHoursIngenieria += el.annualHours || 0;
-            if (!el.onlyIngenieria) globalAprobadaHoursAnalista += el.annualHours || 0;
-          } else if (materias[el.id] === 'cursada') {
-            globalCursadaHoursIngenieria += el.annualHours || 0;
-            if (!el.onlyIngenieria) globalCursadaHoursAnalista += el.annualHours || 0;
-          }
-        });
+      const electivasNivel = ELECTIVAS?.[subject.level as keyof typeof ELECTIVAS] || [];
+      let aprobadaHours = 0; let cursadaHours = 0;
+      electivasNivel.forEach((el: any) => {
+        if (materias[el.id] === 'aprobada') aprobadaHours += el.annualHours || 0;
+        else if (['cursada', 'cursando'].includes(materias[el.id])) cursadaHours += el.annualHours || 0;
       });
 
-      const thresholds: any = { 3: 4, 4: 10, 5: 20 };
-      const target = thresholds[subject.level] || subject.targetHours || 0;
-      const aprobadaHours = subject.level === 3 ? globalAprobadaHoursAnalista : globalAprobadaHoursIngenieria;
-      const cursadaHours = subject.level === 3 ? globalCursadaHoursAnalista : globalCursadaHoursIngenieria;
+      const target = subject.targetHours || 0;
       const totalActive = aprobadaHours + cursadaHours;
 
       if (aprobadaHours >= target) {
         displayHours = `Aprobado: ${aprobadaHours}/${target} hs`;
-      } else if (totalActive >= target) {
-        displayHours = `Cursado: ${totalActive}/${target} hs`;
+      } else if (totalActive > 0) {
+        displayHours = `Cursando: ${totalActive}/${target} hs`;
       } else {
         displayHours = `Progreso: ${totalActive}/${target} hs`;
       }
