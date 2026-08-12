@@ -64,7 +64,7 @@ export default function MateriaDetailModal({
     return s ? s.name.replace(/\s*\(.*?\)/g, '') : id;
   };
 
-  const puedeCambiarEstado = !subject.isElectivePlaceholder && estadoActual !== 'disabled';
+  const puedeCambiarEstado = estadoActual !== 'disabled';
   const muestraDestraba = estadoActual === 'cursando' || estadoActual === 'cursada';
   const { siCursada, siAprobadaAdicional } = muestraDestraba
     ? calcularDesbloqueos(subject.id, materias, careerData)
@@ -127,16 +127,6 @@ export default function MateriaDetailModal({
           <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: info.color }} />
           {info.label}
         </span>
-
-        {subject.isElectivePlaceholder && (
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'var(--glass-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px', fontSize: '0.9rem', color: 'var(--text-strong)', lineHeight: 1.5 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '1px' }}><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>
-            <div>
-              Requiere <b>{subject.targetHours} hs anuales</b> de electivas de {subject.level}° nivel.
-              Se completa automáticamente cuando apruebes suficientes electivas de ese nivel.
-            </div>
-          </div>
-        )}
 
         {estadoActual === 'disabled' && (
           <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '12px', padding: '14px', marginBottom: '20px' }}>

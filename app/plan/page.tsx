@@ -53,6 +53,12 @@ export default function PlanDeEstudios() {
   // hasta que interactúe.
   const [nivelesForzados, setNivelesForzados] = useState<Record<number, boolean>>({});
 
+  // Electivas: colapsadas por default, se abren al tocar la card "Electivas
+  // N° Nivel" de ese año (antes se listaban siempre, ocupando lugar aunque
+  // no se hubiera elegido ninguna).
+  const [electivasAbiertas, setElectivasAbiertas] = useState<Record<number, boolean>>({});
+  const toggleElectivas = (lvl: number) => setElectivasAbiertas((prev) => ({ ...prev, [lvl]: !prev[lvl] }));
+
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
     title: '',
@@ -214,6 +220,7 @@ export default function PlanDeEstudios() {
     }
 
     const isShaking = blockedShake === subject.id;
+    const isPlaceholderOpen = subject.isElectivePlaceholder && !!electivasAbiertas[subject.level];
 
     const getStatusIcon = (status: string) => {
       switch (status) {
@@ -341,8 +348,12 @@ export default function PlanDeEstudios() {
     return (
       <div
         key={subject.id}
-        className={`subject-card ${estadoActual} ${isShaking ? 'highlight-blocked' : ''}`}
-        onClick={() => handleMateriaClick(subject, estadoActual)}
+        className={`subject-card ${estadoActual} ${isShaking ? 'highlight-blocked' : ''} ${subject.isElectivePlaceholder ? 'electiva-toggle-card' : ''} ${isPlaceholderOpen ? 'open' : ''}`}
+        onClick={() => subject.isElectivePlaceholder ? toggleElectivas(subject.level) : handleMateriaClick(subject, estadoActual)}
+        role={subject.isElectivePlaceholder ? 'button' : undefined}
+        tabIndex={subject.isElectivePlaceholder ? 0 : undefined}
+        aria-expanded={subject.isElectivePlaceholder ? isPlaceholderOpen : undefined}
+        onKeyDown={subject.isElectivePlaceholder ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleElectivas(subject.level); } } : undefined}
         style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
       >
         <div className="subject-num">{subject.num}</div>
@@ -350,7 +361,9 @@ export default function PlanDeEstudios() {
         {durationBadges}
         {displayHours && <div className="subject-hours" style={{ marginTop: durationBadges ? '0' : '10px' }}>{displayHours}</div>}
         <div className="subject-status-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {getStatusIcon(estadoActual)}
+          {subject.isElectivePlaceholder
+            ? <svg className="electiva-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+            : getStatusIcon(estadoActual)}
         </div>
       </div>
     );
@@ -393,6 +406,16 @@ export default function PlanDeEstudios() {
           40%, 60% { transform: translate3d(4px, 0, 0); }
         }
         .subject-status-icon { position: absolute; bottom: 10px; right: 10px; opacity: 0.8; }
+
+        .electiva-toggle-card .electiva-chevron { transition: transform 0.25s ease; }
+        .electiva-toggle-card.open .electiva-chevron { transform: rotate(180deg); }
+        .electiva-toggle-card.open { border-color: var(--cursando) !important; box-shadow: 0 0 0 2px color-mix(in srgb, var(--cursando) 30%, transparent); }
+
+        .electivas-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.32s cubic-bezier(.4,0,.2,1); margin-top: 12px; }
+        .electivas-panel.open { grid-template-rows: 1fr; }
+        .electivas-panel-inner { overflow: hidden; min-height: 0; }
+        .electivas-req-note { font-size: 0.8rem; color: var(--muted); margin-bottom: 10px; }
+        .electivas-empty { font-size: 0.85rem; color: var(--muted); font-style: italic; }
 
         .mobile-ad-container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 16px; }
         @media (min-width: 1450px) { .mobile-ad-container { display: none; } }
@@ -600,13 +623,19 @@ export default function PlanDeEstudios() {
                         {placeholders.map(renderCard)}
                       </div>
 
-                      {electivas.length > 0 && (
-                        <>
-                          <div className="electivas-level-label" style={{ marginTop: '24px' }}>Electivas</div>
-                          <div className="subject-grid">
-                              {electivas.map(renderCard)}
+                      {placeholders.length > 0 && (
+                        <div className={`electivas-panel ${electivasAbiertas[lvl] ? 'open' : ''}`}>
+                          <div className="electivas-panel-inner">
+                            <div className="electivas-req-note">
+                              Requiere <b>{placeholders[0].targetHours} hs anuales</b> de electivas de este nivel.
+                            </div>
+                            {electivas.length > 0 ? (
+                              <div className="subject-grid">{electivas.map(renderCard)}</div>
+                            ) : (
+                              <div className="electivas-empty">No hay electivas cargadas todavía para este nivel.</div>
+                            )}
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   </div>
