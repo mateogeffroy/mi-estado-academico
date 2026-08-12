@@ -4,10 +4,12 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../../src/context/PlanContext';
 import { AccionMateria } from '../../src/application/useCases/actualizarProgreso';
-import { calcularDesbloqueos } from '../../src/domain/services/calcularDesbloqueos';
 import { Materia } from '../../src/domain/entities/Materia';
+import { EstadoMateria } from '../../src/domain/entities/Progreso';
 import ConfirmModal from '../../src/components/ConfirmModal';
 import SimuladorModal from '../../src/components/SimuladorModal';
+import MateriaDetailModal from '../../src/components/MateriaDetailModal';
+import GradeModal from '../../src/components/GradeModal';
 import AdBanner from '../../src/components/AdBanner';
 
 const NOMBRES_CARRERAS: Record<string, string> = {
@@ -27,14 +29,19 @@ const NOMBRES_CARRERAS: Record<string, string> = {
 
 export default function PlanDeEstudios() {
   const { materias, detalles, cambiarEstadoMateria, actualizarDetalleMateria, reiniciarProgreso, marcarMultiplesAprobadas, stats, careerData, todasLasCarreras, careerId, setCarreraActiva } = usePlan();
-  const { SUBJECTS, ELECTIVAS, getSubjectById, ALL } = careerData;
+  const { SUBJECTS, ELECTIVAS, ALL } = careerData;
   const maxLevel = Math.max(...SUBJECTS.map((s: any) => s.level || 1));
   const levels = Array.from({ length: maxLevel }, (_, i) => i + 1);
 
   const [showScroll, setShowScroll] = useState(false);
-  
-  const [tooltip, setTooltip] = useState({ visible: false, content: null as React.ReactNode, x: 0, y: 0 });
-  const [menu, setMenu] = useState({ isOpen: false, x: 0, y: 0, subjectId: null as string | null });
+
+  // Un solo punto de entrada para ver/editar una materia: reemplaza el
+  // combo previo de click=aprobar, click derecho/long-press=menú flotante y
+  // tooltip por hover, que en mobile no tenía ninguna pista visual de que
+  // existiera. Ahora cualquier click (incluso en bloqueadas o electivas)
+  // abre este modal con correlativas, acciones y qué destraba.
+  const [selectedSubject, setSelectedSubject] = useState<Materia | null>(null);
+  const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
   const [blockedShake, setBlockedShake] = useState<string | null>(null);
 
   const [isSimuladorOpen, setIsSimuladorOpen] = useState(false);
@@ -58,23 +65,12 @@ export default function PlanDeEstudios() {
   const closeModal = () => setModalConfig(prev => ({ ...prev, isOpen: false }));
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest('.subject-card') || target.closest('.action-menu') || target.closest('.tooltip')) {
-        return; 
-      }
-      setMenu(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
-      setTooltip(prev => prev.visible ? { ...prev, visible: false } : prev);
-    };
-
     const handleScrollAndMove = () => {
       setShowScroll(window.scrollY > 200);
-      setTooltip(prev => prev.visible ? { ...prev, visible: false } : prev);
-      setMenu(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
 
       const footer = document.querySelector('footer');
       const statBar = document.getElementById('stat-bar-container');
-      
+
       if (footer && statBar) {
         const rect = footer.getBoundingClientRect();
         if (rect.top < window.innerHeight) {
@@ -86,19 +82,14 @@ export default function PlanDeEstudios() {
       }
     };
 
-    window.addEventListener('click', handleClickOutside);
-    window.addEventListener('touchstart', handleClickOutside, { passive: true });
-    
     window.addEventListener('scroll', handleScrollAndMove, { passive: true });
     window.addEventListener('touchmove', handleScrollAndMove, { passive: true });
     window.addEventListener('wheel', handleScrollAndMove, { passive: true });
     window.addEventListener('resize', handleScrollAndMove);
-    
+
     handleScrollAndMove();
-    
+
     return () => {
-      window.removeEventListener('click', handleClickOutside);
-      window.removeEventListener('touchstart', handleClickOutside);
       window.removeEventListener('scroll', handleScrollAndMove);
       window.removeEventListener('touchmove', handleScrollAndMove);
       window.removeEventListener('wheel', handleScrollAndMove);
@@ -108,7 +99,7 @@ export default function PlanDeEstudios() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  const obtenerEstado = (subject: any): string => {
+  const obtenerEstado = (subject: any): EstadoMateria => {
     let estado = materias[subject.id];
     if (!estado) estado = (subject.level === 1 || subject.isElective || subject.isElectivePlaceholder) ? 'available' : 'disabled';
     return estado;
@@ -170,65 +161,12 @@ export default function PlanDeEstudios() {
     }
   };
 
-  const handleMateriaClick = (e: React.MouseEvent, subject: any, estadoActual: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (estadoActual === 'disabled' || subject.isElectivePlaceholder) {
-      if (estadoActual === 'disabled') {
-        setBlockedShake(subject.id);
-        setTimeout(() => setBlockedShake(prev => prev === subject.id ? null : prev), 400);
-      }
-
-      if (window.innerWidth <= 900) {
-        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-        let posX = rect.left;
-        if (posX + 220 > window.innerWidth) posX = window.innerWidth - 230; 
-        if (posX < 12) posX = 12;
-
-        let posY = rect.bottom + 8;
-        if (posY + 150 > window.innerHeight) posY = rect.top - 160; 
-
-        setTooltip({
-          visible: true,
-          content: buildTooltipContent(subject),
-          x: posX,
-          y: posY 
-        });
-        setMenu(prev => ({ ...prev, isOpen: false }));
-      }
-      return;
+  const handleMateriaClick = (subject: Materia, estadoActual: string) => {
+    if (estadoActual === 'disabled') {
+      setBlockedShake(subject.id);
+      setTimeout(() => setBlockedShake(prev => (prev === subject.id ? null : prev)), 400);
     }
-
-    if (window.innerWidth <= 900) {
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      let menuX = rect.left;
-      if (menuX + 180 > window.innerWidth) menuX = window.innerWidth - 190; 
-
-      setMenu({
-        isOpen: true,
-        x: menuX,
-        y: rect.bottom + window.scrollY + 5, 
-        subjectId: subject.id
-      });
-      setTooltip(prev => ({ ...prev, visible: false }));
-    } else {
-      ejecutarCambioEstado(subject.id, 'toggle_aprobada');
-    }
-  };
-
-  const handleContextMenu = (e: React.MouseEvent, subjectId: string, estadoActual: string) => {
-    if (window.innerWidth <= 900 || estadoActual === 'disabled') return;
-    e.preventDefault();
-    ejecutarCambioEstado(subjectId, 'cycle_cursada');
-  };
-
-  const handleMenuAction = (e: React.MouseEvent, accionExacta: AccionMateria) => {
-    e.stopPropagation();
-    if (menu.subjectId) {
-      ejecutarCambioEstado(menu.subjectId, accionExacta);
-    }
-    setMenu(prev => ({ ...prev, isOpen: false }));
+    setSelectedSubject(subject);
   };
 
   const handleReiniciarClick = () => {
@@ -243,129 +181,6 @@ export default function PlanDeEstudios() {
         window.location.reload(); 
       }
     });
-  };
-
-  const buildTooltipContent = (subject: any) => {
-    if (subject.isElectivePlaceholder) return (
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: '2px', flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-        <div>Requiere: {subject.targetHours} hs anuales<br />Aprobando electivas de {subject.level}° nivel.</div>
-      </div>
-    );
-    if (subject.isOutdated) return (
-      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '4px 8px', borderRadius: '6px', width: 'fit-content' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
-        Materia fuera del plan.
-      </div>
-    );
-
-    let hasTitle = false;
-    const lines: React.ReactNode[] = [];
-
-    const getCheckIcon = (ok: boolean) => ok 
-      ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
-      : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
-
-    // Los ids de correlativas a veces llegan como number y otras como string
-    // según el catálogo de origen; se normalizan a String antes de comparar.
-    const aprobadasRequeridasStr = (subject.correlAprobada || []).map(String);
-    const cursadasFiltradas = (subject.correlCursada || []).filter(
-      (cid: any) => !aprobadasRequeridasStr.includes(String(cid))
-    );
-
-    if (cursadasFiltradas.length > 0) {
-      hasTitle = true;
-      lines.push(<div key="t1" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Correlativas</div>);
-      lines.push(<b key="s1" style={{ display: 'block', marginBottom: '2px', opacity: 0.9 }}>Cursada(s):</b>);
-      cursadasFiltradas.forEach((cid: any) => {
-        const s = getSubjectById(cid);
-        const cleanName = s ? s.name.replace(/\s*\(.*?\)/g, '') : cid;
-        const ok = materias[cid] === 'cursada' || materias[cid] === 'aprobada';
-        lines.push(<div key={`c-${cid}`} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>{getCheckIcon(ok)} <span style={{ opacity: ok ? 1 : 0.7 }}>{cleanName}</span></div>);
-      });
-    }
-
-    if (aprobadasRequeridasStr.length > 0) {
-      if (!hasTitle) lines.push(<div key="t2" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Correlativas</div>);
-      lines.push(<b key="s2" style={{ display: 'block', marginTop: '6px', marginBottom: '2px', opacity: 0.9 }}>Aprobada(s):</b>);
-      subject.correlAprobada.forEach((cid: any) => {
-        const s = getSubjectById(cid);
-        const cleanName = s ? s.name.replace(/\s*\(.*?\)/g, '') : cid;
-        const ok = materias[cid] === 'aprobada';
-        lines.push(<div key={`a-${cid}`} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>{getCheckIcon(ok)} <span style={{ opacity: ok ? 1 : 0.7 }}>{cleanName}</span></div>);
-      });
-    }
-
-    if (lines.length === 0) return <div style={{ fontStyle: 'italic', opacity: 0.8 }}>Sin correlatividades</div>;
-    return <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>{lines}</div>;
-  };
-
-  // "Qué destraba": solo tiene sentido para materias cursando/cursada, que
-  // son las que están a un paso de sumar un nuevo estado (cursada o
-  // aprobada) y potencialmente habilitar otras. Reusa calcularDesbloqueos
-  // (dominio), que a su vez reusa el mismo motor de correlatividades que ya
-  // corre en producción — así el hint nunca puede desincronizarse.
-  const buildDestrabaContent = (subject: Materia) => {
-    const { siCursada, siAprobadaAdicional } = calcularDesbloqueos(subject.id, materias, careerData);
-
-    if (siCursada.length === 0 && siAprobadaAdicional.length === 0) {
-      return <div style={{ fontStyle: 'italic', opacity: 0.8 }}>Todavía no destraba materias nuevas.</div>;
-    }
-
-    const arrowIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>;
-
-    const renderLista = (titulo: string, items: Materia[]) => (
-      <div style={{ marginTop: '4px' }}>
-        <b style={{ display: 'block', marginBottom: '2px', opacity: 0.9 }}>{titulo}</b>
-        {items.map((m) => (
-          <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-            {arrowIcon} <span>{m.name.replace(/\s*\(.*?\)/g, '')}</span>
-          </div>
-        ))}
-      </div>
-    );
-
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qué destraba</div>
-        {siCursada.length > 0 && renderLista('Si la marcás Cursada:', siCursada)}
-        {siAprobadaAdicional.length > 0 && renderLista('Si la apruebas, además:', siAprobadaAdicional)}
-      </div>
-    );
-  };
-
-  const handleMouseMove = (e: React.MouseEvent, subject: any) => {
-    if (window.innerWidth <= 900) return;
-
-    let x = e.clientX + 12;
-    let y = e.clientY + 12;
-    if (x + 220 > window.innerWidth) x = e.clientX - 230;
-    if (y + 150 > window.innerHeight) y = e.clientY - 160;
-    if (x < 12) x = 12;
-    if (y < 12) y = 12;
-    const sobreDestrabaBtn = (e.target as HTMLElement).closest('.destraba-btn');
-    const content = sobreDestrabaBtn ? buildDestrabaContent(subject) : buildTooltipContent(subject);
-    setTooltip({ visible: true, content, x, y });
-  };
-
-  const handleDestrabaClick = (e: React.MouseEvent, subject: Materia) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (window.innerWidth > 900) return; // en desktop ya lo cubre el hover del ícono
-
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    let posX = rect.left;
-    if (posX + 240 > window.innerWidth) posX = window.innerWidth - 250;
-    if (posX < 12) posX = 12;
-    let posY = rect.bottom + 8;
-    if (posY + 180 > window.innerHeight) posY = rect.top - 190;
-
-    setTooltip({ visible: true, content: buildDestrabaContent(subject), x: posX, y: posY });
-    setMenu((prev) => ({ ...prev, isOpen: false }));
-  };
-
-  const handleMouseLeave = () => {
-    if (window.innerWidth > 900) setTooltip(prev => ({ ...prev, visible: false }));
   };
 
   const renderCard = (subject: any) => {
@@ -527,22 +342,9 @@ export default function PlanDeEstudios() {
       <div
         key={subject.id}
         className={`subject-card ${estadoActual} ${isShaking ? 'highlight-blocked' : ''}`}
-        onClick={(e) => handleMateriaClick(e, subject, estadoActual)} 
-        onContextMenu={(e) => handleContextMenu(e, subject.id, estadoActual)}
-        onMouseMove={(e) => handleMouseMove(e, subject)}
-        onMouseLeave={handleMouseLeave}
-        style={{ cursor: estadoActual === 'disabled' ? 'not-allowed' : 'pointer', display: 'flex', flexDirection: 'column' }}
+        onClick={() => handleMateriaClick(subject, estadoActual)}
+        style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
       >
-        {(estadoActual === 'cursando' || estadoActual === 'cursada') && (
-          <button
-            className="destraba-btn"
-            onClick={(e) => handleDestrabaClick(e, subject)}
-            aria-label={`Ver qué materias destraba ${subject.name}`}
-            title="Qué destraba"
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
-          </button>
-        )}
         <div className="subject-num">{subject.num}</div>
         <div className="subject-name">{subject.name}</div>
         {durationBadges}
@@ -590,27 +392,8 @@ export default function PlanDeEstudios() {
           30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
           40%, 60% { transform: translate3d(4px, 0, 0); }
         }
-        .action-menu { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 6px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); min-width: 140px; animation: fadeIn 0.2s ease-out; flex-direction: column; gap: 4px; }
-        .action-btn { background: transparent; color: var(--text-strong); border: none; padding: 10px 12px; text-align: left; border-radius: 4px; font-family: 'Syne', sans-serif; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; width: 100%; }
-        .action-btn:hover { background: var(--glass-hover); }
         .subject-status-icon { position: absolute; bottom: 10px; right: 10px; opacity: 0.8; }
 
-        /* Hint "qué destraba": solo visible en cursando/cursada. Ícono chico
-           con hover en desktop (el mousemove de la tarjeta ya distingue si
-           el cursor está encima); en mobile es un botón con un target táctil
-           más grande, porque ahí no hay hover y tiene que ser tocable de verdad. */
-        .destraba-btn {
-          position: absolute; top: 8px; right: 8px; width: 20px; height: 20px;
-          border-radius: 50%; border: none; padding: 0; cursor: pointer;
-          background: rgba(0, 0, 0, 0.3); color: rgba(255, 255, 255, 0.9);
-          display: flex; align-items: center; justify-content: center;
-          transition: background 0.15s, transform 0.15s;
-        }
-        .destraba-btn:hover { background: rgba(0, 0, 0, 0.55); transform: scale(1.08); }
-        @media (max-width: 900px) {
-          .destraba-btn { width: 32px; height: 32px; top: 4px; right: 4px; }
-        }
-        
         .mobile-ad-container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 16px; }
         @media (min-width: 1450px) { .mobile-ad-container { display: none; } }
 
@@ -833,24 +616,7 @@ export default function PlanDeEstudios() {
           </div>
         </div>
 
-        {menu.isOpen && (
-          <div id="action-menu" className="action-menu" style={{ position: 'absolute', top: menu.y, left: menu.x, zIndex: 1000, display: 'flex' }}>
-            <button className="action-btn" onClick={(e) => handleMenuAction(e, 'set_aprobada')}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Aprobada
-            </button>
-            <button className="action-btn" onClick={(e) => handleMenuAction(e, 'set_cursada')}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg> Cursada
-            </button>
-            <button className="action-btn" onClick={(e) => handleMenuAction(e, 'set_cursando')}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> Cursando
-            </button>
-            <button className="action-btn" onClick={(e) => handleMenuAction(e, 'set_available')}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Desmarcar
-            </button>
-          </div>
-        )}
-
-        <button 
+        <button
           id="btn-scroll-top" 
           className={`scroll-top-btn ${showScroll ? 'visible' : ''}`} 
           onClick={scrollToTop} 
@@ -858,10 +624,6 @@ export default function PlanDeEstudios() {
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
         </button>
-
-        {tooltip.visible && (
-          <div className="tooltip show" style={{ left: tooltip.x, top: tooltip.y, textAlign: 'left', zIndex: 9999 }}>{tooltip.content}</div>
-        )}
 
         <div id="stat-bar-container" className="stats-bar plan-stats-bar-override" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 900, background: 'var(--bg)', borderTop: '1px solid var(--border)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           
@@ -919,11 +681,36 @@ export default function PlanDeEstudios() {
           onCancel={closeModal}
         />
 
-        <SimuladorModal 
+        <SimuladorModal
           isOpen={isSimuladorOpen}
           onClose={() => setIsSimuladorOpen(false)}
           materias={materias}
           ALL={ALL}
+        />
+
+        <MateriaDetailModal
+          isOpen={selectedSubject !== null}
+          onClose={() => setSelectedSubject(null)}
+          subject={selectedSubject}
+          estadoActual={selectedSubject ? obtenerEstado(selectedSubject) : 'available'}
+          materias={materias}
+          detalles={detalles}
+          careerData={careerData}
+          onCambiarEstado={(accion) => selectedSubject && ejecutarCambioEstado(selectedSubject.id, accion)}
+          onEditarNota={() => setIsGradeModalOpen(true)}
+        />
+
+        <GradeModal
+          isOpen={isGradeModalOpen}
+          onClose={() => setIsGradeModalOpen(false)}
+          materiaName={selectedSubject?.name || ''}
+          initialNota={selectedSubject ? detalles[selectedSubject.id]?.notaFinal : null}
+          initialDificultad={selectedSubject ? detalles[selectedSubject.id]?.dificultad : null}
+          onSubmit={(nota, dificultad) => {
+            if (selectedSubject) {
+              actualizarDetalleMateria(selectedSubject.id, { ...detalles[selectedSubject.id], notaFinal: nota, dificultad });
+            }
+          }}
         />
 
       </main>
