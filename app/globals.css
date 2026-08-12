@@ -415,35 +415,6 @@ button {
 }
 .help-btn:hover { background: var(--muted); color: var(--text-strong); }
 
-.scroll-top-btn {
-  position: fixed; 
-  bottom: 80px;
-  right: 28px; 
-  background-color: var(--panel);
-  color: var(--text); 
-  border: 1px solid var(--border); 
-  width: 45px; 
-  height: 45px;
-  border-radius: 50%; 
-  font-size: 1.5rem; 
-  font-weight: 800; 
-  cursor: pointer;
-  display: flex; 
-  align-items: center; 
-  justify-content: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); 
-  z-index: 1100; 
-  opacity: 0; 
-  pointer-events: none; 
-  transform: translateY(20px); 
-  transition: all 0.3s ease;
-}
-.scroll-top-btn.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
-.scroll-top-btn:hover { background-color: var(--border); color: var(--text-strong); }
-@media (max-width: 1150px) {
-  .scroll-top-btn { bottom: calc(140px + env(safe-area-inset-bottom, 0px)); }
-}
-
 .mark-all-btn {
   background: transparent; color: var(--muted); border: none;
   font-family: 'Space Mono', monospace; font-size: 0.55rem; font-weight: 700;
@@ -662,7 +633,7 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
 *, *::before, *::after { max-width: 100%; }
 
 [style*="position: fixed"], [style*="position:fixed"],
-.tooltip, .sidebar, .sidebar-overlay, .calendar-tooltip-card, .scroll-top-btn,
+.tooltip, .sidebar, .sidebar-overlay, .calendar-tooltip-card,
 .calendar-body, .calendar-body *, .calendar-inner, .grid-lines, .grid-line,
 .time-column, .time-label, .day-column, .event-card, .inhabilitado-overlay {
   max-width: none;

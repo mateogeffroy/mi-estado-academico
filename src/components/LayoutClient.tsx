@@ -29,7 +29,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const router = useRouter(); 
 
-  const isBlogActive = pathname?.startsWith('/blog');
+  //const isBlogActive = pathname?.startsWith('/blog');
 
   useEffect(() => {
     setIsProfileMenuOpen(false);
@@ -80,7 +80,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       return (
         path === '/login' || 
         path === '/onboarding' ||
-        path.startsWith('/blog') || 
+        //path.startsWith('/blog') || 
         path.startsWith('/terminos') || 
         path.startsWith('/privacidad')
       );
@@ -230,7 +230,11 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             z-index: 1500;
             background: var(--panel);
             border-top: 1px solid var(--border);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
+            /* +10px fijos además del safe-area: en Android instalada como
+               app la barra de gestos no siempre reporta safe-area-inset,
+               así que sin este piso mínimo los botones nativos quedan
+               pegados a los tabs. */
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
           }
         }
         .bottom-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); text-decoration: none; font-size: 0.65rem; font-weight: 700; transition: color 0.2s; }
@@ -238,7 +242,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         .bottom-tab.active { color: var(--cursando); }
         .bottom-tab svg { flex-shrink: 0; }
         @media (max-width: 1150px) {
-          .app-footer { padding-bottom: calc(30px + 60px + env(safe-area-inset-bottom, 0px)) !important; }
+          .app-footer { padding-bottom: calc(30px + 60px + 10px + env(safe-area-inset-bottom, 0px)) !important; }
         }
 
         /* Modal de Feedback */
@@ -317,12 +321,14 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                   </button>
                 </Link>
 
+                {/*
                 <Link href="/blog" style={{ textDecoration: 'none' }}>
                   <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
                     Blog
                   </button>
                 </Link>
+                */}
 
                 <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
               </div>
@@ -370,6 +376,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               </div>
             ) : (
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                {/*
                 <Link href="/blog" style={{ textDecoration: 'none' }}>
                   <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
@@ -381,6 +388,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                     Iniciar Sesión / Registrarse
                   </button>
                 </Link>
+                */}
               </div>
             )}
           </div>
@@ -397,10 +405,12 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
             Plan
           </Link>
+          {/*
           <Link href="/blog" className={`bottom-tab ${isBlogActive ? 'active' : ''}`}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
             Blog
           </Link>
+          */}
           <Link href="/perfil" className={`bottom-tab ${pathname === '/perfil' ? 'active' : ''}`}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             Perfil
