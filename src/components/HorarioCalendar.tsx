@@ -52,6 +52,15 @@ const getEventColor = (tipo: string) => {
   return 'var(--cursando)';
 };
 
+// Color del bloque de la grilla según cuándo se cursa: azul anual, verde
+// 1º cuatrimestre, rojo 2º. Antes todos los bloques eran del mismo azul
+// fijo sin importar la duración.
+const getDuracionColor = (duracion?: string) => {
+  if (duracion === '1') return '#22c55e';
+  if (duracion === '2') return '#ef4444';
+  return 'var(--cursando)';
+};
+
 // Versión de fondo tenue de getEventColor, para chips/badges (no concatena
 // alpha sobre un color hex porque el fallback es una custom property, no un hex).
 const getEventColorSoft = (tipo: string) => {
@@ -534,7 +543,10 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
               .grid-lines { position: absolute; top: 0; left: clamp(45px, 4vw, 60px); right: 0; bottom: 0; display: flex; flex-direction: column; pointer-events: none; }
               .grid-line { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--glass-border); }
               .time-column { position: relative; border-right: 1px solid var(--border); background: var(--glass-bg); }
-              .time-label { position: absolute; width: 100%; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: clamp(0.65rem, 0.8vw, 0.75rem); color: var(--muted); background: transparent; }
+              /* Centrado sobre la línea punteada de esa hora (transform), no
+                 dentro de la caja de 1hs completa: eso dejaba el label a
+                 mitad del bloque en vez de a la par de la línea. */
+              .time-label { position: absolute; width: 100%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: clamp(0.65rem, 0.8vw, 0.75rem); color: var(--muted); background: transparent; }
               .day-column { position: relative; border-right: 1px solid var(--glass-border); transition: background-color 0.3s; }
               .day-column:last-child { border-right: none; }
 
@@ -617,7 +629,7 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                   {lineas.map(h => (<div key={`line-${h}`} className="grid-line" style={{ top: `${((h - HORA_INICIO) * 60 / TOTAL_MINUTOS) * 100}%` }} />))}
                 </div>
                 <div className="time-column">
-                  {horasBloque.map(h => (<div key={`time-${h}`} className="time-label" style={{ top: `${((h - HORA_INICIO) * 60 / TOTAL_MINUTOS) * 100}%`, height: `${(60 / TOTAL_MINUTOS) * 100}%` }}>{`${h}:00`}</div>))}
+                  {horasBloque.map(h => (<div key={`time-${h}`} className="time-label" style={{ top: `${((h - HORA_INICIO) * 60 / TOTAL_MINUTOS) * 100}%` }}>{`${h}:00`}</div>))}
                 </div>
 
                 {DIAS.map((dia, idx) => {
@@ -667,7 +679,7 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                           const isNearTop = topNum < 20;
 
                           return (
-                            <div key={clase.id} className={`event-card ${tappedCard === clase.id ? 'mobile-active' : ''}`} style={{ top, height, background: 'var(--panel)', border: '1px solid var(--border)', borderLeft: '4px solid var(--cursando)' }}
+                            <div key={clase.id} className={`event-card ${tappedCard === clase.id ? 'mobile-active' : ''}`} style={{ top, height, background: 'var(--panel)', border: '1px solid var(--border)', borderLeft: `4px solid ${getDuracionColor(clase.duracion)}` }}
                               onClick={() => {
                                 if (window.innerWidth <= 768 && eventosHoy.length > 0) {
                                   if (tappedCard !== clase.id) setTappedCard(clase.id); 
@@ -695,7 +707,6 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                                 </>
                               )}
                               <div style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-strong)', lineHeight: 1.2, marginBottom: 'auto', paddingRight: eventosHoy.length > 0 ? '20px' : '0' }}>{clase.materiaLimpia}</div>
-                              <div style={{ fontSize: '0.6rem', color: 'var(--muted)', fontWeight: 600, marginTop: '2px' }}>{clase.cuatrimestre}</div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
                                 <span style={{ fontFamily: 'Space Mono, monospace', fontSize: '0.65rem', color: 'var(--text-strong)', opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: '4px' }}>{clase.comision}</span>
                                 <span style={{ fontFamily: 'Space Mono, monospace', fontSize: '0.65rem', color: 'var(--text-strong)', opacity: 0.6, fontWeight: 'bold', flexShrink: 0 }}>{clase.inicio}-{clase.fin}</span>

@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePlan } from '../src/context/PlanContext';
-import CountUp from '../src/components/CountUp';
 import SpotlightCard from '../src/components/SpotlightCard';
 import HorarioCalendar from '../src/components/HorarioCalendar';
-import { supabase } from '../src/lib/supabase';
+import { getCuatrimestreActual } from '../src/lib/data/calendario';
 
 // Diccionario para mostrar nombres limpios en el selector
 const NOMBRES_CARRERAS: Record<string, string> = {
@@ -25,25 +24,19 @@ const NOMBRES_CARRERAS: Record<string, string> = {
 };
 
 export default function Dashboard() {
-  const { stats, user, careerData, materias, detalles, todasLasCarreras, careerId, setCarreraActiva } = usePlan();
+  const { careerData, materias, detalles, todasLasCarreras, careerId, setCarreraActiva } = usePlan();
   const { ALL } = careerData;
-  
-  const [nombreDinamico, setNombreDinamico] = useState('');
+
   // Único filtro de cuatrimestre: controla tanto el horario semanal como
-  // qué materias se consideran "sin horario asignado" más abajo.
-  const [filtroCuatri, setFiltroCuatri] = useState('1');
+  // qué materias se consideran "sin horario asignado" más abajo. Arranca
+  // en el cuatrimestre que corresponde a la fecha real (ver
+  // getCuatrimestreActual); si el usuario ya había elegido uno a mano, el
+  // useEffect de abajo lo pisa con lo guardado en localStorage.
+  const [filtroCuatri, setFiltroCuatri] = useState<string>(() => getCuatrimestreActual());
   const [tourStep, setTourStep] = useState(0);
+  const [mostrarTodosEventos, setMostrarTodosEventos] = useState(false);
 
   useEffect(() => {
-    const fetchDirectName = async () => {
-      const { data } = await supabase.auth.getUser();
-      const metaName = data.user?.user_metadata?.full_name;
-      if (metaName) {
-        setNombreDinamico(metaName.split(' ')[0]);
-      }
-    };
-    fetchDirectName();
-
     const filtroGuardado = localStorage.getItem('filtroCuatrimestre');
     if (filtroGuardado && filtroGuardado !== 'Ambos') {
       setFiltroCuatri(filtroGuardado);
@@ -54,7 +47,7 @@ export default function Dashboard() {
     if (typeof window !== 'undefined') {
       const hasViewedTour = localStorage.getItem('mea_tutorial_home_v3');
       if (!hasViewedTour) {
-        setTimeout(() => setTourStep(1), 600); 
+        setTimeout(() => setTourStep(1), 600);
       }
     }
   }, []);
@@ -69,12 +62,16 @@ export default function Dashboard() {
     localStorage.setItem('mea_tutorial_home_v3', 'true');
   };
 
-  const primerNombre = nombreDinamico || user?.fullName?.split(' ')[0] || 'Estudiante';
-
-  const cursando = ALL.filter((s: any) => materias[s.id] === 'cursando');
+  // isElectivePlaceholder ("Electivas N° Nivel") puede quedar en estado
+  // 'cursando' automáticamente cuando el usuario tiene alguna electiva de
+  // ese nivel en curso (evaluarCorrelatividades.ts) — no es una materia
+  // real, no tiene horario propio para cargar. calcularEstadisticas.ts ya
+  // lo excluye de las stats; acá hay que hacer lo mismo o termina pidiendo
+  // agendarle un horario a algo que no existe como cursada en sí misma.
+  const cursando = ALL.filter((s: any) => materias[s.id] === 'cursando' && !s.isElectivePlaceholder);
 
   const obtenerProximosEventos = () => {
-    let eventosMapeados: any[] = [];
+    const eventosMapeados: any[] = [];
     const d = new Date();
     const hoyStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     Object.keys(detalles || {}).forEach(materiaId => {
@@ -97,10 +94,15 @@ export default function Dashboard() {
     });
 
     eventosMapeados.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
-    return eventosMapeados.slice(0, 5);
+    return eventosMapeados;
   };
 
   const proximosEventos = obtenerProximosEventos();
+
+  // Lista corta por default (5) con el 6to transparentado detrás de
+  // "Mostrar más" en vez de siempre mostrar todo o siempre cortar en 5.
+  const eventosVisibles = mostrarTodosEventos ? proximosEventos : proximosEventos.slice(0, 5);
+  const eventoTeaser = !mostrarTodosEventos && proximosEventos.length > 5 ? proximosEventos[5] : null;
 
   const formatearFecha = (fechaISO: string) => {
     const partes = fechaISO.split('-');
@@ -138,7 +140,7 @@ export default function Dashboard() {
           comisionData.dias.forEach((dia: any) => {
             let nombreDiaLimpio = dia.nombre.split(' ')[0];
             if (horariosSemanales[nombreDiaLimpio]) {
-              horariosSemanales[nombreDiaLimpio].push({ id: `${m.id}-${dia.nombre}`, materiaId: m.id, materiaLimpia: nombreMateriaLimpio, cuatrimestre, inicio: dia.inicio, fin: dia.fin, comision: comisionId });
+              horariosSemanales[nombreDiaLimpio].push({ id: `${m.id}-${dia.nombre}`, materiaId: m.id, materiaLimpia: nombreMateriaLimpio, cuatrimestre, duracion, inicio: dia.inicio, fin: dia.fin, comision: comisionId });
             }
           });
         }
@@ -161,7 +163,7 @@ export default function Dashboard() {
 
           let nombreDiaLimpio = horario.dia.split(' ')[0];
           if (horariosSemanales[nombreDiaLimpio]) {
-            horariosSemanales[nombreDiaLimpio].push({ id: `${m.id}-${horario.id}`, materiaId: m.id, materiaLimpia: nombreMateriaLimpio, cuatrimestre, inicio: horario.inicio, fin: horario.fin, comision: 'Pers.' });
+            horariosSemanales[nombreDiaLimpio].push({ id: `${m.id}-${horario.id}`, materiaId: m.id, materiaLimpia: nombreMateriaLimpio, cuatrimestre, duracion: dCode, inicio: horario.inicio, fin: horario.fin, comision: 'Pers.' });
           }
         });
       }
@@ -216,63 +218,50 @@ export default function Dashboard() {
   return (
     <>
       <style>{`
-        .wave { animation: wave-animation 2.5s infinite; transform-origin: 70% 70%; display: inline-block; }
-        @keyframes wave-animation { 0% { transform: rotate( 0.0deg) } 10% { transform: rotate(14.0deg) } 20% { transform: rotate(-8.0deg) } 30% { transform: rotate(14.0deg) } 40% { transform: rotate(-4.0deg) } 50% { transform: rotate(10.0deg) } 60% { transform: rotate( 0.0deg) } 100% { transform: rotate( 0.0deg) } }
-        
         .tour-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--overlay-bg); z-index: 9998; backdrop-filter: blur(3px); transition: opacity 0.3s ease; }
         .tour-dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 420px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; z-index: 10000; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 16px; text-align: center; }
 
         .dashboard-main { padding-bottom: 80px; display: flex; flex-direction: column; gap: clamp(20px, 3vh, 40px); max-width: 1200px; margin: 0 auto; padding-left: clamp(12px, 2vw, 20px); padding-right: clamp(12px, 2vw, 20px); }
-        .dashboard-top-bar { display: flex; align-items: center; justify-content: space-between; gap: clamp(10px, 2vw, 20px); margin-top: clamp(0px, 1vh, 10px); background: var(--panel); padding: clamp(14px, 2vh, 24px) clamp(20px, 3vw, 35px); border-radius: 20px; border: 1px solid var(--border); flex-wrap: nowrap; overflow: hidden; }
-        .dashboard-greeting { font-size: clamp(1.2rem, 2.5vw, 2rem); color: var(--text-strong); margin: 0; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
-        
+
         .career-selector { background: var(--bg); border: 1px solid var(--border); color: var(--text-strong); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; outline: none; cursor: pointer; transition: all 0.2s; width: fit-content; max-width: 250px; text-overflow: ellipsis; }
         .career-selector:hover { border-color: var(--cursando); }
 
-        .dashboard-stats-wrapper { display: flex; align-items: center; justify-content: flex-start; flex: 1; gap: clamp(10px, 1.5vw, 24px); flex-wrap: nowrap; }
-        .top-stat-item { display: flex; align-items: baseline; gap: clamp(4px, 0.8vw, 8px); white-space: nowrap; }
-        .top-stat-val { font-weight: 800; font-size: clamp(1.2rem, 2vw, 1.5rem); line-height: 1; }
-        .top-stat-label { color: var(--muted); font-size: clamp(0.55rem, 0.8vw, 0.75rem); text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
-        .dashboard-progress { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; margin-left: auto; }
-        .prog-val { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 900; color: var(--text-strong); font-variant-numeric: tabular-nums; line-height: 1; display: flex; align-items: baseline; }
-        .prog-label { font-size: clamp(0.55rem, 0.8vw, 0.75rem); color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-top: 6px; text-align: center; line-height: 1.2; }
         .schedule-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: clamp(12px, 2.5vh, 25px); }
         .schedule-toggle { display: flex; background: var(--panel); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
 
-        /* Calendario + panel lateral (Próximos / avisos) uno al lado del otro en
-           desktop; el panel baja debajo del calendario en pantallas angostas. */
-        .home-layout { display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
-        .home-main { flex: 3 1 560px; min-width: 0; }
-        .home-side { flex: 2 1 300px; min-width: 280px; display: flex; flex-direction: column; gap: 24px; }
-
         .home-section-title { color: var(--text-strong); font-size: 1.1rem; margin: 0 0 14px 0; font-weight: bold; display: flex; align-items: center; gap: 8px; }
 
-        .alert-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; background: var(--panel); border: 1px solid var(--border); border-left: 3px solid #ef4444; border-radius: 10px; text-decoration: none; }
-        .alert-row-text { font-size: 0.85rem; color: var(--text-strong); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .alert-row-cta { font-size: 0.75rem; color: #ef4444; font-weight: bold; flex-shrink: 0; white-space: nowrap; }
+        /* Agenda: lo urgente/accionable (próximos parciales, materias sin
+           horario) primero y en una tira horizontal, antes del calendario.
+           Antes vivía en una columna lateral al lado del calendario, donde
+           en mobile quedaba después de todo. */
+        .agenda-strip { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 10px; -webkit-overflow-scrolling: touch; }
+        .agenda-card { flex-shrink: 0; width: 240px; padding: 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border); text-decoration: none; display: flex; flex-direction: column; gap: 8px; }
+        .agenda-card-evento { border-left: 3px solid var(--evento-color, var(--cursando)); }
+        .agenda-card-alerta { border-left: 3px solid #ef4444; }
+        .agenda-card-title { font-size: 0.9rem; font-weight: 700; color: var(--text-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .agenda-card-sub { font-size: 0.75rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .agenda-card-date { align-self: flex-start; background: var(--bg); padding: 4px 10px; border-radius: 8px; font-family: 'Space Mono', monospace; font-weight: bold; font-size: 0.8rem; color: var(--text-strong); }
+        .agenda-card-cta { font-size: 0.75rem; color: #ef4444; font-weight: bold; }
+
+        /* Próximos eventos: lista vertical (no tira horizontal), con el 6to
+           registro transparentado detrás de "Mostrar más" en vez de cortar
+           en seco o mostrar todo de una. */
+        .eventos-list { display: flex; flex-direction: column; gap: 10px; }
+        .evento-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--cursando); text-decoration: none; }
+        .evento-row-text { flex: 1; min-width: 0; }
+        .evento-row-materia { display: block; font-weight: bold; color: var(--text-strong); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .evento-row-tipo { display: block; font-size: 0.75rem; font-weight: 700; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .evento-row-date { flex-shrink: 0; background: var(--bg); padding: 6px 10px; border-radius: 8px; font-family: 'Space Mono', monospace; font-weight: bold; font-size: 0.85rem; color: var(--text-strong); }
+        .eventos-teaser-wrap { position: relative; margin-top: 10px; }
+        .eventos-teaser-row { opacity: 0.35; pointer-events: none; filter: blur(1px); }
+        .eventos-mostrar-mas { position: absolute; inset: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom, transparent, var(--bg) 65%); border: none; border-radius: 12px; color: var(--cursando); font-weight: bold; font-size: 0.85rem; cursor: pointer; }
 
         @media (max-width: 600px) {
-          .dashboard-top-bar { flex-direction: column; align-items: center; gap: 12px; padding: 16px 16px; }
-          .dashboard-greeting { font-size: 1.3rem; width: 100%; justify-content: center; }
           .career-selector { margin: 0 auto; }
-          .dashboard-stats-wrapper { width: 100%; justify-content: space-between; gap: 0px; margin-top: 8px; }
-          .dashboard-progress { margin-left: 0; align-items: center; }
-          .top-stat-item { flex-direction: column; align-items: center; gap: 0px; }
-          .top-stat-val { font-size: 1.1rem; } .prog-val { font-size: 1.1rem; } 
-          .top-stat-label { font-size: 0.5rem; } .prog-label { font-size: 0.5rem; margin-top: 2px; }
           .schedule-header { flex-direction: column; justify-content: center; gap: 14px; margin-bottom: 12px; }
           .schedule-toggle { justify-content: center; width: 100%; max-width: 320px; }
-          .schedule-toggle > div { flex: 1; text-align: center; } 
-        }
-        @media (max-width: 900px) {
-          .event-card-modern { flex-direction: row !important; align-items: center !important; justify-content: space-between !important; }
-          .dashboard-top-bar { padding: 14px 16px; gap: 12px; }
-          .dashboard-stats-wrapper { gap: 12px; }
-          .top-stat-item { flex-direction: column; align-items: center; gap: 2px; }
-          .top-stat-val { font-size: 1.3rem; }
-          .top-stat-label { font-size: 0.55rem; }
-          .prog-val { font-size: 2rem; }
-          .prog-label { font-size: 0.55rem; }
+          .schedule-toggle > div { flex: 1; text-align: center; }
         }
       `}</style>
 
@@ -321,75 +310,34 @@ export default function Dashboard() {
       )}
 
       <main className="dashboard-main">
-        
-        {/* --- CABECERA DE ESTADÍSTICAS --- */}
-        <section className="dashboard-top-bar">
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <h2 className="dashboard-greeting">
-              ¡Hola, <span style={{ color: 'var(--cursando)' }}>{primerNombre}</span>! <span className="wave">👋</span>
-            </h2>
-            {todasLasCarreras?.length > 1 ? (
-              <select 
-                value={careerId}
-                onChange={(e) => setCarreraActiva(e.target.value)}
-                className="career-selector"
-                title="Cambiar carrera actual"
-              >
-                {todasLasCarreras.map(id => (
-                  <option key={id} value={id}>{NOMBRES_CARRERAS[id] || id}</option>
-                ))}
-              </select>
-            ) : todasLasCarreras?.length === 1 ? (
-              <div 
-                className="career-selector" 
-                style={{ pointerEvents: 'none', border: '1px solid transparent', background: 'var(--glass-bg)', display: 'inline-block' }}
-              >
-                {NOMBRES_CARRERAS[careerId] || careerId}
-              </div>
-            ) : null}
-          </div>
-          
-          <div className="dashboard-stats-wrapper">
-             <div className="top-stat-item">
-               <span className="top-stat-val" style={{ color: 'var(--aprobada)' }}>{stats.aprobadas}</span>
-               <span className="top-stat-label">Aprobadas</span>
-             </div>
-             <div className="top-stat-item">
-               <span className="top-stat-val" style={{ color: 'var(--cursada)' }}>{stats.cursadas}</span>
-               <span className="top-stat-label">Cursadas</span>
-             </div>
-             <div className="top-stat-item">
-               <span className="top-stat-val" style={{ color: 'var(--cursando)' }}>{stats.cursando}</span>
-               <span className="top-stat-label">En Curso</span>
-             </div>
-             <div className="dashboard-progress">
-               <div className="prog-val">
-                 <CountUp from={0} to={stats.porcentaje} duration={0.2} />
-                 <span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: '2px' }}>%</span>
-               </div>
-               <div className="prog-label">Progreso</div>
-             </div>
-          </div>
-        </section>
 
-        {/* --- DASHBOARD PRINCIPAL --- */}
-        <div className="home-layout" id="seccion-horarios">
-
-          {/* Horario Semanal */}
-          <div className="home-main">
-            <HorarioCalendar
-              horarios={horariosSemanales}
-              isEmpty={diasMostrar.length === 0}
-              detalles={detalles}
-              materiasData={ALL}
-              title={
-                <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  Horario Semanal
-                </h3>
-              }
-              action={
+        {/* --- Horario Semanal: primer foco al abrir la app --- */}
+        <div id="seccion-horarios">
+          <HorarioCalendar
+            horarios={horariosSemanales}
+            isEmpty={diasMostrar.length === 0}
+            detalles={detalles}
+            materiasData={ALL}
+            title={
+              <h3 style={{ color: 'var(--cursando)', fontSize: '1.4rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Horario Semanal
+              </h3>
+            }
+            action={
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                {todasLasCarreras?.length > 1 && (
+                  <select
+                    value={careerId}
+                    onChange={(e) => setCarreraActiva(e.target.value)}
+                    className="career-selector"
+                    title="Cambiar carrera actual"
+                  >
+                    {todasLasCarreras.map(id => (
+                      <option key={id} value={id}>{NOMBRES_CARRERAS[id] || id}</option>
+                    ))}
+                  </select>
+                )}
                 <div className="schedule-toggle" style={{ display: 'flex', background: 'var(--bg)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   {['1', '2'].map((opcion) => (
                     <div key={opcion} onClick={() => { setFiltroCuatri(opcion); localStorage.setItem('filtroCuatrimestre', opcion); }}
@@ -401,57 +349,64 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-              }
-            />
-          </div>
-
-          {/* Panel lateral: próximos eventos + avisos de materias sin horario cargado */}
-          <div className="home-side">
-            {materiasSinHorario.length > 0 && (
-              <div>
-                <h3 className="home-section-title" style={{ color: '#ef4444' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  Sin horario asignado ({materiasSinHorario.length})
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {materiasSinHorario.map((m: any) => (
-                    <Link href={`/materia/${m.id}`} key={m.id} className="alert-row">
-                      <span className="alert-row-text">{m.name}</span>
-                      <span className="alert-row-cta">Cargar &rarr;</span>
-                    </Link>
-                  ))}
-                </div>
               </div>
-            )}
+            }
+          />
+        </div>
 
-            <div>
-              <h3 className="home-section-title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                Próximos Parciales / TPs
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {proximosEventos.length === 0 ? (
-                  <div style={{ padding: '20px', color: 'var(--muted)', background: 'var(--panel)', borderRadius: '12px', border: '1px solid var(--border)', textAlign: 'center', fontSize: '0.85rem' }}>Sin eventos agendados</div>
-                ) : (
-                  proximosEventos.map(evento => (
-                    <Link href={`/materia/${evento.materiaId}`} key={evento.id} style={{ textDecoration: 'none' }}>
-                      <div className="event-card-modern" style={{ background: 'var(--panel)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                        <div style={{ flex: 1, minWidth: 0, paddingRight: '10px' }}>
-                          <div style={{ fontWeight: 'bold', color: 'var(--text-strong)', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{evento.materia}</div>
-                          <div style={{ fontSize: '0.75rem', color: getEventColor(evento.tipo), fontWeight: 700, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{evento.tipo}: {evento.nombre}</div>
-                        </div>
-                        <div style={{ background: 'var(--bg)', padding: '6px 10px', borderRadius: '8px', fontFamily: 'Space Mono', fontWeight: 'bold', fontSize: '0.85rem', flexShrink: 0, color: 'var(--text-strong)' }}>
-                          {formatearFecha(evento.fecha)}
-                        </div>
-                      </div>
-                    </Link>
-                  ))
-                )}
-              </div>
+        {/* --- Materias sin horario cargado: aviso corto, horizontal --- */}
+        {materiasSinHorario.length > 0 && (
+          <div>
+            <h3 className="home-section-title" style={{ color: '#ef4444' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Sin horario asignado ({materiasSinHorario.length})
+            </h3>
+            <div className="agenda-strip">
+              {materiasSinHorario.map((m: any) => (
+                <Link href={`/materia/${m.id}`} key={m.id} className="agenda-card agenda-card-alerta">
+                  <span className="agenda-card-title">{m.name}</span>
+                  <span className="agenda-card-cta">Cargar horario &rarr;</span>
+                </Link>
+              ))}
             </div>
           </div>
+        )}
 
-        </div>
+        {/* --- Próximos eventos: lista, 5 por default + teaser del 6to --- */}
+        {proximosEventos.length > 0 && (
+          <div>
+            <h3 className="home-section-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              Próximos eventos
+            </h3>
+            <div className="eventos-list">
+              {eventosVisibles.map(evento => (
+                <Link href={`/materia/${evento.materiaId}`} key={evento.id} className="evento-row" style={{ borderLeftColor: getEventColor(evento.tipo) }}>
+                  <div className="evento-row-text">
+                    <span className="evento-row-materia">{evento.materia}</span>
+                    <span className="evento-row-tipo" style={{ color: getEventColor(evento.tipo) }}>{evento.tipo}: {evento.nombre}</span>
+                  </div>
+                  <span className="evento-row-date">{formatearFecha(evento.fecha)}</span>
+                </Link>
+              ))}
+            </div>
+
+            {eventoTeaser && (
+              <div className="eventos-teaser-wrap">
+                <div className="evento-row eventos-teaser-row" style={{ borderLeftColor: getEventColor(eventoTeaser.tipo) }}>
+                  <div className="evento-row-text">
+                    <span className="evento-row-materia">{eventoTeaser.materia}</span>
+                    <span className="evento-row-tipo" style={{ color: getEventColor(eventoTeaser.tipo) }}>{eventoTeaser.tipo}: {eventoTeaser.nombre}</span>
+                  </div>
+                  <span className="evento-row-date">{formatearFecha(eventoTeaser.fecha)}</span>
+                </div>
+                <button className="eventos-mostrar-mas" onClick={() => setMostrarTodosEventos(true)}>
+                  Mostrar {proximosEventos.length - 5} más
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Lista de materias filtrada por el mismo cuatrimestre del calendario:
             queda como acceso directo a una materia aunque no se vea su bloque
