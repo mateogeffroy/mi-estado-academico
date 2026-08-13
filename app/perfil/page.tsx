@@ -66,6 +66,12 @@ export default function PerfilPage() {
 
   const [carreraABorrar, setCarreraABorrar] = useState<string | null>(null);
 
+  // Historial académico: antes eran dos secciones apiladas siempre
+  // visibles (lista larga + gráfico), mucho scroll para algo que se mira
+  // por separado. Ahora es una sola sección con tabs, mismo patrón que las
+  // tabs por año del plan de estudios.
+  const [historialTab, setHistorialTab] = useState<'lista' | 'grafico'>('lista');
+
   useEffect(() => {
     setIsMounted(true);
     const fetchUserData = async () => {
@@ -87,6 +93,11 @@ export default function PerfilPage() {
     }
   }, [universidad]);
 
+  // #chart-container solo existe en el DOM cuando la tab "Evolución" está
+  // abierta (antes la sección siempre estaba montada). Sin historialTab en
+  // las deps, este efecto corría una sola vez al montar el componente, no
+  // encontraba el container todavía y nunca más lo intentaba: el gráfico
+  // se quedaba en el spinner para siempre.
   useEffect(() => {
     const container = document.getElementById('chart-container');
     if (!container) return;
@@ -95,7 +106,7 @@ export default function PerfilPage() {
     });
     resizeObserver.observe(container);
     return () => resizeObserver.disconnect();
-  }, [isMounted]);
+  }, [isMounted, historialTab]);
 
   const handleSaveName = async () => {
     if (!tempNombre.trim()) return;
@@ -176,6 +187,19 @@ export default function PerfilPage() {
         .recharts-wrapper * { max-width: none !important; }
         .recharts-wrapper, .recharts-surface { outline: none !important; }
         @media (max-width: 600px) { .stars-container { display: none !important; } }
+
+        /* Historial académico: antes "Materias Aprobadas" y "Evolución"
+           eran dos secciones separadas, siempre las dos abiertas, con el
+           promedio escondido al pie de la lista. Ahora es una sola sección
+           con tabs (mismo patrón que las tabs por año del plan) y el
+           promedio arriba, a la vista siempre. */
+        .historial-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+        .historial-promedio { display: flex; align-items: baseline; gap: 8px; }
+        .historial-promedio-val { font-size: 1.8rem; font-weight: 900; color: var(--text-strong); font-variant-numeric: tabular-nums; }
+        .historial-promedio-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+        .historial-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+        .historial-tab { padding: 8px 16px; border-radius: 10px; border: 1.5px solid var(--border); background: transparent; color: var(--muted); font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; }
+        .historial-tab.active { border-color: var(--cursando); color: var(--cursando); background: color-mix(in srgb, var(--cursando) 10%, transparent); }
       `}</style>
 
       <main style={{ paddingBottom: '80px', display: 'flex', flexDirection: 'column', gap: '40px', minHeight: '100vh', paddingTop: '40px' }}>
@@ -281,72 +305,87 @@ export default function PerfilPage() {
             </section>
 
             <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-              <h3 style={{ color: 'var(--aprobada)', marginBottom: '16px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Materias Aprobadas del Plan Actual
-              </h3>
-              
-              {aprobadasOrdenadas.length === 0 ? (
-                <p style={{ color: 'var(--muted)', textAlign: 'center', fontStyle: 'italic', padding: '20px' }}>Todavía no tenés materias aprobadas en esta carrera.</p>
-              ) : (
-                <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }} className="custom-scrollbar">
-                  {aprobadasOrdenadas.map(m => (
-                    <div key={m.id} className="list-row" style={{ cursor: 'pointer', padding: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={() => { setSelectedMateria({ id: m.id, name: m.name }); setIsGradeModalOpen(true); }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-                        <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontFamily: 'Space Mono', whiteSpace: 'nowrap' }}>Nivel {m.level || '-'}</span>
-                        <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.name}</span>
-                        <span style={{ color: detalles[m.id]?.notaFinal ? 'var(--aprobada)' : 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold', flexShrink: 0, fontVariantNumeric: 'tabular-nums', paddingLeft: '4px' }}>
-                          {detalles[m.id]?.notaFinal ? `Nota: ${detalles[m.id].notaFinal}` : 'Sin nota'}
-                        </span>
-                      </div>
-                      {!!detalles[m.id]?.dificultad && (
-                        <div className="stars-container" style={{ display: 'flex', gap: '2px', marginLeft: '15px', flexShrink: 0 }}>
-                          {[...Array(5)].map((_, i) => {
-                            const dificultad = detalles[m.id].dificultad ?? 0;
-                            return (
-                              <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < dificultad ? "var(--cursada)" : "none"} stroke={i < dificultad ? "var(--cursada)" : "var(--muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                              </svg>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+              <div className="historial-header">
+                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aprobada)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Historial académico
+                </h3>
+                <div className="historial-promedio">
+                  <span className="historial-promedio-val">{stats.promedio}</span>
+                  <span className="historial-promedio-label">Promedio</span>
                 </div>
-              )}
-              <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--muted)', fontSize: '1.1rem', fontWeight: 'bold' }}>Promedio del Plan</span>
-                <span style={{ color: 'var(--text-strong)', fontSize: '2.2rem', fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{stats.promedio}</span>
               </div>
-            </section>
 
-            <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'block' }}>
-              <h3 style={{ color: 'var(--text-strong)', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                Evolución del Promedio
-              </h3>
-              {dataGrafico.length < 2 ? (
-                <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--muted)', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-                  Necesitás cargar notas en al menos 2 materias para ver tu gráfico de evolución en este plan.
-                </div>
+              <div className="historial-tabs">
+                <button
+                  type="button"
+                  className={`historial-tab ${historialTab === 'lista' ? 'active' : ''}`}
+                  onClick={() => setHistorialTab('lista')}
+                >
+                  Materias ({aprobadasOrdenadas.length})
+                </button>
+                <button
+                  type="button"
+                  className={`historial-tab ${historialTab === 'grafico' ? 'active' : ''}`}
+                  onClick={() => setHistorialTab('grafico')}
+                >
+                  Evolución
+                </button>
+              </div>
+
+              {historialTab === 'lista' ? (
+                aprobadasOrdenadas.length === 0 ? (
+                  <p style={{ color: 'var(--muted)', textAlign: 'center', fontStyle: 'italic', padding: '20px' }}>Todavía no tenés materias aprobadas en esta carrera.</p>
+                ) : (
+                  <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }} className="custom-scrollbar">
+                    {aprobadasOrdenadas.map(m => (
+                      <div key={m.id} className="list-row" style={{ cursor: 'pointer', padding: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={() => { setSelectedMateria({ id: m.id, name: m.name }); setIsGradeModalOpen(true); }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                          <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontFamily: 'Space Mono', whiteSpace: 'nowrap' }}>Nivel {m.level || '-'}</span>
+                          <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.name}</span>
+                          <span style={{ color: detalles[m.id]?.notaFinal ? 'var(--aprobada)' : 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold', flexShrink: 0, fontVariantNumeric: 'tabular-nums', paddingLeft: '4px' }}>
+                            {detalles[m.id]?.notaFinal ? `Nota: ${detalles[m.id].notaFinal}` : 'Sin nota'}
+                          </span>
+                        </div>
+                        {!!detalles[m.id]?.dificultad && (
+                          <div className="stars-container" style={{ display: 'flex', gap: '2px', marginLeft: '15px', flexShrink: 0 }}>
+                            {[...Array(5)].map((_, i) => {
+                              const dificultad = detalles[m.id].dificultad ?? 0;
+                              return (
+                                <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < dificultad ? "var(--cursada)" : "none"} stroke={i < dificultad ? "var(--cursada)" : "var(--muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )
               ) : (
-                <div id="chart-container" style={{ width: '100%', height: '350px', position: 'relative' }}>
-                  {isMounted && chartWidth > 0 ? (
-                    <LineChart style={{ userSelect: 'none' }} width={chartWidth} height={350} data={dataGrafico} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                      <XAxis dataKey="nombreCompleto" stroke="var(--muted)" tick={false} tickLine={false} axisLine={false} tickMargin={10} />
-                      <YAxis domain={[1, 10]} ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]} stroke="var(--muted)" fontSize={11} tickLine={false} axisLine={false} />
-                      <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--border)', strokeWidth: 1, strokeDasharray: '4 4' }} />
-                      <Line type="monotone" dataKey="promedio" name="Promedio Histórico" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: 'var(--panel)' }} activeDot={{ r: 6, strokeWidth: 0 }} />
-                      <Line type="monotone" dataKey="nota" name="Nota de la Materia" stroke="#10b981" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: '#10b981', strokeWidth: 0 }} activeDot={{ r: 5, fill: '#10b981', strokeWidth: 0 }} />
-                    </LineChart>
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <div className="spinner" style={{ width: '30px', height: '30px', border: '3px solid var(--border)', borderTopColor: 'var(--cursando)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                    </div>
-                  )}
-                </div>
+                dataGrafico.length < 2 ? (
+                  <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--muted)', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                    Necesitás cargar notas en al menos 2 materias para ver tu gráfico de evolución en este plan.
+                  </div>
+                ) : (
+                  <div id="chart-container" style={{ width: '100%', height: '350px', position: 'relative' }}>
+                    {isMounted && chartWidth > 0 ? (
+                      <LineChart style={{ userSelect: 'none' }} width={chartWidth} height={350} data={dataGrafico} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                        <XAxis dataKey="nombreCompleto" stroke="var(--muted)" tick={false} tickLine={false} axisLine={false} tickMargin={10} />
+                        <YAxis domain={[1, 10]} ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]} stroke="var(--muted)" fontSize={11} tickLine={false} axisLine={false} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--border)', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                        <Line type="monotone" dataKey="promedio" name="Promedio Histórico" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: 'var(--panel)' }} activeDot={{ r: 6, strokeWidth: 0 }} />
+                        <Line type="monotone" dataKey="nota" name="Nota de la Materia" stroke="#10b981" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: '#10b981', strokeWidth: 0 }} activeDot={{ r: 5, fill: '#10b981', strokeWidth: 0 }} />
+                      </LineChart>
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div className="spinner" style={{ width: '30px', height: '30px', border: '3px solid var(--border)', borderTopColor: 'var(--cursando)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                      </div>
+                    )}
+                  </div>
+                )
               )}
             </section>
 
