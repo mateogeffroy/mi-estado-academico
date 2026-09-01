@@ -46,9 +46,9 @@ const formatDateStr = (date: Date) => {
 
 const getEventColor = (tipo: string) => {
   const t = tipo.toLowerCase();
-  if (t.includes('parcial')) return '#3b82f6';
-  if (t.includes('trabajo') || t.includes('tp') || t.includes('práctico')) return '#ef4444';
-  if (t.includes('exposi')) return '#22c55e';
+  if (t.includes('parcial')) return 'var(--cursando)';
+  if (t.includes('trabajo') || t.includes('tp') || t.includes('práctico')) return 'var(--danger)';
+  if (t.includes('exposi')) return 'var(--aprobada)';
   return 'var(--cursando)';
 };
 
@@ -56,8 +56,8 @@ const getEventColor = (tipo: string) => {
 // 1º cuatrimestre, rojo 2º. Antes todos los bloques eran del mismo azul
 // fijo sin importar la duración.
 const getDuracionColor = (duracion?: string) => {
-  if (duracion === '1') return '#22c55e';
-  if (duracion === '2') return '#ef4444';
+  if (duracion === '1') return 'var(--aprobada)';
+  if (duracion === '2') return 'var(--danger)';
   return 'var(--cursando)';
 };
 
@@ -156,9 +156,9 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
 
   const getColoresInhabil = (tipo: string) => {
     switch(tipo) {
-      case 'feriado': return { bg: 'rgba(59, 130, 246, 0.1)', border: 'rgba(59, 130, 246, 0.4)', text: '#3b82f6' }; 
-      case 'finales': return { bg: 'rgba(34, 197, 94, 0.1)', border: 'rgba(34, 197, 94, 0.4)', text: '#22c55e' }; 
-      case 'paro': return { bg: 'rgba(239, 68, 68, 0.1)', border: 'rgba(239, 68, 68, 0.4)', text: '#ef4444' }; 
+      case 'feriado': return { bg: 'rgba(59, 130, 246, 0.1)', border: 'rgba(59, 130, 246, 0.4)', text: 'var(--cursando)' };
+      case 'finales': return { bg: 'rgba(34, 197, 94, 0.1)', border: 'rgba(34, 197, 94, 0.4)', text: 'var(--aprobada)' };
+      case 'paro': return { bg: 'rgba(239, 68, 68, 0.1)', border: 'rgba(239, 68, 68, 0.4)', text: 'var(--danger)' };
       default: return { bg: 'rgba(100, 100, 100, 0.1)', border: 'rgba(100, 100, 100, 0.4)', text: '#888' };
     }
   };
@@ -427,15 +427,15 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                         
                         <div style={{ fontWeight: 'bold', marginBottom: '10px', borderBottom: '1px solid var(--border)', paddingBottom: '4px', whiteSpace: 'nowrap' }}>Eventos (Puntos)</div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                          <div style={{ width: '8px', height: '8px', minWidth: '8px', borderRadius: '50%', background: '#3b82f6', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }}/> 
+                          <div style={{ width: '8px', height: '8px', minWidth: '8px', borderRadius: '50%', background: 'var(--cursando)', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }}/>
                           <span style={{ whiteSpace: 'nowrap' }}>Exámenes / Parciales</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                          <div style={{ width: '8px', height: '8px', minWidth: '8px', borderRadius: '50%', background: '#ef4444', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }}/> 
+                          <div style={{ width: '8px', height: '8px', minWidth: '8px', borderRadius: '50%', background: 'var(--danger)', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }}/>
                           <span style={{ whiteSpace: 'nowrap' }}>Trabajos Prácticos</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                          <div style={{ width: '8px', height: '8px', minWidth: '8px', borderRadius: '50%', background: '#22c55e', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }}/> 
+                          <div style={{ width: '8px', height: '8px', minWidth: '8px', borderRadius: '50%', background: 'var(--aprobada)', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }}/>
                           <span style={{ whiteSpace: 'nowrap' }}>Exposiciones</span>
                         </div>
                         

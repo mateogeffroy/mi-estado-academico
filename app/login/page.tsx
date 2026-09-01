@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { supabase } from '../../src/lib/supabase';
+import Alert from '../../src/components/Alert';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -144,13 +145,6 @@ export default function AuthPage() {
 
         .auth-form { display: flex; flex-direction: column; }
         .auth-label { color: var(--muted); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-
-        .input-field {
-          width: 100%; box-sizing: border-box; border-radius: 10px;
-          border: 1px solid var(--border); background: var(--glass-bg);
-          color: var(--text-strong); outline: none; transition: border-color 0.2s ease, background 0.2s ease;
-        }
-        .input-field:focus { border-color: var(--cursando); background: var(--glass-hover); }
 
         .auth-submit-btn { border-radius: 10px; font-weight: bold; width: 100%; box-sizing: border-box; cursor: pointer; border: none; }
         
@@ -353,8 +347,8 @@ export default function AuthPage() {
               )}
 
               <div className="login-box">
-                {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '12px', borderRadius: '10px', fontSize: '0.9rem', textAlign: 'center', fontWeight: 'bold' }}>{error}</div>}
-                {successMsg && <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '12px', borderRadius: '10px', fontSize: '0.9rem', textAlign: 'center', fontWeight: 'bold' }}>{successMsg}</div>}
+                {error && <Alert type="danger">{error}</Alert>}
+                {successMsg && <Alert type="success">{successMsg}</Alert>}
 
                 <form onSubmit={handleSubmit} className="auth-form">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -408,7 +402,7 @@ export default function AuthPage() {
                         const isMet = req.test(password, confirmPassword);
                         return (
                           <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: isMet ? 'var(--text-strong)' : 'var(--muted)' }}>
-                            <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: isMet ? '#10b981' : 'transparent', border: `1px solid ${isMet ? '#10b981' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: isMet ? 'var(--success)' : 'transparent', border: `1px solid ${isMet ? 'var(--success)' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                               {isMet && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                             </div>
                             {req.label}
@@ -655,8 +649,8 @@ export default function AuthPage() {
               )}
 
               <div className="login-box">
-                {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '12px', borderRadius: '10px', fontSize: '0.9rem', textAlign: 'center', fontWeight: 'bold' }}>{error}</div>}
-                {successMsg && <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '12px', borderRadius: '10px', fontSize: '0.9rem', textAlign: 'center', fontWeight: 'bold' }}>{successMsg}</div>}
+                {error && <Alert type="danger">{error}</Alert>}
+                {successMsg && <Alert type="success">{successMsg}</Alert>}
 
                 <form onSubmit={handleSubmit} className="auth-form">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -693,7 +687,7 @@ export default function AuthPage() {
                         const isMet = req.test(password, confirmPassword);
                         return (
                           <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: isMet ? 'var(--text-strong)' : 'var(--muted)' }}>
-                            <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: isMet ? '#10b981' : 'transparent', border: `1px solid ${isMet ? '#10b981' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: isMet ? 'var(--success)' : 'transparent', border: `1px solid ${isMet ? 'var(--success)' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                               {isMet && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                             </div>
                             {req.label}

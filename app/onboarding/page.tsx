@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../../src/lib/supabase';
+import Alert from '../../src/components/Alert';
 
 const UNIVERSIDADES = [
   { id: 'utn', name: 'UTN (FRLP)' },
@@ -256,11 +257,7 @@ export default function OnboardingPage() {
               {/* FIN DEL DROPDOWN PERSONALIZADO */}
             </div>
 
-            {error && (
-              <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '12px', borderRadius: '8px', fontSize: '0.9rem', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                {error}
-              </div>
-            )}
+            {error && <Alert type="danger">{error}</Alert>}
 
             <button 
               type="submit" 

@@ -173,7 +173,7 @@ export default function PerfilPage() {
           <p style={{ color: 'var(--text-strong)', fontWeight: 'bold', margin: '0 0 8px 0', fontSize: '0.9rem' }}>{payload[0].payload.nombreCompleto}</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <span style={{ color: '#3b82f6', fontSize: '0.85rem', fontWeight: 'bold' }}>Promedio acumulado: {payload[0].value}</span>
-            <span style={{ color: '#10b981', fontSize: '0.85rem' }}>Nota de la materia: {payload[1].value}</span>
+            <span style={{ color: 'var(--success)', fontSize: '0.85rem' }}>Nota de la materia: {payload[1].value}</span>
           </div>
         </div>
       );
@@ -377,7 +377,7 @@ export default function PerfilPage() {
                         <YAxis domain={[1, 10]} ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]} stroke="var(--muted)" fontSize={11} tickLine={false} axisLine={false} />
                         <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--border)', strokeWidth: 1, strokeDasharray: '4 4' }} />
                         <Line type="monotone" dataKey="promedio" name="Promedio Histórico" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: 'var(--panel)' }} activeDot={{ r: 6, strokeWidth: 0 }} />
-                        <Line type="monotone" dataKey="nota" name="Nota de la Materia" stroke="#10b981" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: '#10b981', strokeWidth: 0 }} activeDot={{ r: 5, fill: '#10b981', strokeWidth: 0 }} />
+                        <Line type="monotone" dataKey="nota" name="Nota de la Materia" stroke="var(--success)" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: 'var(--success)', strokeWidth: 0 }} activeDot={{ r: 5, fill: 'var(--success)', strokeWidth: 0 }} />
                       </LineChart>
                     ) : (
                       <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

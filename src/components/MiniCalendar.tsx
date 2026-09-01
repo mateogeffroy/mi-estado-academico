@@ -80,9 +80,9 @@ export default function MiniCalendar({ detalles, ALL }: MiniCalendarProps) {
 
   const getEventTextColor = (tipo: string) => {
     const t = tipo.toLowerCase();
-    if (t.includes('parcial')) return '#3b82f6'; 
-    if (t.includes('trabajo') || t.includes('tp') || t.includes('práctico')) return '#ef4444'; 
-    if (t.includes('exposi')) return '#22c55e'; 
+    if (t.includes('parcial')) return 'var(--cursando)';
+    if (t.includes('trabajo') || t.includes('tp') || t.includes('práctico')) return 'var(--danger)';
+    if (t.includes('exposi')) return 'var(--aprobada)';
     return 'var(--cursando)'; 
   };
 

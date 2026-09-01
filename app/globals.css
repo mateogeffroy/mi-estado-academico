@@ -37,6 +37,10 @@
   --danger-soft: rgba(239, 68, 68, 0.1);
   --danger-soft-hover: rgba(239, 68, 68, 0.15);
 
+  --success: #10b981;
+  --success-border: rgba(16, 185, 129, 0.3);
+  --success-soft: rgba(16, 185, 129, 0.1);
+
   /* Transparencias (Efecto Glass) */
   --header-bg: rgba(255, 255, 255, 0.95);
   --glass-bg: rgba(0, 0, 0, 0.03);
@@ -406,6 +410,41 @@ button {
   padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
 }
 .btn-danger:hover { background-color: #b91c1c; }
+
+.btn-ghost {
+  background: transparent; color: var(--text-strong);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--glass-hover); }
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+.input-field {
+  width: 100%; box-sizing: border-box; border-radius: 10px;
+  padding: 12px 14px; font-size: 0.95rem;
+  border: 1px solid var(--border); background: var(--glass-bg);
+  color: var(--text-strong); font-family: 'Syne', sans-serif; outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.input-field::placeholder { color: var(--muted); }
+.input-field:focus { border-color: var(--cursando); background: var(--glass-hover); }
+.input-field:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.field-label {
+  display: block; font-size: 0.8rem; font-weight: 600;
+  color: var(--text); margin-bottom: 6px;
+}
+
+/* ============================================================
+   ALERTS
+   ============================================================ */
+.alert {
+  padding: 12px; border-radius: 10px; font-size: 0.9rem;
+  text-align: center; font-weight: bold; border: 1px solid;
+}
+.alert-danger  { background: var(--danger-soft);  border-color: var(--danger-border);  color: var(--danger); }
+.alert-success { background: var(--success-soft); border-color: var(--success-border); color: var(--success); }
 
 .help-btn {
   background: transparent; color: var(--muted); border: 1.5px solid var(--muted);

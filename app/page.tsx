@@ -112,9 +112,9 @@ export default function Dashboard() {
 
   const getEventColor = (tipo: string) => {
     const t = tipo.toLowerCase();
-    if (t.includes('parcial')) return '#3b82f6'; 
-    if (t.includes('trabajo') || t.includes('tp') || t.includes('práctico')) return '#ef4444'; 
-    if (t.includes('exposi')) return '#22c55e'; 
+    if (t.includes('parcial')) return 'var(--cursando)';
+    if (t.includes('trabajo') || t.includes('tp') || t.includes('práctico')) return 'var(--danger)';
+    if (t.includes('exposi')) return 'var(--aprobada)';
     return 'var(--cursando)'; 
   };
 
@@ -238,11 +238,11 @@ export default function Dashboard() {
         .agenda-strip { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 10px; -webkit-overflow-scrolling: touch; }
         .agenda-card { flex-shrink: 0; width: 240px; padding: 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border); text-decoration: none; display: flex; flex-direction: column; gap: 8px; }
         .agenda-card-evento { border-left: 3px solid var(--evento-color, var(--cursando)); }
-        .agenda-card-alerta { border-left: 3px solid #ef4444; }
+        .agenda-card-alerta { border-left: 3px solid var(--danger); }
         .agenda-card-title { font-size: 0.9rem; font-weight: 700; color: var(--text-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .agenda-card-sub { font-size: 0.75rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .agenda-card-date { align-self: flex-start; background: var(--bg); padding: 4px 10px; border-radius: 8px; font-family: 'Space Mono', monospace; font-weight: bold; font-size: 0.8rem; color: var(--text-strong); }
-        .agenda-card-cta { font-size: 0.75rem; color: #ef4444; font-weight: bold; }
+        .agenda-card-cta { font-size: 0.75rem; color: var(--danger); font-weight: bold; }
 
         /* Próximos eventos: lista vertical (no tira horizontal), con el 6to
            registro transparentado detrás de "Mostrar más" en vez de cortar
@@ -357,7 +357,7 @@ export default function Dashboard() {
         {/* --- Materias sin horario cargado: aviso corto, horizontal --- */}
         {materiasSinHorario.length > 0 && (
           <div>
-            <h3 className="home-section-title" style={{ color: '#ef4444' }}>
+            <h3 className="home-section-title" style={{ color: 'var(--danger)' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               Sin horario asignado ({materiasSinHorario.length})
             </h3>
@@ -444,13 +444,13 @@ export default function Dashboard() {
                           comisionSeleccionada ? (
                             <span style={{ color: 'var(--cursando)' }}>Comisión: {comisionSeleccionada}</span>
                           ) : (
-                            <span style={{ color: '#ef4444' }}>No hay comisión</span>
+                            <span style={{ color: 'var(--danger)' }}>No hay comisión</span>
                           )
                         ) : (
                           horariosCustom && horariosCustom.length > 0 ? (
                             <span style={{ color: '#f59e0b' }}>Horario Personalizado</span>
                           ) : (
-                            <span style={{ color: '#ef4444' }}>Sin horario asignado</span>
+                            <span style={{ color: 'var(--danger)' }}>Sin horario asignado</span>
                           )
                         )}
                       </div>

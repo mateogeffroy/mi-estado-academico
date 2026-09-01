@@ -91,9 +91,8 @@ export default function ConfirmModal({
         <div style={{ display: 'flex', gap: '15px' }}>
           <button
             onClick={onCancel}
-            style={{ flex: 1, padding: '12px', borderRadius: '12px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-strong)', cursor: 'pointer', fontWeight: 'bold' }}
-            onMouseOver={(e) => e.currentTarget.style.background = 'var(--glass-hover)'}
-            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+            className="btn-ghost"
+            style={{ flex: 1, padding: '12px', borderRadius: '12px' }}
           >
             {cancelText}
           </button>
@@ -101,14 +100,8 @@ export default function ConfirmModal({
           <button
             ref={confirmBtnRef}
             onClick={onConfirm}
-            className={isDanger ? "" : "btn-primary"}
-            style={{
-              flex: 1, padding: '12px', borderRadius: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer',
-              background: isDanger ? 'var(--danger)' : '', color: isDanger ? 'white' : '',
-              transition: 'background 0.2s'
-            }}
-            onMouseOver={(e) => { if (isDanger) e.currentTarget.style.background = '#dc2626'; }}
-            onMouseOut={(e) => { if (isDanger) e.currentTarget.style.background = 'var(--danger)'; }}
+            className={isDanger ? "btn-danger" : "btn-primary"}
+            style={{ flex: 1, padding: '12px', borderRadius: '12px' }}
           >
             {confirmText}
           </button>

@@ -23,7 +23,7 @@ const ESTADO_INFO: Record<string, { label: string; color: string }> = {
   cursando: { label: 'Cursando', color: 'var(--cursando)' },
   cursada: { label: 'Cursada', color: 'var(--cursada)' },
   available: { label: 'Disponible', color: 'var(--muted)' },
-  disabled: { label: 'Bloqueada', color: '#ef4444' },
+  disabled: { label: 'Bloqueada', color: 'var(--danger)' },
 };
 
 const ACCIONES: { accion: AccionMateria; estado: EstadoMateria; label: string; color: string }[] = [
@@ -34,8 +34,8 @@ const ACCIONES: { accion: AccionMateria; estado: EstadoMateria; label: string; c
 ];
 
 const getCheckIcon = (ok: boolean) => ok
-  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
-  : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
+  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--aprobada)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
+  : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
 
 export default function MateriaDetailModal({
   isOpen, onClose, subject, estadoActual, materias, detalles, careerData, onCambiarEstado, onEditarNota,
@@ -129,8 +129,8 @@ export default function MateriaDetailModal({
         </span>
 
         {estadoActual === 'disabled' && (
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '12px', padding: '14px', marginBottom: '20px' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '1px' }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'var(--danger-soft)', border: '1px solid var(--danger-border)', borderRadius: '12px', padding: '14px', marginBottom: '20px' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '1px' }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-strong)' }}>Todavía no cumplís las correlativas necesarias para cursarla.</div>
           </div>
         )}
