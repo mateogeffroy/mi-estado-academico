@@ -39,29 +39,26 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
   const { careerId } = usePlan();
   const INHABILES = getInhabiles(careerId);
 
-  // Ventana visible de 7 días. Arranca en el lunes de la semana actual, pero
-  // las flechas simples la corren de a un día, así que no siempre empieza
-  // en lunes: cada columna saca su nombre de día de su propia fecha.
-  const [startDate, setStartDate] = useState(() => getMonday(new Date()));
+  // Día marcado por las flechas. Las columnas quedan siempre en el mismo
+  // orden (lunes a domingo): lo que se mueve es esta marca, y la semana
+  // mostrada es la que contiene al día marcado.
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalDate, setModalDate] = useState(new Date());
   const [selectedDayStr, setSelectedDayStr] = useState<string>(formatDateStr(new Date()));
   const [showLegend, setShowLegend] = useState(false);
 
-  // Día activo en la vista de agenda (mobile): siempre arranca en "hoy",
-  // la grilla ahora cubre los 7 días de la semana.
-  const [selectedAgendaDia, setSelectedAgendaDia] = useState<string>(() => {
-    const idxHoy = new Date().getDay(); // 0 = domingo, 1 = lunes, ... 6 = sábado
-    return DIAS[idxHoy === 0 ? 6 : idxHoy - 1];
-  });
+  const hoyStr = formatDateStr(new Date());
+  const selectedStr = formatDateStr(selectedDate);
 
-  const datesOfWeek = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
+  const monday = getMonday(selectedDate);
+  const datesOfWeek = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
 
-  const desplazar = (dias: number) => setStartDate(addDays(startDate, dias));
-  const handleCurrentWeek = () => setStartDate(getMonday(new Date()));
+  const desplazar = (dias: number) => setSelectedDate(addDays(selectedDate, dias));
+  const handleCurrentWeek = () => setSelectedDate(new Date());
 
-  // Datos de un día de la ventana visible. La lógica vive en DayAgenda para
+  // Datos de un día de la semana visible. La lógica vive en DayAgenda para
   // que la comparta la sección "Hoy" de la home.
   const dayData = (idx: number) => {
     const date = datesOfWeek[idx];
@@ -70,7 +67,8 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
     return {
       dia,
       dateStr,
-      isToday: dateStr === formatDateStr(new Date()),
+      isToday: dateStr === hoyStr,
+      isSelected: dateStr === selectedStr,
       ...buildDayData({ dia, dateStr, horarios, detalles, materiasData, inhabiles: INHABILES }),
     };
   };
@@ -475,9 +473,9 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
             {/* --- SEMANA EN COLUMNAS (desktop / tablet) --- */}
             <div className="week-columns week-view">
               {datesOfWeek.map((date, idx) => {
-                const { dia, dateStr, isToday, inhabil, clases, eventosFantasma } = dayData(idx);
+                const { dia, dateStr, isToday, isSelected, inhabil, clases, eventosFantasma } = dayData(idx);
                 return (
-                  <div key={dateStr} className="week-col">
+                  <div key={dateStr} className={`week-col ${isSelected ? 'selected' : ''}`}>
                     <div className={`week-col-header ${isToday ? 'today' : ''}`}>
                       <span className="week-col-day">{dia}</span>
                       <span className="week-col-date">{date.getDate()}</span>
@@ -496,16 +494,15 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
             {/* --- AGENDA MOBILE: un día por vez, elegido con los tabs --- */}
             <div className="agenda-view">
               <div className="agenda-day-tabs">
-                {datesOfWeek.map((date, idx) => {
+                {datesOfWeek.map(date => {
                   const dia = diaDe(date);
                   const dateStr = formatDateStr(date);
-                  const isToday = dateStr === formatDateStr(new Date());
                   const tieneItems = (horarios[dia] && horarios[dia].length > 0) || getEventsForDate(dateStr).length > 0;
                   return (
                     <button
                       key={dateStr}
-                      className={`agenda-tab ${selectedAgendaDia === dia ? 'active' : ''} ${isToday ? 'today' : ''}`}
-                      onClick={() => setSelectedAgendaDia(dia)}
+                      className={`agenda-tab ${dateStr === selectedStr ? 'active' : ''} ${dateStr === hoyStr ? 'today' : ''}`}
+                      onClick={() => setSelectedDate(date)}
                     >
                       <span className="agenda-tab-day">{DIAS_CORTOS[DIAS.indexOf(dia)]}</span>
                       <span className="agenda-tab-date">{date.getDate()}</span>
@@ -516,9 +513,9 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
               </div>
 
               {(() => {
-                // La ventana siempre tiene los 7 días, así que el día elegido
-                // está en alguna posición; el guard es por las dudas.
-                const diaIdx = Math.max(0, datesOfWeek.findIndex(d => diaDe(d) === selectedAgendaDia));
+                // El día marcado siempre cae dentro de la semana mostrada
+                // (la semana se calcula a partir de él); el guard es por las dudas.
+                const diaIdx = Math.max(0, datesOfWeek.findIndex(d => formatDateStr(d) === selectedStr));
                 const { dateStr, inhabil, clases, eventosFantasma } = dayData(diaIdx);
                 return (
                   <DayAgenda

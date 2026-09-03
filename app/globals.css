@@ -599,7 +599,13 @@ button {
 /* Semana en columnas: una por día, cards apiladas por horario. Sin eje de
    horas, así que ninguna card queda más baja que su propio texto. */
 .week-columns { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-3); padding: var(--space-4); }
-.week-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.week-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; border-radius: var(--radius-md); transition: outline-color 0.2s ease; }
+
+/* Marca del día elegido con las flechas: un anillo alrededor de la columna.
+   Es outline y no border para no correr el ancho de la columna al moverse.
+   Arranca sobre el día de hoy y se mueve con las flechas; el resaltado azul
+   del header (.today) queda siempre sobre la fecha real. */
+.week-col.selected { outline: 2px solid var(--cursando); outline-offset: 6px; }
 .week-col-header {
   display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
   padding: 6px 10px; border-radius: var(--radius-sm);
