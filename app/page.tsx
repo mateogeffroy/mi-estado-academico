@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePlan } from '../src/context/PlanContext';
 import SpotlightCard from '../src/components/SpotlightCard';
 import HorarioCalendar from '../src/components/HorarioCalendar';
-import { getCuatrimestreActual } from '../src/lib/data/calendario';
+import DayAgenda, { buildDayData, formatDateStr, getEventColor } from '../src/components/DayAgenda';
+import { getCuatrimestreActual, getInhabiles } from '../src/lib/data/calendario';
 
 // Diccionario para mostrar nombres limpios en el selector
 const NOMBRES_CARRERAS: Record<string, string> = {
@@ -110,14 +111,6 @@ export default function Dashboard() {
     return fechaISO;
   };
 
-  const getEventColor = (tipo: string) => {
-    const t = tipo.toLowerCase();
-    if (t.includes('parcial')) return 'var(--cursando)';
-    if (t.includes('trabajo') || t.includes('tp') || t.includes('práctico')) return 'var(--danger)';
-    if (t.includes('exposi')) return 'var(--aprobada)';
-    return 'var(--cursando)'; 
-  };
-
   const horariosSemanales: Record<string, any[]> = { 'Lunes': [], 'Martes': [], 'Miércoles': [], 'Jueves': [], 'Viernes': [], 'Sábado': [], 'Domingo': [] };
   
   cursando.forEach((m: any) => {
@@ -172,6 +165,23 @@ export default function Dashboard() {
 
   const ordenDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   const diasMostrar = ordenDias.filter(dia => horariosSemanales[dia].length > 0);
+
+  // Sección "Hoy": lo que pasa en el día en curso, arriba de todo, sin tener
+  // que buscar la columna correcta en la grilla semanal.
+  const hoy = new Date();
+  const hoyStr = formatDateStr(hoy);
+  const diaHoy = ordenDias[(hoy.getDay() + 6) % 7]; // getDay(): 0 = domingo
+  const datosHoy = buildDayData({
+    dia: diaHoy,
+    dateStr: hoyStr,
+    horarios: horariosSemanales,
+    detalles,
+    materiasData: ALL,
+    inhabiles: getInhabiles(careerId),
+  });
+  const fechaHoyTexto = hoy.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const eventosDeClaseHoy = (materiaId: string) =>
+    detalles?.[materiaId]?.eventos?.filter((ev: any) => ev.fecha === hoyStr) || [];
 
   // Materias "cursando" que no tienen ninguna forma de horario cargado (ni
   // comisión elegida, ni horario personalizado): no aparecen en el calendario
@@ -230,6 +240,8 @@ export default function Dashboard() {
         .schedule-toggle { display: flex; background: var(--panel); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
 
         .home-section-title { color: var(--text-strong); font-size: 1.1rem; margin: 0 0 14px 0; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+
+        .hoy-list { display: flex; flex-direction: column; gap: 10px; }
 
         /* Agenda: lo urgente/accionable (próximos parciales, materias sin
            horario) primero y en una tira horizontal, antes del calendario.
@@ -310,6 +322,23 @@ export default function Dashboard() {
       )}
 
       <main className="dashboard-main">
+
+        {/* --- Hoy: fecha, clases y eventos del día en curso --- */}
+        <div>
+          <h3 className="home-section-title" style={{ textTransform: 'capitalize' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            {fechaHoyTexto}
+          </h3>
+          <div className="hoy-list">
+            <DayAgenda
+              clases={datosHoy.clases}
+              eventosFantasma={datosHoy.eventosFantasma}
+              inhabil={datosHoy.inhabil}
+              eventosDeClase={eventosDeClaseHoy}
+              emptyText="Hoy no tenés clases ni eventos."
+            />
+          </div>
+        </div>
 
         {/* --- Horario Semanal: primer foco al abrir la app --- */}
         <div id="seccion-horarios">

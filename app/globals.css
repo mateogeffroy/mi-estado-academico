@@ -41,6 +41,10 @@
   --success-border: rgba(16, 185, 129, 0.3);
   --success-soft: rgba(16, 185, 129, 0.1);
 
+  /* Ámbar de "atención": eventos sin clase agendada, horario personalizado */
+  --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.15);
+
   /* Transparencias (Efecto Glass) */
   --header-bg: rgba(255, 255, 255, 0.95);
   --glass-bg: rgba(0, 0, 0, 0.03);
@@ -575,6 +579,49 @@ button {
 .list-row:hover { background: var(--glass-hover); }
 
 /* ============================================================
+   AGENDA / HORARIO
+   Cards de clase de alto automático: el nombre de la materia wrapea entero.
+   Las comparten la grilla semanal (columnas por día), la agenda mobile y la
+   sección "Hoy" de la home.
+   ============================================================ */
+.agenda-item {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 12px 14px; background: var(--panel);
+  border: 1px solid var(--border); border-left: 4px solid var(--cursando);
+  border-radius: var(--radius-md); cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.agenda-item:hover { border-color: var(--cursando); transform: translateY(-2px); }
+.agenda-item.ghost { border-left-color: var(--warning); border-style: dashed; }
+.agenda-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.agenda-item-title { font-weight: 700; color: var(--text-strong); font-size: 0.9rem; line-height: 1.25; overflow-wrap: anywhere; }
+.agenda-item-time { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--muted); flex-shrink: 0; }
+.agenda-item-meta { font-size: 0.7rem; color: var(--muted); font-family: 'Space Mono', monospace; overflow-wrap: anywhere; }
+.agenda-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.agenda-event-chip {
+  font-size: 0.65rem; padding: 2px 8px; border-radius: var(--radius-full);
+  font-weight: 700; text-transform: uppercase; line-height: 1.5; overflow-wrap: anywhere;
+}
+.agenda-empty { padding: 14px; text-align: center; color: var(--muted); font-size: 0.85rem; border-radius: var(--radius-md); }
+
+/* Semana en columnas: una por día, cards apiladas por horario. Sin eje de
+   horas, así que ninguna card queda más baja que su propio texto. */
+.week-columns { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-3); padding: var(--space-4); }
+.week-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.week-col-header {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
+  padding: 6px 10px; border-radius: var(--radius-sm);
+  background: var(--glass-bg); border: 1px solid transparent; color: var(--text-strong);
+}
+.week-col-header.today { border-color: var(--cursando); color: var(--cursando); background: rgba(59, 130, 246, 0.1); }
+.week-col-day { font-weight: 700; font-size: 0.8rem; }
+.week-col-date { font-family: 'Space Mono', monospace; font-size: 0.75rem; opacity: 0.7; }
+
+@media (max-width: 1100px) {
+  .week-columns { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+}
+
+/* ============================================================
    TOOLTIPS
    ============================================================ */
 .tooltip {
@@ -740,9 +787,7 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
 *, *::before, *::after { max-width: 100%; }
 
 [style*="position: fixed"], [style*="position:fixed"],
-.tooltip, .sidebar, .sidebar-overlay, .calendar-tooltip-card,
-.calendar-body, .calendar-body *, .calendar-inner, .grid-lines, .grid-line,
-.time-column, .time-label, .day-column, .event-card, .inhabilitado-overlay {
+.tooltip, .sidebar, .sidebar-overlay, .calendar-tooltip-card {
   max-width: none;
 }
 

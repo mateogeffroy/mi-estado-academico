@@ -22,3 +22,4 @@ pasa a `Shippeado` (o se borra si no aporta valor histórico).
 | # | Iniciativa | Estado | Rama |
 |---|---|---|---|
 | 001 | [Red social (buscar/agregar gente)](001-red-social.md) | En progreso | `feature/rediseno-ux/ui` |
+| 002 | [Rediseño de la grilla horaria](002-rediseno-grilla-horaria.md) | En progreso | `feature/rediseno-ux/ui` |
