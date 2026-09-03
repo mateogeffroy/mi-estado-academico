@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import UpdateModal, { UPDATE_VERSION_KEY } from './UpdateModal';
 import Modal from './Modal';
+import Avatar from './Avatar';
 import { supabase } from '../lib/supabase';
 import { feedbackPort } from '../infrastructure/repositorios';
 
@@ -206,6 +207,13 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         .sidebar-action-btn-custom { padding: 12px 14px !important; transition: all 0.4s ease !important; }
         .theme-toggle-btn { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: transparent; border: none; color: var(--muted); cursor: pointer; transition: all 0.4s ease; padding: 0; }
         .theme-toggle-btn:hover { color: var(--text-strong); background: var(--glass-hover); }
+        .nav-link-btn {
+          padding: 8px 18px; font-size: 0.95rem; font-weight: bold; border-radius: 10px;
+          cursor: pointer; transition: all 0.4s ease; display: flex; align-items: center; gap: 8px;
+          white-space: nowrap; text-decoration: none;
+          background: var(--glass-bg); color: var(--text-strong); border: 1px solid var(--border);
+        }
+        .nav-link-btn.active { background: var(--cursando); color: black; border-color: transparent; }
         .sidebar-btn-hover:hover { color: var(--text-strong) !important; background: var(--glass-hover) !important; }
         .avatar-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--glass-bg); color: var(--text-strong); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; cursor: pointer; border: 2px solid transparent; transition: all 0.4s ease; overflow: hidden; flex-shrink: 0; padding: 0; }
         .avatar-btn:hover { transform: scale(1.05); background: var(--glass-hover); }
@@ -307,18 +315,19 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
                 <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
 
-                <Link href="/" style={{ textDecoration: 'none' }}>
-                  <button style={{ ...navBtnBase, background: pathname === '/' ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname === '/' ? 'black' : 'var(--text-strong)', border: pathname === '/' ? 'none' : '1px solid var(--border)' }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    Inicio
-                  </button>
+                <Link href="/" className={`nav-link-btn${pathname === '/' ? ' active' : ''}`}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  Inicio
                 </Link>
 
-                <Link href="/plan" style={{ textDecoration: 'none' }}>
-                  <button style={{ ...navBtnBase, background: pathname === '/plan' ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname === '/plan' ? 'black' : 'var(--text-strong)', border: pathname === '/plan' ? 'none' : '1px solid var(--border)' }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-                    Plan de estudios
-                  </button>
+                <Link href="/plan" className={`nav-link-btn${pathname === '/plan' ? ' active' : ''}`}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+                  Plan de estudios
+                </Link>
+
+                <Link href="/buscar" className={`nav-link-btn${pathname === '/buscar' ? ' active' : ''}`}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  Buscar
                 </Link>
 
                 {/*
@@ -344,20 +353,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                   className={`avatar-btn ${pathname === '/perfil' ? 'active-profile' : ''}`}
                   title="Mi Perfil"
                 >
-                  {userProfile.avatarUrl ? (
-                    <img src={userProfile.avatarUrl} alt="Avatar" />
-                  ) : (
-                    <span style={{
-                      fontSize: `calc(32px / ${Math.max(userProfile.initials.length, 2)})`,
-                      lineHeight: 1,
-                      letterSpacing: '-0.5px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      {userProfile.initials}
-                    </span>
-                  )}
+                  <Avatar name={userProfile.name || 'Usuario'} src={userProfile.avatarUrl} />
                 </button>
 
                 {isProfileMenuOpen && (
@@ -411,6 +407,10 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             Blog
           </Link>
           */}
+          <Link href="/buscar" className={`bottom-tab ${pathname === '/buscar' ? 'active' : ''}`}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Buscar
+          </Link>
           <Link href="/perfil" className={`bottom-tab ${pathname === '/perfil' ? 'active' : ''}`}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             Perfil

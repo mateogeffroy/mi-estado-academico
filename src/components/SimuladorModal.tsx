@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Modal from './Modal';
 
 interface SimuladorModalProps {
   isOpen: boolean;
@@ -71,8 +72,6 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
       window.removeEventListener('touchstart', handleOutsideInteraction);
     };
   }, [mobileMenu.isOpen, activeRightId, dropdownOpen]);
-
-  if (!isOpen) return null;
 
   const materiasSimulables = ALL.filter(m => materias[m.id] === 'cursando' || materias[m.id] === 'cursada');
   
@@ -263,9 +262,7 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
         }
       `}</style>
 
-      <div className="simulador-overlay" onClick={onClose}>
-        <div className="simulador-modal" onClick={e => e.stopPropagation()}>
-          
+      <Modal isOpen={isOpen} onClose={onClose} overlayClassName="simulador-overlay" className="simulador-modal" ariaLabel="¿Qué destrabo?">
           <div className="simulador-header">
             <div>
               <h2 style={{ color: 'var(--text-strong)', margin: '0 0 4px 0', fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -488,8 +485,7 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
             </div>
 
           </div>
-        </div>
-      </div>
+      </Modal>
 
       {/* MENÚ CONTEXTUAL MÓVIL */}
       {mobileMenu.isOpen && mobileMenu.subjectId && (

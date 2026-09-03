@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Modal from './Modal';
 
 interface GradeModalProps {
   isOpen: boolean;
@@ -25,8 +26,6 @@ export default function GradeModal({ isOpen, onClose, onSubmit, materiaName, ini
     }
   }, [isOpen, initialNota, initialDificultad]);
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const notaNum = parseInt(nota);
@@ -42,16 +41,7 @@ export default function GradeModal({ isOpen, onClose, onSubmit, materiaName, ini
   const valorActual = hoveredStar || dificultad;
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'var(--overlay-bg)',
-      backdropFilter: 'blur(5px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 10000,
-      padding: '20px',
-      animation: 'fadeIn 0.2s ease-out'
-    }}>
-      
+    <>
       {/* Oculta las flechas nativas del input number (Chrome/Safari y Firefox usan reglas distintas). */}
       <style>{`
         .no-spinners::-webkit-outer-spin-button,
@@ -62,20 +52,21 @@ export default function GradeModal({ isOpen, onClose, onSubmit, materiaName, ini
         .no-spinners {
           -moz-appearance: textfield;
         }
+        .grade-modal-overlay {
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+          background-color: var(--overlay-bg); backdrop-filter: blur(5px);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 10000; padding: 20px; animation: fadeIn 0.2s ease-out;
+        }
+        .grade-modal {
+          background: var(--panel); border: 1px solid var(--border); border-radius: 24px;
+          padding: 30px; max-width: 400px; width: 100%;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;
+        }
       `}</style>
 
-      <div style={{
-        background: 'var(--panel)',
-        border: '1px solid var(--border)',
-        borderRadius: '24px',
-        padding: '30px',
-        maxWidth: '400px',
-        width: '100%',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-        position: 'relative'
-      }}>
-        
-        <button 
+      <Modal isOpen={isOpen} onClose={onClose} overlayClassName="grade-modal-overlay" className="grade-modal" ariaLabel={`Cargar nota - ${materiaName}`}>
+        <button
           onClick={onClose}
           style={{
             position: 'absolute', top: '15px', right: '15px',
@@ -165,8 +156,7 @@ export default function GradeModal({ isOpen, onClose, onSubmit, materiaName, ini
             Guardar
           </button>
         </form>
-
-      </div>
-    </div>
+      </Modal>
+    </>
   );
 }

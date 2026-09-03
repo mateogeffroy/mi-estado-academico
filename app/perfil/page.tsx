@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePlan } from '../../src/context/PlanContext';
 import { authPort } from '../../src/infrastructure/repositorios';
 import GradeModal from '../../src/components/GradeModal';
 import ConfirmModal from '../../src/components/ConfirmModal';
+import Card from '../../src/components/Card';
+import PersonList from '../../src/components/PersonList';
+import { getPeopleForComision, MockPerson } from '../../src/lib/data/mockPeople';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
@@ -70,7 +73,7 @@ export default function PerfilPage() {
   // visibles (lista larga + gráfico), mucho scroll para algo que se mira
   // por separado. Ahora es una sola sección con tabs, mismo patrón que las
   // tabs por año del plan de estudios.
-  const [historialTab, setHistorialTab] = useState<'lista' | 'grafico'>('lista');
+  const [historialTab, setHistorialTab] = useState<'lista' | 'grafico' | 'amigos'>('lista');
 
   useEffect(() => {
     setIsMounted(true);
@@ -166,6 +169,18 @@ export default function PerfilPage() {
     };
   }).filter(d => d.nota > 0); 
 
+  // Gente de las comisiones elegidas en cada materia (mockup), dedup por persona.
+  const gentePorComisiones = useMemo(() => {
+    const vistos = new Map<string, MockPerson>();
+    Object.entries(detalles).forEach(([materiaId, det]) => {
+      if (!det?.comision) return;
+      getPeopleForComision(materiaId, det.comision).forEach(p => {
+        if (!vistos.has(p.id)) vistos.set(p.id, p);
+      });
+    });
+    return Array.from(vistos.values());
+  }, [detalles]);
+
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -236,7 +251,7 @@ export default function PerfilPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
             
-            <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+            <Card style={{ width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '20px' }}>
                 <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
@@ -302,9 +317,9 @@ export default function PerfilPage() {
                   </div>
                 )}
               </div>
-            </section>
+            </Card>
 
-            <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+            <Card style={{ width: '100%' }}>
               <div className="historial-header">
                 <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aprobada)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -331,9 +346,18 @@ export default function PerfilPage() {
                 >
                   Evolución
                 </button>
+                <button
+                  type="button"
+                  className={`historial-tab ${historialTab === 'amigos' ? 'active' : ''}`}
+                  onClick={() => setHistorialTab('amigos')}
+                >
+                  Amigos
+                </button>
               </div>
 
-              {historialTab === 'lista' ? (
+              {historialTab === 'amigos' ? (
+                <PersonList people={gentePorComisiones} />
+              ) : historialTab === 'lista' ? (
                 aprobadasOrdenadas.length === 0 ? (
                   <p style={{ color: 'var(--muted)', textAlign: 'center', fontStyle: 'italic', padding: '20px' }}>Todavía no tenés materias aprobadas en esta carrera.</p>
                 ) : (
@@ -387,7 +411,7 @@ export default function PerfilPage() {
                   </div>
                 )
               )}
-            </section>
+            </Card>
 
           </div>
         </div>
