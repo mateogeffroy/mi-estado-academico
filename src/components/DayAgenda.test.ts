@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildDayData, formatDateStr } from './DayAgenda';
+import { buildDayData, diaDe, formatDateStr } from './DayAgenda';
 
 const horarios = {
   Lunes: [{ id: 'a', materiaId: '1', materiaLimpia: 'Análisis', inicio: '08:00', fin: '10:00', comision: 'K1', cuatrimestre: 'Anual' }],
@@ -34,5 +34,14 @@ describe('buildDayData', () => {
 
   it('formatea la fecha en hora local, sin corrimiento de timezone', () => {
     expect(formatDateStr(new Date(2026, 8, 7))).toBe('2026-09-07');
+  });
+});
+
+describe('diaDe', () => {
+  it('arranca la semana en lunes y deja el domingo al final', () => {
+    // 2026-09-07 fue lunes; 2026-09-13, domingo.
+    expect(diaDe(new Date(2026, 8, 7))).toBe('Lunes');
+    expect(diaDe(new Date(2026, 8, 12))).toBe('Sábado');
+    expect(diaDe(new Date(2026, 8, 13))).toBe('Domingo');
   });
 });

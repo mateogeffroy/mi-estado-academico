@@ -39,6 +39,11 @@ export const formatDateStr = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
+const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+/** Nombre del día de una fecha, con la semana arrancando en lunes. */
+export const diaDe = (date: Date) => DIAS[(date.getDay() + 6) % 7]; // getDay(): 0 = domingo
+
 interface BuildDayDataArgs {
   dia: string;
   dateStr: string;
@@ -89,7 +94,7 @@ export default function DayAgenda({
   eventosFantasma = [],
   inhabil,
   eventosDeClase,
-  emptyText = 'Sin clases ni eventos este día.',
+  emptyText = 'Sin actividades.',
 }: DayAgendaProps) {
   const router = useRouter();
 

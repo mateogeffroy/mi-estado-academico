@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePlan } from '../src/context/PlanContext';
 import SpotlightCard from '../src/components/SpotlightCard';
 import HorarioCalendar from '../src/components/HorarioCalendar';
-import DayAgenda, { buildDayData, formatDateStr, getEventColor } from '../src/components/DayAgenda';
+import DayAgenda, { buildDayData, diaDe, formatDateStr, getEventColor } from '../src/components/DayAgenda';
 import { getCuatrimestreActual, getInhabiles } from '../src/lib/data/calendario';
 
 // Diccionario para mostrar nombres limpios en el selector
@@ -34,7 +34,6 @@ export default function Dashboard() {
   // getCuatrimestreActual); si el usuario ya había elegido uno a mano, el
   // useEffect de abajo lo pisa con lo guardado en localStorage.
   const [filtroCuatri, setFiltroCuatri] = useState<string>(() => getCuatrimestreActual());
-  const [tourStep, setTourStep] = useState(0);
   const [mostrarTodosEventos, setMostrarTodosEventos] = useState(false);
 
   useEffect(() => {
@@ -43,25 +42,6 @@ export default function Dashboard() {
       setFiltroCuatri(filtroGuardado);
     }
   }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const hasViewedTour = localStorage.getItem('mea_tutorial_home_v3');
-      if (!hasViewedTour) {
-        setTimeout(() => setTourStep(1), 600);
-      }
-    }
-  }, []);
-
-  const closeTour = () => {
-    setTourStep(0);
-    localStorage.setItem('mea_tutorial_home_v3', 'true');
-  };
-
-  const skipTour = () => {
-    setTourStep(0);
-    localStorage.setItem('mea_tutorial_home_v3', 'true');
-  };
 
   // isElectivePlaceholder ("Electivas N° Nivel") puede quedar en estado
   // 'cursando' automáticamente cuando el usuario tiene alguna electiva de
@@ -170,7 +150,7 @@ export default function Dashboard() {
   // que buscar la columna correcta en la grilla semanal.
   const hoy = new Date();
   const hoyStr = formatDateStr(hoy);
-  const diaHoy = ordenDias[(hoy.getDay() + 6) % 7]; // getDay(): 0 = domingo
+  const diaHoy = diaDe(hoy);
   const datosHoy = buildDayData({
     dia: diaHoy,
     dateStr: hoyStr,
@@ -228,9 +208,6 @@ export default function Dashboard() {
   return (
     <>
       <style>{`
-        .tour-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--overlay-bg); z-index: 9998; backdrop-filter: blur(3px); transition: opacity 0.3s ease; }
-        .tour-dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 420px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; z-index: 10000; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 16px; text-align: center; }
-
         .dashboard-main { padding-bottom: 80px; display: flex; flex-direction: column; gap: clamp(20px, 3vh, 40px); max-width: 1200px; margin: 0 auto; padding-left: clamp(12px, 2vw, 20px); padding-right: clamp(12px, 2vw, 20px); }
 
         .career-selector { background: var(--bg); border: 1px solid var(--border); color: var(--text-strong); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; outline: none; cursor: pointer; transition: all 0.2s; width: fit-content; max-width: 250px; text-overflow: ellipsis; }
@@ -276,50 +253,6 @@ export default function Dashboard() {
           .schedule-toggle > div { flex: 1; text-align: center; }
         }
       `}</style>
-
-      {/* Tutorial Overlay */}
-      {tourStep > 0 && (
-        <>
-          <div className="tour-overlay" />
-          <div className="tour-dialog">
-            {tourStep === 1 && (
-              <>
-                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.3rem' }}>¡Bienvenido/a a bordo!</h3>
-                <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
-                  Tu interfaz principal (el <strong>Home</strong>) ahora es un Dashboard inteligente. Todo lo que apruebes o curses se va a reflejar automáticamente acá.
-                </p>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <button onClick={skipTour} className="btn-secondary" style={{ flex: 1 }}>Omitir</button>
-                  <button onClick={() => setTourStep(2)} className="btn-primary" style={{ flex: 1 }}>Siguiente</button>
-                </div>
-              </>
-            )}
-            {tourStep === 2 && (
-              <>
-                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem' }}>Plan de Estudios</h3>
-                <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
-                  Es el corazón de la app. Al ir a tu <strong>Plan de Estudios</strong>, podés destrabar correlatividades y poner tus materias en estado "Aprobada" o "Cursando".
-                </p>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <button onClick={skipTour} className="btn-secondary" style={{ flex: 1 }}>Omitir</button>
-                  <button onClick={() => setTourStep(3)} className="btn-primary" style={{ flex: 1 }}>Siguiente</button>
-                </div>
-              </>
-            )}
-            {tourStep === 3 && (
-              <>
-                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem' }}>Armá tu Horario</h3>
-                <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
-                  Las materias que pongas en <strong>"Cursando"</strong> aparecerán en tu Home. Al entrar a cada una, vas a poder elegir la comisión real para que se dibuje sola en tu grilla de horarios.
-                </p>
-                <button onClick={closeTour} className="btn-primary" style={{ width: '100%', marginTop: '10px', padding: '12px' }}>
-                  ¡Entendido, a organizar!
-                </button>
-              </>
-            )}
-          </div>
-        </>
-      )}
 
       <main className="dashboard-main">
 

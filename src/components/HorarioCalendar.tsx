@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getInhabiles } from '../lib/data/calendario';
 import { usePlan } from '../context/PlanContext';
-import DayAgenda, { buildDayData, formatDateStr, getEventColor, getColoresInhabil } from './DayAgenda';
+import DayAgenda, { buildDayData, diaDe, formatDateStr, getEventColor, getColoresInhabil } from './DayAgenda';
 
 interface HorarioCalendarProps {
   horarios: Record<string, any[]>;
@@ -39,7 +39,10 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
   const { careerId } = usePlan();
   const INHABILES = getInhabiles(careerId);
 
-  const [baseDate, setBaseDate] = useState(new Date());
+  // Ventana visible de 7 días. Arranca en el lunes de la semana actual, pero
+  // las flechas simples la corren de a un día, así que no siempre empieza
+  // en lunes: cada columna saca su nombre de día de su propia fecha.
+  const [startDate, setStartDate] = useState(() => getMonday(new Date()));
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalDate, setModalDate] = useState(new Date());
@@ -53,18 +56,19 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
     return DIAS[idxHoy === 0 ? 6 : idxHoy - 1];
   });
 
-  const monday = getMonday(baseDate);
-  const datesOfWeek = DIAS.map((_, i) => addDays(monday, i));
+  const datesOfWeek = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
 
-  const handlePrevWeek = () => setBaseDate(addDays(baseDate, -7));
-  const handleNextWeek = () => setBaseDate(addDays(baseDate, 7));
-  const handleCurrentWeek = () => setBaseDate(new Date());
+  const desplazar = (dias: number) => setStartDate(addDays(startDate, dias));
+  const handleCurrentWeek = () => setStartDate(getMonday(new Date()));
 
-  // Datos de un día de la semana visible. La lógica vive en DayAgenda para
+  // Datos de un día de la ventana visible. La lógica vive en DayAgenda para
   // que la comparta la sección "Hoy" de la home.
-  const dayData = (dia: string, idx: number) => {
-    const dateStr = formatDateStr(datesOfWeek[idx]);
+  const dayData = (idx: number) => {
+    const date = datesOfWeek[idx];
+    const dia = diaDe(date);
+    const dateStr = formatDateStr(date);
     return {
+      dia,
       dateStr,
       isToday: dateStr === formatDateStr(new Date()),
       ...buildDayData({ dia, dateStr, horarios, detalles, materiasData, inhabiles: INHABILES }),
@@ -407,19 +411,25 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
         <div className="hc-header-wrapper">
           <div className="hc-title-box">{title}</div>
           <div className="hc-nav-box">
-            <button onClick={handlePrevWeek} style={{ background: 'transparent', border: 'none', color: 'var(--text-strong)', padding: '8px 12px', cursor: 'pointer', borderRadius: '12px', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseOver={e => e.currentTarget.style.background='var(--glass-bg)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+            <button className="calendar-btn" onClick={() => desplazar(-7)} title="Semana anterior">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="11 18 5 12 11 6"></polyline><polyline points="18 18 12 12 18 6"></polyline></svg>
+            </button>
+            <button className="calendar-btn" onClick={() => desplazar(-1)} title="Día anterior">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </button>
-            
+
             <div className="hc-nav-text">
               <span style={{ color: 'var(--text-strong)', fontWeight: '700', fontSize: '0.95rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                {monday.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })} al {datesOfWeek[6].toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
+                {datesOfWeek[0].toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })} al {datesOfWeek[6].toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
               </span>
-              <button onClick={handleCurrentWeek} style={{ background: 'none', border: 'none', color: 'var(--cursando)', fontSize: '0.75rem', cursor: 'pointer', padding: '2px 5px', fontWeight: '700', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity=0.7} onMouseOut={e => e.currentTarget.style.opacity=1}>Ir a hoy</button>
+              <button onClick={handleCurrentWeek} style={{ background: 'none', border: 'none', color: 'var(--cursando)', fontSize: '0.75rem', cursor: 'pointer', padding: '2px 5px', fontWeight: '700', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity='0.7'} onMouseOut={e => e.currentTarget.style.opacity='1'}>Ir a hoy</button>
             </div>
 
-            <button onClick={handleNextWeek} style={{ background: 'transparent', border: 'none', color: 'var(--text-strong)', padding: '8px 12px', cursor: 'pointer', borderRadius: '12px', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseOver={e => e.currentTarget.style.background='var(--glass-bg)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+            <button className="calendar-btn" onClick={() => desplazar(1)} title="Día siguiente">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <button className="calendar-btn" onClick={() => desplazar(7)} title="Semana siguiente">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="13 18 19 12 13 6"></polyline><polyline points="6 18 12 12 6 6"></polyline></svg>
             </button>
 
             <div style={{ height: '24px', width: '1px', background: 'var(--border)', margin: '0 5px' }}></div>
@@ -464,20 +474,19 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
 
             {/* --- SEMANA EN COLUMNAS (desktop / tablet) --- */}
             <div className="week-columns week-view">
-              {DIAS.map((dia, idx) => {
-                const { dateStr, isToday, inhabil, clases, eventosFantasma } = dayData(dia, idx);
+              {datesOfWeek.map((date, idx) => {
+                const { dia, dateStr, isToday, inhabil, clases, eventosFantasma } = dayData(idx);
                 return (
-                  <div key={dia} className="week-col">
+                  <div key={dateStr} className="week-col">
                     <div className={`week-col-header ${isToday ? 'today' : ''}`}>
                       <span className="week-col-day">{dia}</span>
-                      <span className="week-col-date">{datesOfWeek[idx].getDate()}</span>
+                      <span className="week-col-date">{date.getDate()}</span>
                     </div>
                     <DayAgenda
                       clases={clases}
                       eventosFantasma={eventosFantasma}
                       inhabil={inhabil}
                       eventosDeClase={eventosDeClase(dateStr)}
-                      emptyText="—"
                     />
                   </div>
                 );
@@ -487,18 +496,19 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
             {/* --- AGENDA MOBILE: un día por vez, elegido con los tabs --- */}
             <div className="agenda-view">
               <div className="agenda-day-tabs">
-                {DIAS.map((dia, idx) => {
-                  const dateStr = formatDateStr(datesOfWeek[idx]);
+                {datesOfWeek.map((date, idx) => {
+                  const dia = diaDe(date);
+                  const dateStr = formatDateStr(date);
                   const isToday = dateStr === formatDateStr(new Date());
                   const tieneItems = (horarios[dia] && horarios[dia].length > 0) || getEventsForDate(dateStr).length > 0;
                   return (
                     <button
-                      key={dia}
+                      key={dateStr}
                       className={`agenda-tab ${selectedAgendaDia === dia ? 'active' : ''} ${isToday ? 'today' : ''}`}
                       onClick={() => setSelectedAgendaDia(dia)}
                     >
-                      <span className="agenda-tab-day">{DIAS_CORTOS[idx]}</span>
-                      <span className="agenda-tab-date">{datesOfWeek[idx].getDate()}</span>
+                      <span className="agenda-tab-day">{DIAS_CORTOS[DIAS.indexOf(dia)]}</span>
+                      <span className="agenda-tab-date">{date.getDate()}</span>
                       {tieneItems && <span className="agenda-tab-dot" />}
                     </button>
                   );
@@ -506,8 +516,10 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
               </div>
 
               {(() => {
-                const diaIdx = DIAS.indexOf(selectedAgendaDia);
-                const { dateStr, inhabil, clases, eventosFantasma } = dayData(selectedAgendaDia, diaIdx);
+                // La ventana siempre tiene los 7 días, así que el día elegido
+                // está en alguna posición; el guard es por las dudas.
+                const diaIdx = Math.max(0, datesOfWeek.findIndex(d => diaDe(d) === selectedAgendaDia));
+                const { dateStr, inhabil, clases, eventosFantasma } = dayData(diaIdx);
                 return (
                   <DayAgenda
                     clases={clases}
