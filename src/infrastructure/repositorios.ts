@@ -7,6 +7,7 @@ import { SupabaseCarrerasRepository } from './supabase/SupabaseCarrerasRepositor
 import { SupabaseEventosRepository } from './supabase/SupabaseEventosRepository';
 import { SupabaseDificultadRepository } from './supabase/SupabaseDificultadRepository';
 import { SupabaseAmistadesRepository } from './supabase/SupabaseAmistadesRepository';
+import { SupabaseApuntesRepository } from './supabase/SupabaseApuntesRepository';
 import { SupabaseAuthAdapter } from './supabase/SupabaseAuthAdapter';
 import { HttpFeedbackAdapter } from './http/HttpFeedbackAdapter';
 
@@ -15,5 +16,6 @@ export const carrerasRepository = new SupabaseCarrerasRepository(supabase);
 export const eventosRepository = new SupabaseEventosRepository(supabase);
 export const dificultadRepository = new SupabaseDificultadRepository(supabase);
 export const amistadesRepository = new SupabaseAmistadesRepository(supabase);
+export const apuntesRepository = new SupabaseApuntesRepository(supabase);
 export const authPort = new SupabaseAuthAdapter(supabase);
 export const feedbackPort = new HttpFeedbackAdapter();

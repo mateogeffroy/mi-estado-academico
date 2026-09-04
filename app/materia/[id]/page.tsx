@@ -10,6 +10,7 @@ import CustomSelect from '../../../src/components/CustomSelect';
 import ConfirmModal from '../../../src/components/ConfirmModal';
 import Card from '../../../src/components/Card';
 import GenteEnMateria from '../../../src/components/GenteEnMateria';
+import ApuntesDeMateria from '../../../src/components/ApuntesDeMateria';
 
 export default function MateriaPage() {
   const params = useParams();
@@ -368,6 +369,8 @@ export default function MateriaPage() {
               comision={comisionGuardada || null}
               tieneComisiones={Boolean(tieneComisiones)}
             />
+
+            <ApuntesDeMateria materiaId={id as string} />
 
           </section>
 

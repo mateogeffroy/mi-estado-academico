@@ -1,6 +1,6 @@
 # 004 — Apuntes por materia
 
-- **Estado**: Planeado (decisiones tomadas, sin código)
+- **Estado**: Implementado, a probar
 - **Depende de**: [001](001-red-social.md) — la visibilidad "sólo amigos" usa
   la tabla `amistades`.
 
@@ -21,6 +21,18 @@ ejercicios resueltos y código, y el resto los descarga.
 - **Almacenamiento**: bucket del plan gratuito de Supabase. El día que el
   espacio o la transferencia se acaben, se cambia a que la gente suba links
   (Drive u otro) y el sistema de reportes queda igual.
+
+## Implementado (2026-09-04)
+
+- `20260904200000_apuntes.sql`: bucket `apuntes` privado (10 MB,
+  pdf/md/txt/docx), tabla `apuntes` con RLS por visibilidad, amistad y
+  bloqueos, y policies de `storage.objects` que replican esa misma regla.
+- `ApuntesRepository` + `SupabaseApuntesRepository`. La subida va directo del
+  browser al bucket; si la fila no entra, borra el archivo para no dejar
+  huérfanos.
+- `ApuntesDeMateria`: listado, formulario de subida (título, descripción,
+  tipo, visibilidad, archivo) y borrado del propio, dentro de cada materia.
+- Descarga con URL firmada de 60 segundos, porque el bucket es privado.
 
 ## Infra necesaria
 
@@ -51,6 +63,13 @@ Supabase Storage con la misma sesión que ya usa la app.
 son unos 250 archivos guardados, pero el techo real es la transferencia:
 1.000-2.500 descargas mensuales. Conviene mostrar el peso de cada archivo y
 tener a mano el número de cuánto queda.
+
+## Falta
+
+- Probarlo: subir, descargar desde otra cuenta, y verificar que un apunte
+  "sólo amigos" no lo vea alguien que no es amigo.
+- Botón de reportar. Hoy la moderación es mirar el panel de Supabase.
+- Nadie avisa cuánto espacio queda del giga gratuito.
 
 ## Riesgo a tener presente
 
