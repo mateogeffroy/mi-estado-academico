@@ -48,10 +48,8 @@ default** y se apaga desde el perfil; apagada, sólo te ven tus amigos.
 - Avisar del cambio de visibilidad: ahora los usuarios existentes pasaron a
   visibles sin haberlo pedido. Corresponde un aviso en la app (y revisar la
   política de privacidad) antes de que se sumen usuarios nuevos.
-- "Gente en tu comisión" quedó sin reemplazo: haría falta publicar qué
-  comisión cursa cada uno, que es más superficie de privacidad que la
-  decidida.
-- No hay aviso de solicitud nueva: te enterás entrando a `/buscar`.
+- El badge se recalcula al cambiar de ruta: si llega una solicitud mientras
+  estás parado en una página, no aparece hasta navegar.
 - Bloquear y reportar usuarios.
 - La búsqueda usa `ilike` sin índice de trigramas. Alcanza para el padrón
   actual; si se pone lenta, `pg_trgm` (anotado en la migración).
