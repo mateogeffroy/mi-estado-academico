@@ -8,15 +8,13 @@
    Para probar otra combinación: cambiá esas dos líneas y listo. No hace
    falta tocar el @import ni recompilar nada.
 
-   Candidatas cargadas:
-     sans:  Manrope · Instrument Sans · Space Grotesk · Inter
-     mono:  JetBrains Mono · IBM Plex Mono · Space Mono · Roboto Mono
-     display (logo, no se toca): Syne
+   Elegidas: Inter (texto) + Roboto Mono (números) + Syne (logo).
 
-   Cuando quede elegida una, sacá del @import las familias que no se usen
-   para ahorrar una descarga.
+   Para probar otra hay que sumarla al @import y ponerla en la variable.
+   Las que se descartaron, por si hay que volver: Manrope + JetBrains Mono,
+   Instrument Sans + IBM Plex Mono, Space Grotesk + Space Mono.
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;600&family=Space+Mono:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;700&display=swap');
 
 :root {
   /* ==========================================================
@@ -104,17 +102,8 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-full: 999px;
-
-  /* ==========================================================
-     FUENTES — cambiá estas dos líneas y cambia toda la app.
-     Combinaciones sugeridas (copiá el par que quieras probar):
-       A) 'Manrope'        + 'JetBrains Mono'   geométrica y neutra
-       B) 'Instrument Sans'+ 'IBM Plex Mono'    editorial, clásica
-       C) 'Space Grotesk'  + 'Space Mono'       la más parecida al look original
-       D) 'Inter'          + 'Roboto Mono'      la más invisible
-     ========================================================== */
-  --font-sans: 'Manrope', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
 
   --font-display: 'Syne', sans-serif; /* logo / marca */
 }

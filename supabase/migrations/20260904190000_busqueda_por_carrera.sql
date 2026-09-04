@@ -37,7 +37,12 @@ comment on column perfiles_publicos.nombre_normalizado is
 -- solicitud a) quien tenga la misma carrera activa. Además de acotar el
 -- padrón, es lo que tiene sentido para lo que se busca: gente con la que se
 -- cursa.
-create or replace view perfiles_buscables
+-- Va drop + create y no "create or replace": la vista suma una columna
+-- (nombre_normalizado) y Postgres no deja cambiar la lista de columnas de una
+-- vista existente.
+drop view if exists perfiles_buscables;
+
+create view perfiles_buscables
 with (security_invoker = false) as
 select p.user_id, p.nombre, p.nombre_normalizado, p.carrera_id
 from perfiles_publicos p
