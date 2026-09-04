@@ -8,8 +8,7 @@ import { authPort } from '../../src/infrastructure/repositorios';
 import GradeModal from '../../src/components/GradeModal';
 import ConfirmModal from '../../src/components/ConfirmModal';
 import Card from '../../src/components/Card';
-import PersonList from '../../src/components/PersonList';
-import { getPeopleForComision, MockPerson } from '../../src/lib/data/mockPeople';
+import PerfilBuscableCard from '../../src/components/PerfilBuscableCard';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
@@ -73,7 +72,7 @@ export default function PerfilPage() {
   // visibles (lista larga + gráfico), mucho scroll para algo que se mira
   // por separado. Ahora es una sola sección con tabs, mismo patrón que las
   // tabs por año del plan de estudios.
-  const [historialTab, setHistorialTab] = useState<'lista' | 'grafico' | 'amigos'>('lista');
+  const [historialTab, setHistorialTab] = useState<'lista' | 'grafico'>('lista');
 
   useEffect(() => {
     setIsMounted(true);
@@ -169,18 +168,6 @@ export default function PerfilPage() {
     };
   }).filter(d => d.nota > 0); 
 
-  // Gente de las comisiones elegidas en cada materia (mockup), dedup por persona.
-  const gentePorComisiones = useMemo(() => {
-    const vistos = new Map<string, MockPerson>();
-    Object.entries(detalles).forEach(([materiaId, det]) => {
-      if (!det?.comision) return;
-      getPeopleForComision(materiaId, det.comision).forEach(p => {
-        if (!vistos.has(p.id)) vistos.set(p.id, p);
-      });
-    });
-    return Array.from(vistos.values());
-  }, [detalles]);
-
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -250,7 +237,9 @@ export default function PerfilPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-            
+
+            <PerfilBuscableCard careerId={careerId} />
+
             <Card style={{ width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '20px' }}>
                 <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -346,18 +335,9 @@ export default function PerfilPage() {
                 >
                   Evolución
                 </button>
-                <button
-                  type="button"
-                  className={`historial-tab ${historialTab === 'amigos' ? 'active' : ''}`}
-                  onClick={() => setHistorialTab('amigos')}
-                >
-                  Amigos
-                </button>
               </div>
 
-              {historialTab === 'amigos' ? (
-                <PersonList people={gentePorComisiones} />
-              ) : historialTab === 'lista' ? (
+              {historialTab === 'lista' ? (
                 aprobadasOrdenadas.length === 0 ? (
                   <p style={{ color: 'var(--muted)', textAlign: 'center', fontStyle: 'italic', padding: '20px' }}>Todavía no tenés materias aprobadas en esta carrera.</p>
                 ) : (

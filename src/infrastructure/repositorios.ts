@@ -6,6 +6,7 @@ import { SupabaseProgresoRepository } from './supabase/SupabaseProgresoRepositor
 import { SupabaseCarrerasRepository } from './supabase/SupabaseCarrerasRepository';
 import { SupabaseEventosRepository } from './supabase/SupabaseEventosRepository';
 import { SupabaseDificultadRepository } from './supabase/SupabaseDificultadRepository';
+import { SupabaseAmistadesRepository } from './supabase/SupabaseAmistadesRepository';
 import { SupabaseAuthAdapter } from './supabase/SupabaseAuthAdapter';
 import { HttpFeedbackAdapter } from './http/HttpFeedbackAdapter';
 
@@ -13,5 +14,6 @@ export const progresoRepository = new SupabaseProgresoRepository(supabase);
 export const carrerasRepository = new SupabaseCarrerasRepository(supabase);
 export const eventosRepository = new SupabaseEventosRepository(supabase);
 export const dificultadRepository = new SupabaseDificultadRepository(supabase);
+export const amistadesRepository = new SupabaseAmistadesRepository(supabase);
 export const authPort = new SupabaseAuthAdapter(supabase);
 export const feedbackPort = new HttpFeedbackAdapter();

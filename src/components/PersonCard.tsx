@@ -1,40 +1,61 @@
 'use client';
 
-import { useState } from 'react';
 import Avatar from './Avatar';
 import Badge from './Badge';
 import Button from './Button';
-import { MockPerson } from '../lib/data/mockPeople';
+import { PerfilPublico, Relacion } from '../application/ports/AmistadesRepository';
+import { getNombreCarreraCorto } from '../lib/data/registry';
 
-const TONE_BY_RELACION = { amigo: 'aprobada', companero: 'accent', ninguno: 'muted' } as const;
-const LABEL_BY_RELACION = { amigo: 'Amigo', companero: 'Compañero', ninguno: 'Sin conexión' } as const;
+interface PersonCardProps {
+  persona: PerfilPublico;
+  relacion: Relacion;
+  /** Deshabilita los botones mientras una acción está en vuelo. */
+  ocupado?: boolean;
+  onAgregar: (persona: PerfilPublico) => void;
+  onAceptar: (persona: PerfilPublico) => void;
+  onEliminar: (persona: PerfilPublico) => void;
+}
 
-export default function PersonCard({ person }: { person: MockPerson }) {
-  const [esAmigo, setEsAmigo] = useState(person.relacion === 'amigo');
-  const relacion = esAmigo ? 'amigo' : person.relacion === 'amigo' ? 'companero' : person.relacion;
+const BADGE = {
+  amigos: { tone: 'aprobada', label: 'Amigos' },
+  enviada: { tone: 'muted', label: 'Solicitud enviada' },
+  recibida: { tone: 'accent', label: 'Te agregó' },
+  ninguna: null,
+} as const;
+
+export default function PersonCard({ persona, relacion, ocupado, onAgregar, onAceptar, onEliminar }: PersonCardProps) {
+  const badge = BADGE[relacion];
 
   return (
-    <div className="list-row" style={{ justifyContent: 'space-between' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', minWidth: 0 }}>
-        <Avatar name={person.nombre} size="sm" />
+    <div className="person-card">
+      <div className="person-card-info">
+        <Avatar name={persona.nombre} size="sm" />
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontWeight: 600, color: 'var(--text-strong)', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {person.nombre}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{person.carrera}</div>
+          <div className="person-card-nombre">{persona.nombre}</div>
+          <div className="person-card-carrera">{getNombreCarreraCorto(persona.carreraId)}</div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexShrink: 0 }}>
-        <Badge tone={TONE_BY_RELACION[relacion]}>{LABEL_BY_RELACION[relacion]}</Badge>
-        <Button
-          type="button"
-          variant={esAmigo ? 'ghost' : 'secondary'}
-          onClick={() => setEsAmigo(v => !v)}
-          style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-        >
-          {esAmigo ? 'Quitar amigo' : 'Agregar amigo'}
-        </Button>
+      <div className="person-card-acciones">
+        {badge && <Badge tone={badge.tone}>{badge.label}</Badge>}
+
+        {relacion === 'ninguna' && (
+          <Button type="button" variant="secondary" disabled={ocupado} onClick={() => onAgregar(persona)}>
+            Agregar
+          </Button>
+        )}
+
+        {relacion === 'recibida' && (
+          <Button type="button" variant="primary" disabled={ocupado} onClick={() => onAceptar(persona)}>
+            Aceptar
+          </Button>
+        )}
+
+        {relacion !== 'ninguna' && (
+          <Button type="button" variant="ghost" disabled={ocupado} onClick={() => onEliminar(persona)}>
+            {relacion === 'amigos' ? 'Quitar' : relacion === 'enviada' ? 'Cancelar' : 'Rechazar'}
+          </Button>
+        )}
       </div>
     </div>
   );

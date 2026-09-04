@@ -9,8 +9,6 @@ import { EventoAcademico, HorarioCustom } from '../../../src/domain/entities/Pro
 import CustomSelect from '../../../src/components/CustomSelect';
 import ConfirmModal from '../../../src/components/ConfirmModal';
 import Card from '../../../src/components/Card';
-import PersonList from '../../../src/components/PersonList';
-import { getPeopleForComision } from '../../../src/lib/data/mockPeople';
 
 export default function MateriaPage() {
   const params = useParams();
@@ -364,15 +362,6 @@ export default function MateriaPage() {
               )}
             </Card>
 
-            {comisionGuardada && (
-              <Card style={{ marginTop: 'var(--space-5)' }}>
-                <h2 style={{ color: 'var(--text-strong)', fontSize: '1.2rem', marginBottom: 'var(--space-4)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                  Gente en tu comisión
-                </h2>
-                <PersonList people={getPeopleForComision(materia.id, comisionGuardada)} />
-              </Card>
-            )}
           </section>
 
           <section style={{ flex: '1 1 35%', minWidth: '300px' }}>

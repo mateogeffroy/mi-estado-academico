@@ -1,70 +1,53 @@
 # 001 — Red social (buscar/agregar gente)
 
-- **Estado**: En progreso
-- **Rama**: `feature/rediseno-ux/ui` (cambios sin commitear al 2026-09-03;
-  no está en `develop` todavía pese a lo que se pensaba)
+- **Estado**: Funcionando, a validar con usuarios reales
+- **Rama**: `feature/rediseno-ux/ui`
 
 ## Contexto
 
-Agregar una capa social al sistema: buscar compañeros, ver relación
-(amigo/compañero/ninguno) y, a futuro, agregar como amigo.
+Capa social del sistema: buscar compañeros por nombre y agregarlos como
+amigos.
 
-## Hecho
+**Alcance decidido**: un amigo ve *nombre y carrera*. Nada de progreso, notas
+ni horarios. La búsqueda es opt-in: nadie aparece hasta que lo activa.
 
-- `app/buscar/page.tsx`: página de búsqueda de gente por nombre.
-- `src/lib/data/mockPeople.ts`: dataset mock determinístico (40 nombres,
-  carrera, relación) + `mockPeople.test.ts`.
-- Componentes nuevos: `Avatar`, `Badge`, `Card`, `PersonCard`, `PersonList`,
-  `Tabs`.
-- Link "Buscar" en el nav (`LayoutClient.tsx`), con ícono de lupa.
-- `Avatar` reemplaza el render inline de iniciales/foto en el nav y (a
-  revisar) en perfil.
+## Implementado (2026-09-04)
 
-## Qué falta para que funcione de verdad (orden sugerido)
-
-1. **Confirmar qué hay en producción.** La migración
-   `20260809082037_progreso_usuario.sql` crea `usuarios_perfil` pero, según
-   `ARCHITECTURE.md`, el catálogo relacional todavía no se aplicó. Sin esa
-   tabla (o una equivalente) no hay a quién buscar.
-2. **Perfil buscable, opt-in.** `usuarios_perfil` hoy tiene RLS de "leer
-   propio", así que nadie puede buscar a nadie. Hace falta una columna
-   `buscable boolean default false` y una policy de SELECT para
-   `authenticated` limitada a `buscable = true` y a las columnas públicas
-   (nombre, carrera). Opt-in y no opt-out: son nombres de personas reales.
-3. **Tabla `amistades`**: `(solicitante_id, destinatario_id, estado, created_at)`,
-   PK compuesta, `check (solicitante_id <> destinatario_id)`, estado en
-   `pendiente | aceptada`. RLS: leer si sos una de las dos partes; insertar
-   sólo como solicitante; aceptar (update) sólo como destinatario.
-4. **Índice de búsqueda por nombre**: `lower(full_name)` con `pg_trgm`, o un
-   RPC `buscar_personas(query)` que ya devuelva el estado de relación con el
-   usuario actual en una sola consulta.
-5. **Capa de aplicación**: puerto `AmistadesRepository` +
-   `SupabaseAmistadesRepository`, registrados en `repositorios.ts` como el
-   resto. Casos de uso: `buscarPersonas`, `enviarSolicitud`,
-   `responderSolicitud`, `eliminarAmistad`.
-6. **UI**: botón de acción en `PersonCard` según el estado (agregar /
-   pendiente / aceptar / amigos), y una vista de solicitudes recibidas.
-   Recién ahí se borra `mockPeople.ts`.
-
-Decisión de alcance pendiente: qué ve un amigo. La versión chica es sólo
-nombre y carrera (nada de progreso ni horarios), y es la que menos preguntas
-de privacidad abre.
+- SQL, aplicado en producción:
+  - `20260904150000_amistades.sql`: `perfiles_publicos` (nombre, carrera
+    activa, `buscable` en false por default) y `amistades` (par ordenado
+    solicitante/destinatario, estado `pendiente` o `aceptada`), con RLS y
+    trigger de alta del perfil al registrarse.
+  - `20260904160000_amistades_ver_perfil_de_amigos.sql`: policy para leer el
+    perfil de alguien con quien ya tenés relación, aunque haya apagado
+    "buscable" (si no, un amigo desaparecía de tu lista al ocultarse).
+- `AmistadesRepository` (puerto) + `SupabaseAmistadesRepository`, registrado
+  en `repositorios.ts` como el resto de los adaptadores.
+- `/buscar`: pestañas Buscar / Solicitudes / Amigos. Búsqueda con debounce de
+  300ms a partir de 2 letras; acciones agregar, aceptar, cancelar, rechazar y
+  quitar.
+- Perfil: tarjeta de opt-in "Aparecer en las búsquedas". Además mantiene la
+  carrera del perfil público sincronizada con la carrera activa.
+- Borrado el mockup: `mockPeople.ts`, `PersonList.tsx`, la sección "Gente en
+  tu comisión" de la página de materia y la pestaña "Amigos" del perfil.
 
 ## Falta
 
-- Reemplazar `mockPeople.ts` por datos reales (Supabase: tabla de usuarios
-  buscables + relación de amistad).
-- Acción de "agregar amigo" / "aceptar solicitud" (hoy `PersonCard` es
-  solo lectura).
-- Persistir relaciones (tabla `amistades` o similar) — no existe todavía
-  en `supabase/migrations/`.
-- Decidir si esto vive en `develop` o se mergea directo a `feature/rediseno-ux/ui`.
-- Actualizar `ARCHITECTURE.md` si se agrega dominio nuevo (ej.
-  `src/domain/services` para relaciones).
+- Probar el flujo completo con dos cuentas reales (ver más abajo).
+- "Gente en tu comisión" quedó sin reemplazo: haría falta publicar qué
+  comisión cursa cada uno, que es más superficie de privacidad que la
+  decidida.
+- No hay aviso de solicitud nueva: te enterás entrando a `/buscar`.
+- Bloquear y reportar usuarios.
+- La búsqueda usa `ilike` sin índice de trigramas. Alcanza para el padrón
+  actual; si se pone lenta, `pg_trgm` (anotado en la migración).
 
-## Decisiones abiertas
+## Cómo probarlo
 
-- ¿Amistad es bidireccional con solicitud (como hoy sugiere el mock:
-  amigo/compañero/ninguno) o unidireccional (seguir)?
-- ¿"Compañero" se infiere automático (comparten materias cursadas) o es
-  manual?
+1. Entrar a `/perfil` con dos cuentas distintas y activar "Aparecer en las
+   búsquedas" en ambas.
+2. Desde una, buscar a la otra por nombre en `/buscar` y darle Agregar.
+3. Desde la otra, pestaña Solicitudes → Aceptar.
+4. Verificar que aparece en Amigos de las dos, y que al apagar "buscable" en
+   una, la otra la sigue viendo en su lista de amigos (esa es la policy de
+   `20260904160000`).

@@ -7,22 +7,7 @@ import SpotlightCard from '../src/components/SpotlightCard';
 import HorarioCalendar from '../src/components/HorarioCalendar';
 import DayAgenda, { buildDayData, diaDe, formatDateStr, getEventColor } from '../src/components/DayAgenda';
 import { getCuatrimestreActual, getInhabiles } from '../src/lib/data/calendario';
-
-// Diccionario para mostrar nombres limpios en el selector
-const NOMBRES_CARRERAS: Record<string, string> = {
-  'utn-sistemas-2023': 'Ingeniería en Sistemas',
-  'utn-civil-2023': 'Ingeniería Civil',
-  'utn-industrial-2008': 'Ingeniería Industrial',
-  'utn-mecanica-2023': 'Ingeniería Mecánica',
-  'utn-quimica-2008': 'Ingeniería Química',
-  'utn-electrica-2023': 'Ingeniería Eléctrica',
-  'unlp-apu-2021': 'APU (UNLP)',
-  'unlp-sistemas-2021': 'Lic. en Sistemas (UNLP)',
-  'unlp-informatica-2021': 'Lic. en Informática (UNLP)',
-  'unlp-psicologia-2012': 'Psicología (UNLP)',
-  'unlp-computacion-2024': 'Ing. en Computación (UNLP)',
-  'unlp-sonido-2023': 'Tec. en Sonido (UNLP)',
-};
+import { NOMBRES_CARRERAS } from '../src/lib/data/registry';
 
 export default function Dashboard() {
   const { careerData, materias, detalles, todasLasCarreras, careerId, setCarreraActiva } = usePlan();
