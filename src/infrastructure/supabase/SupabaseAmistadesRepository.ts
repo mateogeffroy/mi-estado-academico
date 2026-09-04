@@ -36,6 +36,11 @@ const aAmistad = (fila: FilaAmistad): Amistad => ({
 // devuelve cualquier cosa.
 const escaparLike = (texto: string) => texto.replace(/[\\%_]/g, c => `\\${c}`);
 
+// Misma normalización que la columna nombre_normalizado de la base: sin
+// acentos y en minúsculas, para que "martin" encuentre a "Martín".
+const normalizar = (texto: string) =>
+  texto.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+
 export class SupabaseAmistadesRepository implements AmistadesRepository {
   constructor(private readonly client: SupabaseClient) {}
 
@@ -47,7 +52,7 @@ export class SupabaseAmistadesRepository implements AmistadesRepository {
       .from('perfiles_buscables')
       .select('user_id, nombre, carrera_id')
       .neq('user_id', miId)
-      .ilike('nombre', `%${escaparLike(texto)}%`)
+      .ilike('nombre_normalizado', `%${escaparLike(normalizar(texto))}%`)
       .order('nombre')
       .limit(limite);
     if (error) throw new Error(`No se pudo buscar gente: ${error.message}`);

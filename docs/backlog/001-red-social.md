@@ -49,6 +49,11 @@ default** y se apaga desde el perfil; apagada, sólo te ven tus amigos.
   de solicitudes (guarda la fecha de la última vista en localStorage).
 - Política de privacidad: sección nueva sobre perfil visible y amistades.
 - `UpdateModal` (v3): carrusel con las funciones nuevas y qué ven los demás.
+- `20260904190000_busqueda_por_carrera.sql`: la búsqueda ignora acentos
+  (columna generada `nombre_normalizado` + `unaccent`) y sólo muestra gente de
+  la misma carrera activa. La regla de carrera también está en la policy de
+  solicitudes, así que no alcanza con conocer el id de alguien de otra
+  carrera.
 - Borrado el mockup: `mockPeople.ts`, `PersonList.tsx`, la sección "Gente en
   tu comisión" de la página de materia y la pestaña "Amigos" del perfil.
 
@@ -57,8 +62,11 @@ default** y se apaga desde el perfil; apagada, sólo te ven tus amigos.
 - Probar el flujo completo con dos cuentas reales (ver más abajo).
 - Reportar usuarios: por ahora no hay más interacción que los apuntes, así
   que se decidió que alcanza con bloquear.
-- La búsqueda usa `ilike` sin índice de trigramas. Alcanza para el padrón
-  actual; si se pone lenta, `pg_trgm` (anotado en la migración).
+- La búsqueda sigue sin índice de trigramas. Con el filtro por carrera el
+  padrón por consulta es chico; si se pone lenta, `pg_trgm` (anotado en la
+  migración).
+- Si alguien cambia de carrera activa, deja de ver (y de aparecerle a) la
+  gente de la anterior. Las amistades ya hechas no se tocan.
 
 ## Cómo probarlo
 

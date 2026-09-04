@@ -1,34 +1,22 @@
 /* ============================================================
    TIPOGRAFÍA — un solo lugar
-   Para cambiar la fuente de toda la app: cambiá la familia en este @import
-   y en las variables --font-* de :root. Ningún otro archivo nombra fuentes.
+   El @import de abajo trae las familias candidatas de una sola vez. El
+   navegador descarga sólo las que se usan de verdad, así que tener varias
+   listadas no pesa: lo único que define la fuente de toda la app son las
+   variables --font-sans y --font-mono de :root.
 
-   Combinaciones listas para probar: comentá el @import y las variables de
-   abajo, y descomentá el bloque que quieras.
+   Para probar otra combinación: cambiá esas dos líneas y listo. No hace
+   falta tocar el @import ni recompilar nada.
 
-   A) Actual — Manrope + JetBrains Mono. Geométrica y neutra, números parejos.
-   B) Editorial — Instrument Sans + IBM Plex Mono. Más clásica, buena en
-      textos largos; la mono tiene cifras más angostas.
-   C) Técnica — Space Grotesk + Space Mono. La más cercana al look original
-      del proyecto, con carácter propio y sin los números raros de Syne.
-   D) Neutra — Inter + Roboto Mono. La más invisible de las cuatro: no
-      compite con nada, ideal si querés que mande el color.
+   Candidatas cargadas:
+     sans:  Manrope · Instrument Sans · Space Grotesk · Inter
+     mono:  JetBrains Mono · IBM Plex Mono · Space Mono · Roboto Mono
+     display (logo, no se toca): Syne
+
+   Cuando quede elegida una, sacá del @import las familias que no se usen
+   para ahorrar una descarga.
    ============================================================ */
-
-/* A) Manrope + JetBrains Mono (activa) */
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
-
-/* B) Instrument Sans + IBM Plex Mono
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
-*/
-
-/* C) Space Grotesk + Space Mono
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
-*/
-
-/* D) Inter + Roboto Mono
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;700&display=swap');
-*/
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;600&family=Space+Mono:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap');
 
 :root {
   /* ==========================================================
@@ -117,15 +105,18 @@
   --radius-lg: 16px;
   --radius-full: 999px;
 
-  /* Fuentes: cambiar de combinación es cambiar estas dos líneas y el @import
-     del principio del archivo (ahí están las opciones A a D). */
-  --font-display: 'Syne', sans-serif;        /* logo / marca, no se toca */
-  --font-sans: 'Manrope', sans-serif;        /* A */
-  --font-mono: 'JetBrains Mono', monospace;  /* A */
+  /* ==========================================================
+     FUENTES — cambiá estas dos líneas y cambia toda la app.
+     Combinaciones sugeridas (copiá el par que quieras probar):
+       A) 'Manrope'        + 'JetBrains Mono'   geométrica y neutra
+       B) 'Instrument Sans'+ 'IBM Plex Mono'    editorial, clásica
+       C) 'Space Grotesk'  + 'Space Mono'       la más parecida al look original
+       D) 'Inter'          + 'Roboto Mono'      la más invisible
+     ========================================================== */
+  --font-sans: 'Manrope', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
-  /* B: --font-sans: 'Instrument Sans', sans-serif;  --font-mono: 'IBM Plex Mono', monospace; */
-  /* C: --font-sans: 'Space Grotesk', sans-serif;    --font-mono: 'Space Mono', monospace;    */
-  /* D: --font-sans: 'Inter', sans-serif;            --font-mono: 'Roboto Mono', monospace;   */
+  --font-display: 'Syne', sans-serif; /* logo / marca */
 }
 
 .dark {
