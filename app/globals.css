@@ -74,6 +74,14 @@
   --ne: #64748b;
   --header-height: 70px;
 
+  /* Bottom tab bar mobile. El piso fijo va además del safe-area porque en
+     Android la barra de gestos no siempre lo reporta y los botones nativos
+     terminan tapando los tabs. Todo lo que tiene que esquivar la barra usa
+     --tabbar-total. */
+  --tabbar-height: 60px;
+  --tabbar-floor: 24px;
+  --tabbar-total: calc(var(--tabbar-height) + var(--tabbar-floor) + env(safe-area-inset-bottom, 0px));
+
   /* Escala de spacing/radios para componentes nuevos (Card/Avatar/Badge/Tabs).
      No migra retroactivamente los valores sueltos ya existentes en cada vista. */
   --space-1: 4px;
@@ -404,10 +412,12 @@ main {
   border-radius: 2px;
 }
 
-/* En mobile hay una bottom-tab-bar (60px + safe area) fija debajo de esto;
-   se corre hacia arriba para que no quede tapada por los tabs. */
+/* En mobile hay una bottom-tab-bar fija debajo de esto; se corre hacia
+   arriba para que no quede tapada por los tabs (ver --tabbar-total). */
 @media (max-width: 1150px) {
-  .stats-bar { bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
+  .stats-bar { bottom: var(--tabbar-total); }
+  /* Lo último de cada página tiene que quedar por encima de los tabs. */
+  main { padding-bottom: calc(var(--tabbar-total) + 20px) !important; }
 }
 /* ============================================================
    BOTONES Y COMPONENTES
@@ -603,8 +613,11 @@ button {
 .agenda-item.ghost { border-left-color: var(--warning); border-style: dashed; }
 .agenda-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .agenda-item-title { font-weight: 700; color: var(--text-strong); font-size: 0.9rem; line-height: 1.25; overflow-wrap: anywhere; }
-.agenda-item-time { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); flex-shrink: 0; }
-.agenda-item-meta { font-size: 0.7rem; color: var(--muted); font-family: var(--font-mono); overflow-wrap: anywhere; }
+/* Horario y comisión en sans con cifras de ancho fijo: la mono a 0.7rem
+   dentro de la card se leía mal. tabular-nums mantiene los números alineados
+   entre cards igual que lo hacía la mono. */
+.agenda-item-time { font-size: 0.8rem; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: 0.01em; flex-shrink: 0; }
+.agenda-item-meta { font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .agenda-chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .agenda-event-chip {
   font-size: 0.65rem; padding: 2px 8px; border-radius: var(--radius-full);

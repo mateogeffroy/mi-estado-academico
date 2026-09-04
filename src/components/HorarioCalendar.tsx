@@ -465,7 +465,12 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
               .agenda-tab { flex: 1 0 auto; min-width: 44px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 6px; border-radius: 12px; border: 1px solid var(--border); background: var(--glass-bg); color: var(--muted); cursor: pointer; transition: all 0.2s; }
               .agenda-tab-day { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
               .agenda-tab-date { font-size: 0.9rem; font-weight: 700; font-family: var(--font-mono); }
-              .agenda-tab-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cursando); }
+              /* Alto fijo aunque el día no tenga eventos, para que los tabs no
+                 salten al cambiar de semana. */
+              .agenda-tab-dots { display: flex; gap: 3px; height: 5px; align-items: center; }
+              .agenda-tab-dot { width: 5px; height: 5px; border-radius: 50%; }
+              /* Sobre el tab activo (fondo azul) un punto azul se perdería. */
+              .agenda-tab.active .agenda-tab-dot { box-shadow: 0 0 0 1px rgba(255,255,255,0.9); }
               .agenda-tab.active { background: var(--cursando); border-color: var(--cursando); color: #fff; }
               .agenda-tab.today:not(.active) { border-color: var(--cursando); color: var(--cursando); }
             `}</style>
@@ -497,7 +502,10 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                 {datesOfWeek.map(date => {
                   const dia = diaDe(date);
                   const dateStr = formatDateStr(date);
-                  const tieneItems = (horarios[dia] && horarios[dia].length > 0) || getEventsForDate(dateStr).length > 0;
+                  // Un punto por tipo de evento del día (parcial azul, TP rojo,
+                  // exposición verde). Las clases sueltas no ponen punto: el
+                  // punto marca que ese día hay algo para entregar o rendir.
+                  const coloresEvento = [...new Set(getEventsForDate(dateStr).map(ev => getEventColor(ev.tipo)))];
                   return (
                     <button
                       key={dateStr}
@@ -506,7 +514,11 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
                     >
                       <span className="agenda-tab-day">{DIAS_CORTOS[DIAS.indexOf(dia)]}</span>
                       <span className="agenda-tab-date">{date.getDate()}</span>
-                      {tieneItems && <span className="agenda-tab-dot" />}
+                      <span className="agenda-tab-dots">
+                        {coloresEvento.map(color => (
+                          <span key={color} className="agenda-tab-dot" style={{ background: color }} />
+                        ))}
+                      </span>
                     </button>
                   );
                 })}

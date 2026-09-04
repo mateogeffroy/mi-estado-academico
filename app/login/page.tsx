@@ -261,21 +261,29 @@ export default function AuthPage() {
           .mobile-layout { display: none !important; }
           .desktop-layout { display: flex !important; width: 100%; height: 100vh; }
           
+          /* justify-content: safe center + overflow auto: centrado mientras
+             entra, y cuando no entra se alinea arriba y scrollea. Con
+             "center" a secas el contenido más alto que la columna se recorta
+             por arriba (el logo quedaba cortado en pantallas de 768px). */
           .hero-col {
             flex: 0 0 50%; max-width: 50%; height: 100vh;
             background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.08) 0%, transparent 50%), var(--panel);
             border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; 
-            justify-content: center; 
+            display: flex; flex-direction: column;
+            justify-content: center;
+            justify-content: safe center;
             gap: clamp(20px, 4vh, 40px);
             padding: clamp(20px, 5vh, 40px) clamp(30px, 4vw, 60px);
-            overflow: hidden; box-sizing: border-box;
+            overflow-y: auto; box-sizing: border-box;
           }
 
           .form-col {
             flex: 0 0 50%; max-width: 50%; height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: var(--bg); overflow: hidden; box-sizing: border-box;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center;
+            justify-content: safe center;
+            padding: clamp(16px, 3vh, 32px) 20px;
+            background: var(--bg); overflow-y: auto; box-sizing: border-box;
           }
 
           .logo-container-desktop { display: flex; align-items: center; gap: clamp(10px, 1.5vw, 20px); margin-bottom: 0px; }
@@ -303,6 +311,28 @@ export default function AuthPage() {
           
           .desktop-form-title h2 { font-size: clamp(1.8rem, 2vw, 2.2rem) !important; margin-bottom: 5px !important; }
           .desktop-form-title p { font-size: clamp(0.95rem, 1vw, 1.05rem) !important; }
+        }
+
+        /* Notebooks de 768px de alto (1366x768 y similares): con la barra del
+           navegador quedan ~620px útiles y el hero no entraba. Se comprime el
+           ritmo vertical en vez de recortar contenido. */
+        @media (min-width: 1025px) and (max-height: 820px) {
+          .hero-col { gap: 14px; padding-top: 20px; padding-bottom: 20px; }
+          .logo-img-desktop { width: 48px; height: 48px; }
+          .title-desktop { font-size: 1.9rem; }
+          .hero-subtitle { font-size: 0.88rem; margin-top: 4px; }
+          .hero-checklist { gap: 10px; }
+          .hero-checklist li { font-size: 0.82rem; line-height: 1.25; gap: 10px; }
+          .check-icon { width: 18px; height: 18px; }
+          .career-box { padding: 10px 12px; }
+          .career-box-title { font-size: 0.82rem; margin-bottom: 4px; }
+          .career-box-list { font-size: 0.72rem; gap: 2px; }
+          .contact-text { margin-top: 6px; font-size: 0.72rem; }
+
+          .login-box { padding: 20px 22px; gap: 14px; }
+          .auth-form { gap: 12px; }
+          .desktop-form-title h2 { font-size: 1.6rem !important; }
+          .desktop-form-title p { font-size: 0.88rem !important; }
         }
       `}</style>
 

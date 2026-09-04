@@ -234,15 +234,15 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             display: flex;
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: 60px;
+            height: var(--tabbar-height);
             z-index: 1500;
             background: var(--panel);
             border-top: 1px solid var(--border);
-            /* +10px fijos además del safe-area: en Android instalada como
-               app la barra de gestos no siempre reporta safe-area-inset,
-               así que sin este piso mínimo los botones nativos quedan
+            /* Ver --tabbar-floor en globals.css: piso fijo además del
+               safe-area para que los botones nativos del celular no queden
                pegados a los tabs. */
-            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--tabbar-floor));
+            box-sizing: content-box;
           }
         }
         .bottom-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); text-decoration: none; font-size: 0.65rem; font-weight: 700; transition: color 0.2s; }
@@ -250,7 +250,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         .bottom-tab.active { color: var(--cursando); }
         .bottom-tab svg { flex-shrink: 0; }
         @media (max-width: 1150px) {
-          .app-footer { padding-bottom: calc(30px + 60px + 10px + env(safe-area-inset-bottom, 0px)) !important; }
+          .app-footer { padding-bottom: calc(30px + var(--tabbar-total)) !important; }
         }
 
         /* Modal de Feedback */
