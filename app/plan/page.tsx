@@ -485,7 +485,7 @@ export default function PlanDeEstudios() {
         }
         .year-tab:focus-visible { outline: 2px solid var(--cursando); outline-offset: 2px; }
         .year-tab .tab-label { font-weight: 800; font-size: 0.7rem; white-space: nowrap; color: inherit; }
-        .year-tab .tab-frac { font-family: 'Space Mono', monospace; font-size: 0.62rem; opacity: 0.8; white-space: nowrap; color: inherit; }
+        .year-tab .tab-frac { font-family: var(--font-mono); font-size: 0.62rem; opacity: 0.8; white-space: nowrap; color: inherit; }
         /* progreso: azul característico de la app, completo: verde, vacío: gris (default de arriba) */
         .year-tab.progreso { border-color: var(--cursando); color: var(--cursando); background: color-mix(in srgb, var(--cursando) 8%, var(--panel)); }
         .year-tab.completo { border-color: var(--aprobada); color: var(--aprobada); background: color-mix(in srgb, var(--aprobada) 8%, var(--panel)); }
@@ -496,7 +496,7 @@ export default function PlanDeEstudios() {
         .year-panel { animation: fadeIn 0.2s ease-out; }
         .year-panel-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
         .year-panel-title { font-size: 1.2rem; font-weight: 800; margin: 0; }
-        .year-chip { font-family: 'Space Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+        .year-chip { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
         .year-chip.complete { background: rgba(34, 197, 94, 0.12); color: var(--aprobada); }
         .year-chip.active { background: rgba(59, 130, 246, 0.12); color: var(--cursando); }
         .year-chip.locked { background: var(--disabled); color: var(--disabled-text); }

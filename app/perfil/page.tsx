@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePlan } from '../../src/context/PlanContext';
 import { authPort } from '../../src/infrastructure/repositorios';
 import GradeModal from '../../src/components/GradeModal';
 import ConfirmModal from '../../src/components/ConfirmModal';
+import Card from '../../src/components/Card';
+import PerfilBuscableCard from '../../src/components/PerfilBuscableCard';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
@@ -235,8 +237,10 @@ export default function PerfilPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-            
-            <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+
+            <PerfilBuscableCard careerId={careerId} />
+
+            <Card style={{ width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '20px' }}>
                 <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
@@ -302,9 +306,9 @@ export default function PerfilPage() {
                   </div>
                 )}
               </div>
-            </section>
+            </Card>
 
-            <section style={{ width: '100%', background: 'var(--panel)', borderRadius: '20px', padding: 'clamp(16px, 5vw, 28px)', border: '1px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+            <Card style={{ width: '100%' }}>
               <div className="historial-header">
                 <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aprobada)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -341,7 +345,7 @@ export default function PerfilPage() {
                     {aprobadasOrdenadas.map(m => (
                       <div key={m.id} className="list-row" style={{ cursor: 'pointer', padding: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={() => { setSelectedMateria({ id: m.id, name: m.name }); setIsGradeModalOpen(true); }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-                          <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontFamily: 'Space Mono', whiteSpace: 'nowrap' }}>Nivel {m.level || '-'}</span>
+                          <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>Nivel {m.level || '-'}</span>
                           <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.name}</span>
                           <span style={{ color: detalles[m.id]?.notaFinal ? 'var(--aprobada)' : 'var(--muted)', fontSize: '0.9rem', fontWeight: 'bold', flexShrink: 0, fontVariantNumeric: 'tabular-nums', paddingLeft: '4px' }}>
                             {detalles[m.id]?.notaFinal ? `Nota: ${detalles[m.id].notaFinal}` : 'Sin nota'}
@@ -387,7 +391,7 @@ export default function PerfilPage() {
                   </div>
                 )
               )}
-            </section>
+            </Card>
 
           </div>
         </div>

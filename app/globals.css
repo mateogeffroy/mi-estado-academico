@@ -1,4 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+/* ============================================================
+   TIPOGRAFÍA — un solo lugar
+   El @import de abajo trae las familias candidatas de una sola vez. El
+   navegador descarga sólo las que se usan de verdad, así que tener varias
+   listadas no pesa: lo único que define la fuente de toda la app son las
+   variables --font-sans y --font-mono de :root.
+
+   Para probar otra combinación: cambiá esas dos líneas y listo. No hace
+   falta tocar el @import ni recompilar nada.
+
+   Elegidas: Inter (texto) + Roboto Mono (números) + Syne (logo).
+
+   Para probar otra hay que sumarla al @import y ponerla en la variable.
+   Las que se descartaron, por si hay que volver: Manrope + JetBrains Mono,
+   Instrument Sans + IBM Plex Mono, Space Grotesk + Space Mono.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;700&display=swap');
 
 :root {
   /* ==========================================================
@@ -41,6 +57,10 @@
   --success-border: rgba(16, 185, 129, 0.3);
   --success-soft: rgba(16, 185, 129, 0.1);
 
+  /* Ámbar de "atención": eventos sin clase agendada, horario personalizado */
+  --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.15);
+
   /* Transparencias (Efecto Glass) */
   --header-bg: rgba(255, 255, 255, 0.95);
   --glass-bg: rgba(0, 0, 0, 0.03);
@@ -59,6 +79,33 @@
   --n5: #14b8a6;
   --ne: #64748b;
   --header-height: 70px;
+
+  /* Bottom tab bar mobile. El piso fijo va además del safe-area porque en
+     Android la barra de gestos no siempre lo reporta y los botones nativos
+     terminan tapando los tabs. Todo lo que tiene que esquivar la barra usa
+     --tabbar-total. */
+  --tabbar-height: 60px;
+  --tabbar-floor: 24px;
+  --tabbar-total: calc(var(--tabbar-height) + var(--tabbar-floor) + env(safe-area-inset-bottom, 0px));
+
+  /* Escala de spacing/radios para componentes nuevos (Card/Avatar/Badge/Tabs).
+     No migra retroactivamente los valores sueltos ya existentes en cada vista. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+
+  --font-display: 'Syne', sans-serif; /* logo / marca */
 }
 
 .dark {
@@ -122,7 +169,7 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-sans);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -157,6 +204,7 @@ header {
 }
 
 .logo {
+  font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -169,7 +217,7 @@ header {
 }
 
 .subtitle {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.65rem;
   color: var(--muted);
   letter-spacing: 0.05em;
@@ -190,7 +238,7 @@ header {
   display: flex;
   gap: 18px;
   font-size: 0.72rem;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   flex-wrap: wrap;
 }
 
@@ -244,7 +292,7 @@ main {
 }
 
 .level-badge {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.15em;
@@ -322,7 +370,7 @@ main {
   opacity: 1;
 }
 
-.subject-num  { font-family: 'Space Mono', monospace; font-size: 0.6rem; opacity: 0.5; margin-bottom: 4px; }
+.subject-num  { font-family: var(--font-mono); font-size: 0.6rem; opacity: 0.5; margin-bottom: 4px; }
 .subject-name { font-weight: 700; }
 .subject-hours { font-size: 0.65rem; opacity: 0.6; margin-top: 6px; }
 
@@ -351,8 +399,8 @@ main {
 }
 
 .stat { display: flex; align-items: center; gap: 8px; }
-.stat-val { font-size: 1.1rem; font-weight: 700; font-family: 'Syne', sans-serif; }
-.stat-label { color: var(--muted); font-size: 0.7rem; font-family: 'Space Mono', monospace; }
+.stat-val { font-size: 1.1rem; font-weight: 700; font-family: var(--font-sans); }
+.stat-label { color: var(--muted); font-size: 0.7rem; font-family: var(--font-mono); }
 
 .progress-bar {
   flex: 1;
@@ -369,10 +417,12 @@ main {
   border-radius: 2px;
 }
 
-/* En mobile hay una bottom-tab-bar (60px + safe area) fija debajo de esto;
-   se corre hacia arriba para que no quede tapada por los tabs. */
+/* En mobile hay una bottom-tab-bar fija debajo de esto; se corre hacia
+   arriba para que no quede tapada por los tabs (ver --tabbar-total). */
 @media (max-width: 1150px) {
-  .stats-bar { bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
+  .stats-bar { bottom: var(--tabbar-total); }
+  /* Lo último de cada página tiene que quedar por encima de los tabs. */
+  main { padding-bottom: calc(var(--tabbar-total) + 20px) !important; }
 }
 /* ============================================================
    BOTONES Y COMPONENTES
@@ -380,7 +430,7 @@ main {
 button {
   padding: 10px 16px;
   border-radius: 6px;
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
@@ -424,7 +474,7 @@ button {
   width: 100%; box-sizing: border-box; border-radius: 10px;
   padding: 12px 14px; font-size: 0.95rem;
   border: 1px solid var(--border); background: var(--glass-bg);
-  color: var(--text-strong); font-family: 'Syne', sans-serif; outline: none;
+  color: var(--text-strong); font-family: var(--font-sans); outline: none;
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 .input-field::placeholder { color: var(--muted); }
@@ -446,17 +496,9 @@ button {
 .alert-danger  { background: var(--danger-soft);  border-color: var(--danger-border);  color: var(--danger); }
 .alert-success { background: var(--success-soft); border-color: var(--success-border); color: var(--success); }
 
-.help-btn {
-  background: transparent; color: var(--muted); border: 1.5px solid var(--muted);
-  border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center;
-  justify-content: center; font-weight: 800; font-family: 'Space Mono', monospace;
-  cursor: pointer; transition: all 0.2s; padding: 0; flex: none;
-}
-.help-btn:hover { background: var(--muted); color: var(--text-strong); }
-
 .mark-all-btn {
   background: transparent; color: var(--muted); border: none;
-  font-family: 'Space Mono', monospace; font-size: 0.55rem; font-weight: 700;
+  font-family: var(--font-mono); font-size: 0.55rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.1em; padding: 3px 10px;
   border-radius: 12px; cursor: pointer; opacity: 0.8; transition: all 0.2s ease; white-space: nowrap;
 }
@@ -465,19 +507,17 @@ button {
 /* ============================================================
    CARDS MODERNAS (DASHBOARD)
    ============================================================ */
-.event-card-modern {
-  background: var(--glass-bg); 
-  border: 1px solid var(--glass-border);
-  padding: 18px 24px; border-radius: 12px; display: flex;
-  justify-content: space-between; align-items: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.mark-all-btn {
+  background: transparent; color: var(--muted); border: none;
+  font-family: var(--font-mono); font-size: 0.55rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em; padding: 3px 10px;
+  border-radius: 12px; cursor: pointer; opacity: 0.8; transition: all 0.2s ease; white-space: nowrap;
 }
-.event-card-modern:hover { 
-  background: var(--glass-hover); 
-  border-color: var(--cursando); 
-  transform: translateX(8px); 
-}
+.mark-all-btn:hover { opacity: 1; color: var(--text); }
 
+/* ============================================================
+   CARDS MODERNAS (DASHBOARD)
+   ============================================================ */
 .premium-card {
   background: linear-gradient(145deg, var(--premium-grad-start) 0%, var(--premium-grad-end) 100%);
   border: 1px solid var(--glass-border); 
@@ -495,6 +535,59 @@ button {
 }
 
 /* ============================================================
+   PRIMITIVOS (Card / Avatar / Badge / Tabs)
+   ============================================================ */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--glass-bg); border: 1px solid var(--border);
+  color: var(--text-strong); font-weight: 700; font-family: var(--font-sans);
+  overflow: hidden; flex-shrink: 0;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-sm { width: 28px; height: 28px; font-size: 0.65rem; }
+.avatar-md { width: 40px; height: 40px; font-size: 0.85rem; }
+.avatar-lg { width: 56px; height: 56px; font-size: 1.1rem; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 10px; border-radius: var(--radius-full);
+  font-size: 0.7rem; font-weight: 700; font-family: var(--font-mono);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  border: 1px solid; white-space: nowrap;
+}
+.badge-cursando { background: rgba(59, 130, 246, 0.12); border-color: var(--cursando); color: var(--cursando); }
+.badge-aprobada { background: rgba(34, 197, 94, 0.12); border-color: var(--aprobada-border); color: var(--aprobada-border); }
+.badge-cursada  { background: rgba(251, 191, 36, 0.15); border-color: var(--cursada-border); color: var(--cursada-border); }
+.badge-muted    { background: var(--glass-bg); border-color: var(--border); color: var(--muted); }
+.badge-accent   { background: rgba(59, 130, 246, 0.12); border-color: var(--accent); color: var(--accent); }
+.badge-danger   { background: var(--danger-soft); border-color: var(--danger-border); color: var(--danger); }
+
+.tab-group {
+  display: flex; gap: var(--space-2); flex-wrap: wrap;
+  border-bottom: 1px solid var(--border); padding-bottom: var(--space-2);
+}
+.tab-item {
+  background: transparent; border: 1px solid transparent; cursor: pointer;
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm);
+  font-family: var(--font-sans); font-weight: 600; font-size: 0.85rem;
+  color: var(--muted); transition: all 0.2s ease;
+}
+.tab-item:hover { color: var(--text-strong); background: var(--glass-hover); }
+.tab-item.active {
+  color: var(--text-strong);
+  background: color-mix(in srgb, var(--cursando) 12%, transparent);
+  border-color: var(--cursando);
+}
+
+/* ============================================================
    LISTAS
    ============================================================ */
 .list-row {
@@ -507,12 +600,84 @@ button {
 .list-row:hover { background: var(--glass-hover); }
 
 /* ============================================================
+   AGENDA / HORARIO
+   Cards de clase de alto automático: el nombre de la materia wrapea entero.
+   Las comparten la grilla semanal (columnas por día), la agenda mobile y la
+   sección "Hoy" de la home.
+   ============================================================ */
+.agenda-item {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 12px 14px; background: var(--panel);
+  border: 1px solid var(--border); border-left: 4px solid var(--cursando);
+  border-radius: var(--radius-md); cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.agenda-item:hover { border-color: var(--cursando); transform: translateY(-2px); }
+.agenda-item.ghost { border-left-color: var(--warning); border-style: dashed; }
+.agenda-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.agenda-item-title { font-weight: 700; color: var(--text-strong); font-size: 0.9rem; line-height: 1.25; overflow-wrap: anywhere; }
+/* Horario y comisión en sans con cifras de ancho fijo: la mono a 0.7rem
+   dentro de la card se leía mal. tabular-nums mantiene los números alineados
+   entre cards igual que lo hacía la mono. */
+.agenda-item-time { font-size: 0.8rem; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: 0.01em; flex-shrink: 0; }
+.agenda-item-meta { font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.agenda-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.agenda-event-chip {
+  font-size: 0.65rem; padding: 2px 8px; border-radius: var(--radius-full);
+  font-weight: 700; text-transform: uppercase; line-height: 1.5; overflow-wrap: anywhere;
+}
+.agenda-empty { padding: 14px; text-align: center; color: var(--muted); font-size: 0.85rem; border-radius: var(--radius-md); }
+
+/* Semana en columnas: una por día, cards apiladas por horario. Sin eje de
+   horas, así que ninguna card queda más baja que su propio texto. */
+.week-columns { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-3); padding: var(--space-4); }
+/* El padding lo tienen todas las columnas, no sólo la marcada, para que la
+   marca al moverse no corra el ancho de nada. */
+.week-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 8px; border-radius: var(--radius-md); transition: background 0.2s ease, box-shadow 0.2s ease; }
+
+/* Marca del día elegido con las flechas: degradé azul que baja por la
+   columna, sin borde ni sombra que la recuadre. Arranca sobre el día de hoy
+   y se mueve con las flechas; el resaltado del header (.today) queda siempre
+   sobre la fecha real. */
+.week-col.selected {
+  background: linear-gradient(to bottom, rgba(59, 130, 246, 0.18) 0%, rgba(59, 130, 246, 0.04) 45%, transparent 100%);
+}
+.week-col-header {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
+  padding: 6px 10px; border-radius: var(--radius-sm);
+  background: var(--glass-bg); border: 1px solid transparent; color: var(--text-strong);
+}
+.week-col-header.today { border-color: var(--cursando); color: var(--cursando); background: rgba(59, 130, 246, 0.1); }
+.week-col-day { font-weight: 700; font-size: 0.8rem; }
+.week-col-date { font-family: var(--font-mono); font-size: 0.75rem; opacity: 0.7; }
+
+@media (max-width: 1100px) {
+  .week-columns { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+}
+
+/* ============================================================
+   GENTE (búsqueda, amigos, compañeros de comisión)
+   ============================================================ */
+.person-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.person-card {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3); flex-wrap: wrap;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 12px 14px;
+}
+.person-card-info { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.person-card-nombre { font-weight: 600; color: var(--text-strong); font-size: 0.9rem; overflow-wrap: anywhere; }
+.person-card-carrera { font-size: 0.75rem; color: var(--muted); }
+.person-card-acciones { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
+.person-card-acciones button { padding: 6px 12px; font-size: 0.8rem; }
+
+/* ============================================================
    TOOLTIPS
    ============================================================ */
 .tooltip {
   position: fixed; z-index: 200; background: var(--panel); border: 1px solid var(--border);
   border-radius: 8px; padding: 10px 14px; font-size: 0.72rem;
-  font-family: 'Space Mono', monospace; color: var(--text); pointer-events: none;
+  font-family: var(--font-mono); color: var(--text); pointer-events: none;
   opacity: 0; transition: opacity 0.15s; max-width: 220px; line-height: 1.6;
 }
 .tooltip.show { opacity: 1; }
@@ -554,7 +719,7 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
   background: var(--glass-bg);
   border: 1px solid var(--border); color: var(--text);
   padding: 14px 16px; border-radius: 10px;
-  font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.95rem;
+  font-family: var(--font-sans); font-weight: 600; font-size: 0.95rem;
   text-decoration: none; display: flex; align-items: center; gap: 12px;
   transition: all 0.2s ease; cursor: pointer; text-align: left;
 }
@@ -585,7 +750,7 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
 }
 .sidebar-legend-title {
   font-size: 0.65rem;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -623,7 +788,6 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
 
   .main-logo { flex-direction: column !important; line-height: 1.1 !important; gap: 1px; }
   .logo-top, .logo-bottom { font-size: clamp(0.85rem, 3.5vw, 1rem) !important; }
-  .logo-landing { font-size: clamp(1.6rem, 7vw, 2.4rem) !important; }
 
   main {
     padding-top: calc(var(--header-height) + 10px) !important;
@@ -632,9 +796,6 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
   }
 
   .premium-card { padding: 18px !important; }
-
-  .event-card-modern { padding: 14px 16px; flex-direction: column; align-items: flex-start; gap: 8px; }
-  .event-card-modern:hover { transform: none; }
 
   .stats-bar {
     flex-wrap: nowrap !important;
@@ -653,7 +814,6 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
    RESPONSIVE — MOBILE (≤ 480px)
    ============================================================ */
 @media (max-width: 480px) {
-  .logo-landing { font-size: clamp(1.4rem, 8vw, 1.8rem) !important; }
   .premium-card { padding: 14px !important; }
   .list-row { padding: 10px 12px; gap: 10px; }
 }
@@ -663,7 +823,6 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
    ============================================================ */
 @media (max-width: 360px) {
   .subject-grid { grid-template-columns: 1fr !important; }
-  .logo-landing { font-size: 1.4rem !important; }
 }
 
 /* ============================================================
@@ -672,9 +831,7 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
 *, *::before, *::after { max-width: 100%; }
 
 [style*="position: fixed"], [style*="position:fixed"],
-.tooltip, .sidebar, .sidebar-overlay, .calendar-tooltip-card,
-.calendar-body, .calendar-body *, .calendar-inner, .grid-lines, .grid-line,
-.time-column, .time-label, .day-column, .event-card, .inhabilitado-overlay {
+.tooltip, .sidebar, .sidebar-overlay, .calendar-tooltip-card {
   max-width: none;
 }
 
@@ -688,7 +845,6 @@ input, select, textarea, button { max-width: 100%; box-sizing: border-box; }
   .subject-card { width: 100% !important; max-width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; }
   form { width: 100% !important; box-sizing: border-box !important; }
   form input, form button { min-width: 0 !important; max-width: 100% !important; }
-  .event-card-modern:hover, [onMouseOver] { transform: none !important; }
 }
 
 /* ==========================================================================

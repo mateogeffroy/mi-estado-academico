@@ -148,13 +148,16 @@ export default function AuthPage() {
 
         .auth-submit-btn { border-radius: 10px; font-weight: bold; width: 100%; box-sizing: border-box; cursor: pointer; border: none; }
         
+        /* Botón de Google: blanco con texto oscuro en los dos temas, como
+           pide la guía de marca. Antes tomaba --panel, así que en oscuro
+           quedaba negro y el logo casi no se veía. */
         .auth-google-btn {
           display: flex; align-items: center; justify-content: center; gap: 12px;
-          border-radius: 10px; background: var(--panel); color: var(--text-strong); font-weight: bold;
-          border: 1px solid var(--border); cursor: pointer; transition: transform 0.2s, background 0.2s; 
+          border-radius: 10px; background: #ffffff; color: #1f1f1f; font-weight: bold;
+          border: 1px solid #dadce0; cursor: pointer; transition: transform 0.2s, background 0.2s;
           width: 100%; box-sizing: border-box;
         }
-        .auth-google-btn:hover { transform: scale(1.02); background: var(--glass-hover); }
+        .auth-google-btn:hover { transform: scale(1.02); background: #f4f4f4; }
 
         .arrow-container { cursor: pointer; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 30px; transition: color 0.2s ease; }
         .arrow-container:hover { color: var(--text-strong); }
@@ -261,21 +264,29 @@ export default function AuthPage() {
           .mobile-layout { display: none !important; }
           .desktop-layout { display: flex !important; width: 100%; height: 100vh; }
           
+          /* justify-content: safe center + overflow auto: centrado mientras
+             entra, y cuando no entra se alinea arriba y scrollea. Con
+             "center" a secas el contenido más alto que la columna se recorta
+             por arriba (el logo quedaba cortado en pantallas de 768px). */
           .hero-col {
             flex: 0 0 50%; max-width: 50%; height: 100vh;
             background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.08) 0%, transparent 50%), var(--panel);
             border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; 
-            justify-content: center; 
+            display: flex; flex-direction: column;
+            justify-content: center;
+            justify-content: safe center;
             gap: clamp(20px, 4vh, 40px);
             padding: clamp(20px, 5vh, 40px) clamp(30px, 4vw, 60px);
-            overflow: hidden; box-sizing: border-box;
+            overflow-y: auto; box-sizing: border-box;
           }
 
           .form-col {
             flex: 0 0 50%; max-width: 50%; height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: var(--bg); overflow: hidden; box-sizing: border-box;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center;
+            justify-content: safe center;
+            padding: clamp(16px, 3vh, 32px) 20px;
+            background: var(--bg); overflow-y: auto; box-sizing: border-box;
           }
 
           .logo-container-desktop { display: flex; align-items: center; gap: clamp(10px, 1.5vw, 20px); margin-bottom: 0px; }
@@ -303,6 +314,28 @@ export default function AuthPage() {
           
           .desktop-form-title h2 { font-size: clamp(1.8rem, 2vw, 2.2rem) !important; margin-bottom: 5px !important; }
           .desktop-form-title p { font-size: clamp(0.95rem, 1vw, 1.05rem) !important; }
+        }
+
+        /* Notebooks de 768px de alto (1366x768 y similares): con la barra del
+           navegador quedan ~620px útiles y el hero no entraba. Se comprime el
+           ritmo vertical en vez de recortar contenido. */
+        @media (min-width: 1025px) and (max-height: 820px) {
+          .hero-col { gap: 14px; padding-top: 20px; padding-bottom: 20px; }
+          .logo-img-desktop { width: 48px; height: 48px; }
+          .title-desktop { font-size: 1.9rem; }
+          .hero-subtitle { font-size: 0.88rem; margin-top: 4px; }
+          .hero-checklist { gap: 10px; }
+          .hero-checklist li { font-size: 0.82rem; line-height: 1.25; gap: 10px; }
+          .check-icon { width: 18px; height: 18px; }
+          .career-box { padding: 10px 12px; }
+          .career-box-title { font-size: 0.82rem; margin-bottom: 4px; }
+          .career-box-list { font-size: 0.72rem; gap: 2px; }
+          .contact-text { margin-top: 6px; font-size: 0.72rem; }
+
+          .login-box { padding: 20px 22px; gap: 14px; }
+          .auth-form { gap: 12px; }
+          .desktop-form-title h2 { font-size: 1.6rem !important; }
+          .desktop-form-title p { font-size: 0.88rem !important; }
         }
       `}</style>
 
@@ -710,7 +743,7 @@ export default function AuthPage() {
                       <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
                     </div>
 
-                    <button style={{ color: 'BLACK', backgroundColor: 'white'}} onClick={handleGoogleLogin} type="button" className="auth-google-btn">
+                    <button onClick={handleGoogleLogin} type="button" className="auth-google-btn">
                       <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>

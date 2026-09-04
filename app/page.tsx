@@ -5,23 +5,9 @@ import Link from 'next/link';
 import { usePlan } from '../src/context/PlanContext';
 import SpotlightCard from '../src/components/SpotlightCard';
 import HorarioCalendar from '../src/components/HorarioCalendar';
-import { getCuatrimestreActual } from '../src/lib/data/calendario';
-
-// Diccionario para mostrar nombres limpios en el selector
-const NOMBRES_CARRERAS: Record<string, string> = {
-  'utn-sistemas-2023': 'Ingeniería en Sistemas',
-  'utn-civil-2023': 'Ingeniería Civil',
-  'utn-industrial-2008': 'Ingeniería Industrial',
-  'utn-mecanica-2023': 'Ingeniería Mecánica',
-  'utn-quimica-2008': 'Ingeniería Química',
-  'utn-electrica-2023': 'Ingeniería Eléctrica',
-  'unlp-apu-2021': 'APU (UNLP)',
-  'unlp-sistemas-2021': 'Lic. en Sistemas (UNLP)',
-  'unlp-informatica-2021': 'Lic. en Informática (UNLP)',
-  'unlp-psicologia-2012': 'Psicología (UNLP)',
-  'unlp-computacion-2024': 'Ing. en Computación (UNLP)',
-  'unlp-sonido-2023': 'Tec. en Sonido (UNLP)',
-};
+import DayAgenda, { buildDayData, diaDe, formatDateStr, getEventColor } from '../src/components/DayAgenda';
+import { getCuatrimestreActual, getInhabiles } from '../src/lib/data/calendario';
+import { NOMBRES_CARRERAS } from '../src/lib/data/registry';
 
 export default function Dashboard() {
   const { careerData, materias, detalles, todasLasCarreras, careerId, setCarreraActiva } = usePlan();
@@ -33,7 +19,6 @@ export default function Dashboard() {
   // getCuatrimestreActual); si el usuario ya había elegido uno a mano, el
   // useEffect de abajo lo pisa con lo guardado en localStorage.
   const [filtroCuatri, setFiltroCuatri] = useState<string>(() => getCuatrimestreActual());
-  const [tourStep, setTourStep] = useState(0);
   const [mostrarTodosEventos, setMostrarTodosEventos] = useState(false);
 
   useEffect(() => {
@@ -42,25 +27,6 @@ export default function Dashboard() {
       setFiltroCuatri(filtroGuardado);
     }
   }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const hasViewedTour = localStorage.getItem('mea_tutorial_home_v3');
-      if (!hasViewedTour) {
-        setTimeout(() => setTourStep(1), 600);
-      }
-    }
-  }, []);
-
-  const closeTour = () => {
-    setTourStep(0);
-    localStorage.setItem('mea_tutorial_home_v3', 'true');
-  };
-
-  const skipTour = () => {
-    setTourStep(0);
-    localStorage.setItem('mea_tutorial_home_v3', 'true');
-  };
 
   // isElectivePlaceholder ("Electivas N° Nivel") puede quedar en estado
   // 'cursando' automáticamente cuando el usuario tiene alguna electiva de
@@ -108,14 +74,6 @@ export default function Dashboard() {
     const partes = fechaISO.split('-');
     if (partes.length === 3) return `${partes[2]}/${partes[1]}`;
     return fechaISO;
-  };
-
-  const getEventColor = (tipo: string) => {
-    const t = tipo.toLowerCase();
-    if (t.includes('parcial')) return 'var(--cursando)';
-    if (t.includes('trabajo') || t.includes('tp') || t.includes('práctico')) return 'var(--danger)';
-    if (t.includes('exposi')) return 'var(--aprobada)';
-    return 'var(--cursando)'; 
   };
 
   const horariosSemanales: Record<string, any[]> = { 'Lunes': [], 'Martes': [], 'Miércoles': [], 'Jueves': [], 'Viernes': [], 'Sábado': [], 'Domingo': [] };
@@ -173,6 +131,23 @@ export default function Dashboard() {
   const ordenDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   const diasMostrar = ordenDias.filter(dia => horariosSemanales[dia].length > 0);
 
+  // Sección "Hoy": lo que pasa en el día en curso, arriba de todo, sin tener
+  // que buscar la columna correcta en la grilla semanal.
+  const hoy = new Date();
+  const hoyStr = formatDateStr(hoy);
+  const diaHoy = diaDe(hoy);
+  const datosHoy = buildDayData({
+    dia: diaHoy,
+    dateStr: hoyStr,
+    horarios: horariosSemanales,
+    detalles,
+    materiasData: ALL,
+    inhabiles: getInhabiles(careerId),
+  });
+  const fechaHoyTexto = hoy.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const eventosDeClaseHoy = (materiaId: string) =>
+    detalles?.[materiaId]?.eventos?.filter((ev: any) => ev.fecha === hoyStr) || [];
+
   // Materias "cursando" que no tienen ninguna forma de horario cargado (ni
   // comisión elegida, ni horario personalizado): no aparecen en el calendario
   // y por eso ameritan un aviso propio en vez de perderse silenciosamente.
@@ -218,9 +193,6 @@ export default function Dashboard() {
   return (
     <>
       <style>{`
-        .tour-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--overlay-bg); z-index: 9998; backdrop-filter: blur(3px); transition: opacity 0.3s ease; }
-        .tour-dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 420px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; z-index: 10000; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 16px; text-align: center; }
-
         .dashboard-main { padding-bottom: 80px; display: flex; flex-direction: column; gap: clamp(20px, 3vh, 40px); max-width: 1200px; margin: 0 auto; padding-left: clamp(12px, 2vw, 20px); padding-right: clamp(12px, 2vw, 20px); }
 
         .career-selector { background: var(--bg); border: 1px solid var(--border); color: var(--text-strong); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; outline: none; cursor: pointer; transition: all 0.2s; width: fit-content; max-width: 250px; text-overflow: ellipsis; }
@@ -230,6 +202,8 @@ export default function Dashboard() {
         .schedule-toggle { display: flex; background: var(--panel); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
 
         .home-section-title { color: var(--text-strong); font-size: 1.1rem; margin: 0 0 14px 0; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+
+        .hoy-list { display: flex; flex-direction: column; gap: 10px; }
 
         /* Agenda: lo urgente/accionable (próximos parciales, materias sin
            horario) primero y en una tira horizontal, antes del calendario.
@@ -241,7 +215,7 @@ export default function Dashboard() {
         .agenda-card-alerta { border-left: 3px solid var(--danger); }
         .agenda-card-title { font-size: 0.9rem; font-weight: 700; color: var(--text-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .agenda-card-sub { font-size: 0.75rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .agenda-card-date { align-self: flex-start; background: var(--bg); padding: 4px 10px; border-radius: 8px; font-family: 'Space Mono', monospace; font-weight: bold; font-size: 0.8rem; color: var(--text-strong); }
+        .agenda-card-date { align-self: flex-start; background: var(--bg); padding: 4px 10px; border-radius: 8px; font-family: var(--font-mono); font-weight: bold; font-size: 0.8rem; color: var(--text-strong); }
         .agenda-card-cta { font-size: 0.75rem; color: var(--danger); font-weight: bold; }
 
         /* Próximos eventos: lista vertical (no tira horizontal), con el 6to
@@ -252,7 +226,7 @@ export default function Dashboard() {
         .evento-row-text { flex: 1; min-width: 0; }
         .evento-row-materia { display: block; font-weight: bold; color: var(--text-strong); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .evento-row-tipo { display: block; font-size: 0.75rem; font-weight: 700; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .evento-row-date { flex-shrink: 0; background: var(--bg); padding: 6px 10px; border-radius: 8px; font-family: 'Space Mono', monospace; font-weight: bold; font-size: 0.85rem; color: var(--text-strong); }
+        .evento-row-date { flex-shrink: 0; background: var(--bg); padding: 6px 10px; border-radius: 8px; font-family: var(--font-mono); font-weight: bold; font-size: 0.85rem; color: var(--text-strong); }
         .eventos-teaser-wrap { position: relative; margin-top: 10px; }
         .eventos-teaser-row { opacity: 0.35; pointer-events: none; filter: blur(1px); }
         .eventos-mostrar-mas { position: absolute; inset: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom, transparent, var(--bg) 65%); border: none; border-radius: 12px; color: var(--cursando); font-weight: bold; font-size: 0.85rem; cursor: pointer; }
@@ -265,51 +239,24 @@ export default function Dashboard() {
         }
       `}</style>
 
-      {/* Tutorial Overlay */}
-      {tourStep > 0 && (
-        <>
-          <div className="tour-overlay" />
-          <div className="tour-dialog">
-            {tourStep === 1 && (
-              <>
-                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.3rem' }}>¡Bienvenido/a a bordo!</h3>
-                <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
-                  Tu interfaz principal (el <strong>Home</strong>) ahora es un Dashboard inteligente. Todo lo que apruebes o curses se va a reflejar automáticamente acá.
-                </p>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <button onClick={skipTour} className="btn-secondary" style={{ flex: 1 }}>Omitir</button>
-                  <button onClick={() => setTourStep(2)} className="btn-primary" style={{ flex: 1 }}>Siguiente</button>
-                </div>
-              </>
-            )}
-            {tourStep === 2 && (
-              <>
-                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem' }}>Plan de Estudios</h3>
-                <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
-                  Es el corazón de la app. Al ir a tu <strong>Plan de Estudios</strong>, podés destrabar correlatividades y poner tus materias en estado "Aprobada" o "Cursando".
-                </p>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <button onClick={skipTour} className="btn-secondary" style={{ flex: 1 }}>Omitir</button>
-                  <button onClick={() => setTourStep(3)} className="btn-primary" style={{ flex: 1 }}>Siguiente</button>
-                </div>
-              </>
-            )}
-            {tourStep === 3 && (
-              <>
-                <h3 style={{ color: 'var(--text-strong)', margin: 0, fontSize: '1.2rem' }}>Armá tu Horario</h3>
-                <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
-                  Las materias que pongas en <strong>"Cursando"</strong> aparecerán en tu Home. Al entrar a cada una, vas a poder elegir la comisión real para que se dibuje sola en tu grilla de horarios.
-                </p>
-                <button onClick={closeTour} className="btn-primary" style={{ width: '100%', marginTop: '10px', padding: '12px' }}>
-                  ¡Entendido, a organizar!
-                </button>
-              </>
-            )}
-          </div>
-        </>
-      )}
-
       <main className="dashboard-main">
+
+        {/* --- Hoy: fecha, clases y eventos del día en curso --- */}
+        <div>
+          <h3 className="home-section-title" style={{ textTransform: 'capitalize' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            {fechaHoyTexto}
+          </h3>
+          <div className="hoy-list">
+            <DayAgenda
+              clases={datosHoy.clases}
+              eventosFantasma={datosHoy.eventosFantasma}
+              inhabil={datosHoy.inhabil}
+              eventosDeClase={eventosDeClaseHoy}
+              emptyText="Hoy no tenés clases ni eventos."
+            />
+          </div>
+        </div>
 
         {/* --- Horario Semanal: primer foco al abrir la app --- */}
         <div id="seccion-horarios">
@@ -432,7 +379,7 @@ export default function Dashboard() {
                 return (
                   <Link href={`/materia/${m.id}`} key={m.id} style={{ textDecoration: 'none' }}>
                     <SpotlightCard className="premium-card" spotlightColor="rgba(59, 130, 246, 0.1)">
-                      <div style={{ fontSize: '0.7rem', color: 'var(--muted)', fontFamily: 'Space Mono', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         NIVEL {m.level}
                       </div>
                       <div style={{ fontWeight: 700, color: 'var(--text-strong)', marginTop: '8px', fontSize: '1.15rem' }}>

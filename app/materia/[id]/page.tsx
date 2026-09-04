@@ -8,6 +8,9 @@ import { agregarEvento, borrarEvento } from '../../../src/application/useCases/g
 import { EventoAcademico, HorarioCustom } from '../../../src/domain/entities/Progreso';
 import CustomSelect from '../../../src/components/CustomSelect';
 import ConfirmModal from '../../../src/components/ConfirmModal';
+import Card from '../../../src/components/Card';
+import GenteEnMateria from '../../../src/components/GenteEnMateria';
+import ApuntesDeMateria from '../../../src/components/ApuntesDeMateria';
 
 export default function MateriaPage() {
   const params = useParams();
@@ -179,7 +182,7 @@ export default function MateriaPage() {
                 <span style={{ color: 'var(--muted)', fontSize: '0.9rem', background: 'var(--glass-bg)', padding: '4px 10px', borderRadius: '6px', border: '1px dashed var(--border)' }}>Sin valoraciones de dificultad aún.</span>
               ) : (
                 <>
-                  <span style={{ color: '#ffffff', fontSize: '1.2rem', fontWeight: 800, fontFamily: 'Space Mono' }}>{statsDificultad.promedio.toFixed(1)}</span>
+                  <span style={{ color: '#ffffff', fontSize: '1.2rem', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{statsDificultad.promedio.toFixed(1)}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                     {[1, 2, 3, 4, 5].map((star) => {
                       const fillPorcentaje = Math.max(0, Math.min(100, (statsDificultad.promedio - star + 1) * 100));
@@ -224,7 +227,7 @@ export default function MateriaPage() {
           {/* Horarios de Cursada es el propósito central de esta página, así que
               va primero y en la columna más ancha (antes estaba al revés). */}
           <section style={{ flex: '1 1 60%', minWidth: '300px' }}>
-            <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <Card>
               <h2 style={{ color: 'var(--text-strong)', fontSize: '1.2rem', marginBottom: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 Horarios de Cursada
@@ -261,7 +264,7 @@ export default function MateriaPage() {
                             </span>
                           </div>
                           {comision.dias.map((dia, index) => (
-                            <div key={index} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px' }}>
+                            <div key={index} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px' }}>
                               <span style={{ color: 'var(--text-strong)' }}>{dia.nombre}</span>
                               <span>{dia.inicio} - {dia.fin}</span>
                             </div>
@@ -286,7 +289,7 @@ export default function MateriaPage() {
                       </div>
 
                       {horariosCustomGuardados.map((h: HorarioCustom) => (
-                        <div key={h.id} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '10px' }}>
+                        <div key={h.id} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '10px' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                               <span style={{ color: 'var(--text-strong)', fontWeight: 'bold', minWidth: '80px' }}>{h.dia}</span>
@@ -343,11 +346,11 @@ export default function MateriaPage() {
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Hora Inicio</label>
-                            <input type="time" value={nuevoHorario.inicio} onChange={e => setNuevoHorario({...nuevoHorario, inicio: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'Space Mono' }} required />
+                            <input type="time" value={nuevoHorario.inicio} onChange={e => setNuevoHorario({...nuevoHorario, inicio: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'var(--font-mono)' }} required />
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Hora Fin</label>
-                            <input type="time" value={nuevoHorario.fin} onChange={e => setNuevoHorario({...nuevoHorario, fin: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'Space Mono' }} required />
+                            <input type="time" value={nuevoHorario.fin} onChange={e => setNuevoHorario({...nuevoHorario, fin: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'var(--font-mono)' }} required />
                           </div>
                         </div>
 
@@ -359,11 +362,20 @@ export default function MateriaPage() {
                   </div>
                 </div>
               )}
-            </div>
+            </Card>
+
+            <GenteEnMateria
+              materiaId={id as string}
+              comision={comisionGuardada || null}
+              tieneComisiones={Boolean(tieneComisiones)}
+            />
+
+            <ApuntesDeMateria materiaId={id as string} />
+
           </section>
 
           <section style={{ flex: '1 1 35%', minWidth: '300px' }}>
-            <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <Card>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' }}>
                 <h2 style={{ color: 'var(--text-strong)', fontSize: '1.2rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -399,7 +411,7 @@ export default function MateriaPage() {
                           <div style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: '4px' }}>{ev.tipo}</div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <span style={{ fontFamily: 'Space Mono', color: 'var(--cursando)', background: 'rgba(59, 130, 246, 0.1)', padding: '5px 10px', borderRadius: '6px', fontSize: '0.82rem' }}>{formatearFecha(ev.fecha)}</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--cursando)', background: 'rgba(59, 130, 246, 0.1)', padding: '5px 10px', borderRadius: '6px', fontSize: '0.82rem' }}>{formatearFecha(ev.fecha)}</span>
                           <button onClick={() => setConfirmacionBorrado({ tipo: 'evento', id: ev.id })} style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger-border)', color: 'var(--danger)', cursor: 'pointer', fontSize: '1.1rem', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', transition: 'all 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.background = 'var(--danger)'; e.currentTarget.style.color = 'white'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'var(--danger-soft)'; e.currentTarget.style.color = 'var(--danger)'; }} title="Borrar evento" aria-label={`Borrar evento ${ev.nombre}`}>×</button>
                         </div>
                       </div>
@@ -407,7 +419,7 @@ export default function MateriaPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
           </section>
 
         </div>
