@@ -363,7 +363,11 @@ export default function MateriaPage() {
               )}
             </Card>
 
-            <GenteEnMateria materiaId={id as string} miComision={comisionGuardada || null} />
+            <GenteEnMateria
+              materiaId={id as string}
+              comision={comisionGuardada || null}
+              tieneComisiones={Boolean(tieneComisiones)}
+            />
 
           </section>
 
