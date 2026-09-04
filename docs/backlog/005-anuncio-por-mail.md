@@ -41,6 +41,8 @@ NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... RESEND_API_KEY=... \
 
 ## Falta
 
+- **Mandarlo**: al 2026-09-04 todavía no se envió ningún mail. Queda para el
+  día siguiente, arrancando por el simulacro y una prueba con `--limite 2`.
 - Revisar el texto del mail antes de mandarlo.
 - El plan gratuito de Resend permite 100 mails por día: si el padrón crece,
   hay que partir el envío en tandas.

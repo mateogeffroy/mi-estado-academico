@@ -37,7 +37,7 @@ const slides = [
     title: 'Qué ven los demás',
     description: (
       <span>
-        Sólo <strong style={{ color: 'var(--cursando)' }}>tu nombre, tu carrera y las materias y comisiones que cursás</strong>.
+        Sólo <strong style={{ color: 'var(--cursando)' }}>tu nombre, tu carrera y comisiones que cursás</strong>.
         Nunca tus notas, tu promedio ni tus horarios. Podés ocultarte o bloquear a alguien cuando quieras
         desde <strong style={{ color: 'var(--cursando)' }}>Mi Perfil</strong>.
       </span>
@@ -49,12 +49,12 @@ const slides = [
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
       </svg>
     ),
-    tag: 'En camino',
+    tag: 'Novedades',
     title: 'Apuntes por materia',
     description: (
       <span>
-        Se viene una sección para compartir <strong style={{ color: 'var(--cursando)' }}>resúmenes, ejercicios resueltos y código</strong>
-        {' '}en cada materia, con la opción de publicarlos para todos o sólo para tus amigos.
+        Se agregó una sección para compartir <strong style={{ color: 'var(--cursando)' }}>resúmenes, ejercicios resueltos y código</strong>
+        {' '}en cada materia, con la opción de publicarlos para todos o sólo para tus amigos. La función está a modo de beta, si funciona bien se va a mejorar y ampliar en el futuro.
       </span>
     ),
   },
