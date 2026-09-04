@@ -66,8 +66,8 @@ tener a mano el número de cuánto queda.
 
 ## Falta
 
-- Probarlo: subir, descargar desde otra cuenta, y verificar que un apunte
-  "sólo amigos" no lo vea alguien que no es amigo.
+- Verificar que un apunte "sólo amigos" no lo vea alguien que no es amigo
+  (subir y descargar ya se probó, funciona).
 - Botón de reportar. Hoy la moderación es mirar el panel de Supabase.
 - Nadie avisa cuánto espacio queda del giga gratuito.
 

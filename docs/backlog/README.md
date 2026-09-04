@@ -24,4 +24,5 @@ pasa a `Shippeado` (o se borra si no aporta valor histórico).
 | 001 | [Red social (buscar/agregar gente)](001-red-social.md) | En progreso | `feature/rediseno-ux/ui` |
 | 002 | [Rediseño de la grilla horaria](002-rediseno-grilla-horaria.md) | En progreso | `feature/rediseno-ux/ui` |
 | 003 | [Pasada visual general (marca, chips, colores, fuentes)](003-pasada-visual-general.md) | En progreso | `feature/rediseno-ux/ui` |
-| 004 | [Apuntes por materia](004-apuntes-por-materia.md) | Planeado | — |
+| 004 | [Apuntes por materia](004-apuntes-por-materia.md) | Implementado, a probar | `feature/rediseno-ux/ui` |
+| 005 | [Anuncio por mail de las funciones nuevas](005-anuncio-por-mail.md) | Listo para enviar | `feature/rediseno-ux/ui` |

@@ -12,6 +12,7 @@ interface FilaPerfil {
   nombre: string;
   carrera_id: string | null;
   buscable?: boolean;
+  recibir_novedades?: boolean;
 }
 
 interface FilaAmistad {
@@ -161,22 +162,27 @@ export class SupabaseAmistadesRepository implements AmistadesRepository {
   async obtenerMiPerfil(userId: string): Promise<MiPerfilPublico | null> {
     const { data, error } = await this.client
       .from('perfiles_publicos')
-      .select('user_id, nombre, carrera_id, buscable')
+      .select('user_id, nombre, carrera_id, buscable, recibir_novedades')
       .eq('user_id', userId)
       .maybeSingle();
     if (error) throw new Error(`No se pudo cargar tu perfil público: ${error.message}`);
     if (!data) return null;
     const fila = data as FilaPerfil;
-    return { ...aPerfil(fila), buscable: Boolean(fila.buscable) };
+    return {
+      ...aPerfil(fila),
+      buscable: Boolean(fila.buscable),
+      recibirNovedades: fila.recibir_novedades !== false,
+    };
   }
 
   async actualizarMiPerfil(
     userId: string,
-    cambios: { buscable?: boolean; carreraId?: string | null }
+    cambios: { buscable?: boolean; carreraId?: string | null; recibirNovedades?: boolean }
   ): Promise<void> {
     const fila: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (cambios.buscable !== undefined) fila.buscable = cambios.buscable;
     if (cambios.carreraId !== undefined) fila.carrera_id = cambios.carreraId;
+    if (cambios.recibirNovedades !== undefined) fila.recibir_novedades = cambios.recibirNovedades;
 
     const { error } = await this.client.from('perfiles_publicos').update(fila).eq('user_id', userId);
     if (error) throw new Error(`No se pudo actualizar tu perfil público: ${error.message}`);

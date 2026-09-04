@@ -7,12 +7,13 @@ import { supabase } from '../lib/supabase';
 import { amistadesRepository } from '../infrastructure/repositorios';
 
 /**
- * Opt-in para aparecer en la búsqueda de gente. Arranca apagado para todos:
- * mientras esté apagado, nadie puede encontrarte ni mandarte solicitudes.
+ * Controles del perfil público: aparecer en las búsquedas (viene activado, se
+ * apaga desde acá) y recibir avisos por mail de funciones nuevas.
  */
 export default function PerfilBuscableCard({ careerId }: { careerId?: string | null }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [buscable, setBuscable] = useState<boolean | null>(null);
+  const [novedades, setNovedades] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [amigos, setAmigos] = useState(0);
@@ -28,6 +29,7 @@ export default function PerfilBuscableCard({ careerId }: { careerId?: string | n
       .obtenerMiPerfil(userId)
       .then(perfil => {
         setBuscable(perfil?.buscable ?? false);
+        setNovedades(perfil?.recibirNovedades ?? true);
         // La carrera del perfil público sigue a la carrera activa: es el
         // único dato de carrera que ven los demás, así que no puede quedar
         // desactualizado cuando el usuario cambia de plan.
@@ -45,6 +47,18 @@ export default function PerfilBuscableCard({ careerId }: { careerId?: string | n
       })
       .catch(() => {});
   }, [userId, careerId]);
+
+  const cambiarNovedades = async (valor: boolean) => {
+    if (!userId) return;
+    const previo = novedades;
+    setNovedades(valor);
+    try {
+      await amistadesRepository.actualizarMiPerfil(userId, { recibirNovedades: valor });
+    } catch (e: any) {
+      setNovedades(previo);
+      setError(e.message);
+    }
+  };
 
   const cambiar = async (valor: boolean) => {
     if (!userId) return;
@@ -94,7 +108,19 @@ export default function PerfilBuscableCard({ careerId }: { careerId?: string | n
         </label>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', marginTop: '18px', paddingTop: '14px', borderTop: '1px solid var(--border)' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border)', cursor: 'pointer' }}>
+        <input
+          type="checkbox"
+          checked={novedades}
+          onChange={e => cambiarNovedades(e.target.checked)}
+          style={{ width: '18px', height: '18px', accentColor: 'var(--cursando)', cursor: 'inherit', flexShrink: 0 }}
+        />
+        <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
+          Avisarme por mail cuando haya funciones nuevas
+        </span>
+      </label>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid var(--border)' }}>
         <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
           <strong style={{ color: 'var(--text-strong)' }}>{amigos}</strong> {amigos === 1 ? 'amigo' : 'amigos'}
         </span>

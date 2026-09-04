@@ -6,6 +6,7 @@ export interface PerfilPublico {
 
 export interface MiPerfilPublico extends PerfilPublico {
   buscable: boolean;
+  recibirNovedades: boolean;
 }
 
 export interface Amistad {
@@ -56,5 +57,8 @@ export interface AmistadesRepository {
   /** A quiénes bloqueó el usuario, con su perfil para poder mostrarlos. */
   obtenerBloqueados(miId: string): Promise<PerfilPublico[]>;
   obtenerMiPerfil(userId: string): Promise<MiPerfilPublico | null>;
-  actualizarMiPerfil(userId: string, cambios: { buscable?: boolean; carreraId?: string | null }): Promise<void>;
+  actualizarMiPerfil(
+    userId: string,
+    cambios: { buscable?: boolean; carreraId?: string | null; recibirNovedades?: boolean }
+  ): Promise<void>;
 }
