@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import Card from './Card';
 import { supabase } from '../lib/supabase';
 import { amistadesRepository } from '../infrastructure/repositorios';
@@ -14,6 +15,8 @@ export default function PerfilBuscableCard({ careerId }: { careerId?: string | n
   const [buscable, setBuscable] = useState<boolean | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [amigos, setAmigos] = useState(0);
+  const [pendientes, setPendientes] = useState(0);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
@@ -33,6 +36,14 @@ export default function PerfilBuscableCard({ careerId }: { careerId?: string | n
         }
       })
       .catch(e => setError(e.message));
+
+    amistadesRepository
+      .obtenerAmistades(userId)
+      .then(relaciones => {
+        setAmigos(relaciones.filter(a => a.estado === 'aceptada').length);
+        setPendientes(relaciones.filter(a => a.estado === 'pendiente' && a.destinatarioId === userId).length);
+      })
+      .catch(() => {});
   }, [userId, careerId]);
 
   const cambiar = async (valor: boolean) => {
@@ -80,6 +91,20 @@ export default function PerfilBuscableCard({ careerId }: { careerId?: string | n
             {buscable ? 'Visible' : 'Oculto'}
           </span>
         </label>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', marginTop: '18px', paddingTop: '14px', borderTop: '1px solid var(--border)' }}>
+        <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
+          <strong style={{ color: 'var(--text-strong)' }}>{amigos}</strong> {amigos === 1 ? 'amigo' : 'amigos'}
+        </span>
+        {pendientes > 0 && (
+          <span style={{ color: 'var(--danger)', fontSize: '0.85rem', fontWeight: 700 }}>
+            {pendientes} {pendientes === 1 ? 'solicitud sin responder' : 'solicitudes sin responder'}
+          </span>
+        )}
+        <Link href="/buscar" style={{ marginLeft: 'auto', color: 'var(--cursando)', fontSize: '0.85rem', fontWeight: 700, textDecoration: 'none' }}>
+          Ver amigos y solicitudes →
+        </Link>
       </div>
     </Card>
   );

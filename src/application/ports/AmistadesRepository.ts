@@ -33,6 +33,8 @@ export interface AmistadesRepository {
   /** Todas las relaciones en las que participa el usuario, pendientes y aceptadas. */
   obtenerAmistades(userId: string): Promise<Amistad[]>;
   obtenerPerfiles(userIds: string[]): Promise<PerfilPublico[]>;
+  /** Cuántas solicitudes recibió el usuario y todavía no respondió. */
+  contarSolicitudesPendientes(userId: string): Promise<number>;
   enviarSolicitud(miId: string, destinatarioId: string): Promise<void>;
   aceptarSolicitud(miId: string, solicitanteId: string): Promise<void>;
   /** Sirve para cancelar una solicitud, rechazarla o dejar de ser amigos. */

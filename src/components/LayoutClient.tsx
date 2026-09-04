@@ -9,12 +9,14 @@ import UpdateModal, { UPDATE_VERSION_KEY } from './UpdateModal';
 import Modal from './Modal';
 import Avatar from './Avatar';
 import { supabase } from '../lib/supabase';
-import { feedbackPort } from '../infrastructure/repositorios';
+import { amistadesRepository, feedbackPort } from '../infrastructure/repositorios';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [hasSession, setHasSession] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [solicitudesPendientes, setSolicitudesPendientes] = useState(0);
 
   // Estado para el modal de Feedback
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
@@ -93,6 +95,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         if (!isMounted) return;
 
         setHasSession(!!session);
+        setUserId(session?.user?.id ?? null);
         const isPublicRoute = checkIfPublicRoute(pathname);
 
         if (!session) {
@@ -120,6 +123,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== 'INITIAL_SESSION' && isMounted) {
         setHasSession(!!session);
+        setUserId(session?.user?.id ?? null);
         const isPublicRoute = checkIfPublicRoute(pathname);
 
         if (!session && !isPublicRoute) {
@@ -139,6 +143,20 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       subscription.unsubscribe();
     };
   }, [pathname, router]);
+
+  // Contador de solicitudes de amistad sin responder, para el badge del nav.
+  // Se recalcula al cambiar de ruta: alcanza para enterarse sin abrir un
+  // canal de realtime sólo para esto.
+  useEffect(() => {
+    if (!userId) {
+      setSolicitudesPendientes(0);
+      return;
+    }
+    amistadesRepository
+      .contarSolicitudesPendientes(userId)
+      .then(setSolicitudesPendientes)
+      .catch(() => setSolicitudesPendientes(0));
+  }, [userId, pathname]);
 
   if (isChecking) {
     return (
@@ -245,6 +263,17 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             box-sizing: content-box;
           }
         }
+        /* Badge de solicitudes sin responder. En el nav de escritorio va al
+           lado del texto; en la tab bar, pegado al ícono. */
+        .nav-badge {
+          display: inline-flex; align-items: center; justify-content: center;
+          min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+          background: var(--danger); color: #fff;
+          font-size: 0.7rem; font-weight: 700; line-height: 1;
+        }
+        .bottom-tab-icon { position: relative; display: flex; }
+        .nav-badge-dot { position: absolute; top: -6px; right: -10px; }
+
         .bottom-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); text-decoration: none; font-size: 0.65rem; font-weight: 700; transition: color 0.2s; }
         .bottom-tab:active { background: var(--glass-hover); }
         .bottom-tab.active { color: var(--cursando); }
@@ -321,6 +350,11 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                 <Link href="/buscar" className={`nav-link-btn${pathname === '/buscar' ? ' active' : ''}`}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   Buscar
+                  {solicitudesPendientes > 0 && (
+                    <span className="nav-badge" title={`${solicitudesPendientes} solicitud(es) de amistad sin responder`}>
+                      {solicitudesPendientes}
+                    </span>
+                  )}
                 </Link>
 
                 {/*
@@ -401,7 +435,10 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
           </Link>
           */}
           <Link href="/buscar" className={`bottom-tab ${pathname === '/buscar' ? 'active' : ''}`}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span className="bottom-tab-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              {solicitudesPendientes > 0 && <span className="nav-badge nav-badge-dot">{solicitudesPendientes}</span>}
+            </span>
             Buscar
           </Link>
           <Link href="/perfil" className={`bottom-tab ${pathname === '/perfil' ? 'active' : ''}`}>

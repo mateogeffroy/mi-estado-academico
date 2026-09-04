@@ -70,6 +70,17 @@ export class SupabaseAmistadesRepository implements AmistadesRepository {
     return (data as FilaPerfil[] | null ?? []).map(aPerfil);
   }
 
+  async contarSolicitudesPendientes(userId: string): Promise<number> {
+    // head: true trae sólo el conteo, sin las filas.
+    const { count, error } = await this.client
+      .from('amistades')
+      .select('*', { count: 'exact', head: true })
+      .eq('destinatario_id', userId)
+      .eq('estado', 'pendiente');
+    if (error) throw new Error(`No se pudieron contar las solicitudes: ${error.message}`);
+    return count ?? 0;
+  }
+
   async enviarSolicitud(miId: string, destinatarioId: string): Promise<void> {
     const { error } = await this.client
       .from('amistades')
