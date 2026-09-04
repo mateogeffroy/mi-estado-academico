@@ -9,6 +9,8 @@ import { getNombreCarreraCorto } from '../lib/data/registry';
 interface PersonCardProps {
   persona: PerfilPublico;
   relacion: Relacion;
+  /** Reemplaza a la carrera en la segunda línea (p. ej. la comisión). */
+  subtitulo?: string;
   /** Deshabilita los botones mientras una acción está en vuelo. */
   ocupado?: boolean;
   onAgregar: (persona: PerfilPublico) => void;
@@ -23,7 +25,7 @@ const BADGE = {
   ninguna: null,
 } as const;
 
-export default function PersonCard({ persona, relacion, ocupado, onAgregar, onAceptar, onEliminar }: PersonCardProps) {
+export default function PersonCard({ persona, relacion, subtitulo, ocupado, onAgregar, onAceptar, onEliminar }: PersonCardProps) {
   const badge = BADGE[relacion];
 
   return (
@@ -32,7 +34,7 @@ export default function PersonCard({ persona, relacion, ocupado, onAgregar, onAc
         <Avatar name={persona.nombre} size="sm" />
         <div style={{ minWidth: 0 }}>
           <div className="person-card-nombre">{persona.nombre}</div>
-          <div className="person-card-carrera">{getNombreCarreraCorto(persona.carreraId)}</div>
+          <div className="person-card-carrera">{subtitulo ?? getNombreCarreraCorto(persona.carreraId)}</div>
         </div>
       </div>
 

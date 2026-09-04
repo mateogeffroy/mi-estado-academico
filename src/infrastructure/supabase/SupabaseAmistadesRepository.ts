@@ -2,6 +2,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import {
   Amistad,
   AmistadesRepository,
+  CursanteDeMateria,
   MiPerfilPublico,
   PerfilPublico,
 } from '../../application/ports/AmistadesRepository';
@@ -79,6 +80,17 @@ export class SupabaseAmistadesRepository implements AmistadesRepository {
       .eq('estado', 'pendiente');
     if (error) throw new Error(`No se pudieron contar las solicitudes: ${error.message}`);
     return count ?? 0;
+  }
+
+  async obtenerCursantesDeMateria(miId: string, materiaId: string): Promise<CursanteDeMateria[]> {
+    const { data, error } = await this.client
+      .from('comisiones_publicas')
+      .select('user_id, comision')
+      .eq('materia_id', materiaId)
+      .neq('user_id', miId);
+    if (error) throw new Error(`No se pudo cargar la gente de la materia: ${error.message}`);
+    return (data as { user_id: string; comision: string | null }[] | null ?? [])
+      .map(fila => ({ userId: fila.user_id, comision: fila.comision }));
   }
 
   async enviarSolicitud(miId: string, destinatarioId: string): Promise<void> {

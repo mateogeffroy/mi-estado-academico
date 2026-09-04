@@ -8,8 +8,9 @@
 Capa social del sistema: buscar compañeros por nombre y agregarlos como
 amigos.
 
-**Alcance decidido**: un amigo ve *nombre y carrera*. Nada de progreso, notas
-ni horarios. La búsqueda es opt-in: nadie aparece hasta que lo activa.
+**Alcance decidido**: se ve *nombre, carrera y qué materias/comisiones cursa*
+cada uno. Nunca notas ni horarios. La visibilidad viene **activada por
+default** y se apaga desde el perfil; apagada, sólo te ven tus amigos.
 
 ## Implementado (2026-09-04)
 
@@ -26,14 +27,27 @@ ni horarios. La búsqueda es opt-in: nadie aparece hasta que lo activa.
 - `/buscar`: pestañas Buscar / Solicitudes / Amigos. Búsqueda con debounce de
   300ms a partir de 2 letras; acciones agregar, aceptar, cancelar, rechazar y
   quitar.
-- Perfil: tarjeta de opt-in "Aparecer en las búsquedas". Además mantiene la
-  carrera del perfil público sincronizada con la carrera activa.
+- Perfil: tarjeta "Aparecer en las búsquedas" (activada por default) con el
+  conteo de amigos y solicitudes. Además mantiene la carrera del perfil
+  público sincronizada con la carrera activa.
+- Badge con las solicitudes sin responder en el nav de escritorio y en la tab
+  bar mobile.
+- `20260904170000_comisiones_publicas.sql`: la visibilidad pasa a estar
+  activada por default, y se agrega la vista `comisiones_publicas`, que
+  expone sólo quién cursa qué materia en qué comisión. Es una vista y no una
+  policy sobre `usuario_materias` porque RLS es por fila: no hay forma de
+  dejar leer la comisión y esconder la nota de la misma fila.
+- Página de materia: listados de "Amigos que la cursan" y "Compañeros de
+  comisión", con los mismos botones de agregar/aceptar/quitar.
 - Borrado el mockup: `mockPeople.ts`, `PersonList.tsx`, la sección "Gente en
   tu comisión" de la página de materia y la pestaña "Amigos" del perfil.
 
 ## Falta
 
 - Probar el flujo completo con dos cuentas reales (ver más abajo).
+- Avisar del cambio de visibilidad: ahora los usuarios existentes pasaron a
+  visibles sin haberlo pedido. Corresponde un aviso en la app (y revisar la
+  política de privacidad) antes de que se sumen usuarios nuevos.
 - "Gente en tu comisión" quedó sin reemplazo: haría falta publicar qué
   comisión cursa cada uno, que es más superficie de privacidad que la
   decidida.

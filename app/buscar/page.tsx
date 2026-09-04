@@ -125,13 +125,6 @@ export default function BuscarPage() {
     <main className="buscar-main">
       <style>{`
         .buscar-main { padding-bottom: 60px; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-5); }
-        .person-list { display: flex; flex-direction: column; gap: var(--space-2); }
-        .person-card { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; }
-        .person-card-info { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
-        .person-card-nombre { font-weight: 600; color: var(--text-strong); font-size: 0.9rem; overflow-wrap: anywhere; }
-        .person-card-carrera { font-size: 0.75rem; color: var(--muted); }
-        .person-card-acciones { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
-        .person-card-acciones button { padding: 6px 12px; font-size: 0.8rem; }
         .buscar-vacio { color: var(--muted); font-size: 0.85rem; text-align: center; padding: var(--space-5) 0; }
       `}</style>
 
@@ -142,8 +135,8 @@ export default function BuscarPage() {
 
       {!soyBuscable && (
         <Card style={{ borderLeft: '3px solid var(--warning)', fontSize: '0.85rem' }}>
-          No aparecés en las búsquedas de otras personas. Podés activarlo desde{' '}
-          <Link href="/perfil" style={{ color: 'var(--cursando)' }}>tu perfil</Link>.
+          Estás oculto: no aparecés en las búsquedas ni en los listados de comisión, salvo para tus amigos.
+          Podés cambiarlo desde <Link href="/perfil" style={{ color: 'var(--cursando)' }}>tu perfil</Link>.
         </Card>
       )}
 

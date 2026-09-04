@@ -27,6 +27,12 @@ export const relacionCon = (amistades: Amistad[], miId: string, otroId: string):
   return a.solicitanteId === miId ? 'enviada' : 'recibida';
 };
 
+/** Alguien que cursa una materia, según la vista comisiones_publicas. */
+export interface CursanteDeMateria {
+  userId: string;
+  comision: string | null;
+}
+
 export interface AmistadesRepository {
   /** Perfiles buscables cuyo nombre contiene el texto, sin incluirse a uno mismo. */
   buscarPersonas(miId: string, texto: string, limite?: number): Promise<PerfilPublico[]>;
@@ -35,6 +41,8 @@ export interface AmistadesRepository {
   obtenerPerfiles(userIds: string[]): Promise<PerfilPublico[]>;
   /** Cuántas solicitudes recibió el usuario y todavía no respondió. */
   contarSolicitudesPendientes(userId: string): Promise<number>;
+  /** Quiénes cursan esa materia, sin incluirse a uno mismo. */
+  obtenerCursantesDeMateria(miId: string, materiaId: string): Promise<CursanteDeMateria[]>;
   enviarSolicitud(miId: string, destinatarioId: string): Promise<void>;
   aceptarSolicitud(miId: string, solicitanteId: string): Promise<void>;
   /** Sirve para cancelar una solicitud, rechazarla o dejar de ser amigos. */

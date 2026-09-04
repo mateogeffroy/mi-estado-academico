@@ -73,8 +73,9 @@ export default function PerfilBuscableCard({ careerId }: { careerId?: string | n
             Aparecer en las búsquedas
           </h3>
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>
-            Si lo activás, otras personas pueden encontrarte por tu nombre y mandarte solicitudes de amistad.
-            Sólo se muestra tu nombre y tu carrera: nunca tus materias, notas ni horarios.
+            Mientras esté activado, otras personas pueden encontrarte por tu nombre, verte en el listado de
+            tu comisión y mandarte solicitudes. Se muestra tu nombre, tu carrera y qué materias cursás:
+            nunca tus notas ni tus horarios. Si lo desactivás, sólo te ven tus amigos.
           </p>
           {error && <p style={{ color: 'var(--danger)', fontSize: '0.8rem', margin: '8px 0 0 0' }}>{error}</p>}
         </div>

@@ -9,6 +9,7 @@ import { EventoAcademico, HorarioCustom } from '../../../src/domain/entities/Pro
 import CustomSelect from '../../../src/components/CustomSelect';
 import ConfirmModal from '../../../src/components/ConfirmModal';
 import Card from '../../../src/components/Card';
+import GenteEnMateria from '../../../src/components/GenteEnMateria';
 
 export default function MateriaPage() {
   const params = useParams();
@@ -361,6 +362,8 @@ export default function MateriaPage() {
                 </div>
               )}
             </Card>
+
+            <GenteEnMateria materiaId={id as string} miComision={comisionGuardada || null} />
 
           </section>
 
