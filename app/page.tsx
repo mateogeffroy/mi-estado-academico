@@ -230,7 +230,7 @@ export default function Dashboard() {
         .agenda-card-alerta { border-left: 3px solid var(--danger); }
         .agenda-card-title { font-size: 0.9rem; font-weight: 700; color: var(--text-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .agenda-card-sub { font-size: 0.75rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .agenda-card-date { align-self: flex-start; background: var(--bg); padding: 4px 10px; border-radius: 8px; font-family: 'Space Mono', monospace; font-weight: bold; font-size: 0.8rem; color: var(--text-strong); }
+        .agenda-card-date { align-self: flex-start; background: var(--bg); padding: 4px 10px; border-radius: 8px; font-family: var(--font-mono); font-weight: bold; font-size: 0.8rem; color: var(--text-strong); }
         .agenda-card-cta { font-size: 0.75rem; color: var(--danger); font-weight: bold; }
 
         /* Próximos eventos: lista vertical (no tira horizontal), con el 6to
@@ -241,7 +241,7 @@ export default function Dashboard() {
         .evento-row-text { flex: 1; min-width: 0; }
         .evento-row-materia { display: block; font-weight: bold; color: var(--text-strong); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .evento-row-tipo { display: block; font-size: 0.75rem; font-weight: 700; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .evento-row-date { flex-shrink: 0; background: var(--bg); padding: 6px 10px; border-radius: 8px; font-family: 'Space Mono', monospace; font-weight: bold; font-size: 0.85rem; color: var(--text-strong); }
+        .evento-row-date { flex-shrink: 0; background: var(--bg); padding: 6px 10px; border-radius: 8px; font-family: var(--font-mono); font-weight: bold; font-size: 0.85rem; color: var(--text-strong); }
         .eventos-teaser-wrap { position: relative; margin-top: 10px; }
         .eventos-teaser-row { opacity: 0.35; pointer-events: none; filter: blur(1px); }
         .eventos-mostrar-mas { position: absolute; inset: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom, transparent, var(--bg) 65%); border: none; border-radius: 12px; color: var(--cursando); font-weight: bold; font-size: 0.85rem; cursor: pointer; }
@@ -394,7 +394,7 @@ export default function Dashboard() {
                 return (
                   <Link href={`/materia/${m.id}`} key={m.id} style={{ textDecoration: 'none' }}>
                     <SpotlightCard className="premium-card" spotlightColor="rgba(59, 130, 246, 0.1)">
-                      <div style={{ fontSize: '0.7rem', color: 'var(--muted)', fontFamily: 'Space Mono', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         NIVEL {m.level}
                       </div>
                       <div style={{ fontWeight: 700, color: 'var(--text-strong)', marginTop: '8px', fontSize: '1.15rem' }}>

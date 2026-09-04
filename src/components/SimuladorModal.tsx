@@ -243,7 +243,7 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
         .sim-mobile-btn {
           background: transparent; color: var(--text-strong); border: none;
           padding: 12px 14px; text-align: left; border-radius: 8px; font-weight: 600;
-          font-family: 'Syne', sans-serif; font-size: 0.9rem; cursor: pointer;
+          font-family: var(--font-sans); font-size: 0.9rem; cursor: pointer;
           display: flex; align-items: center; gap: 10px; transition: background 0.2s;
         }
         .sim-mobile-btn:hover, .sim-mobile-btn:active { background: var(--glass-hover); }
@@ -324,7 +324,7 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
                         ) : (
                            materiasSimulables.map(m => (
                               <div key={m.id} className="sim-dropdown-item" onClick={() => { setSelectedSingleId(m.id); setDropdownOpen(false); }}>
-                                 <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginRight: '8px', fontFamily: 'Space Mono' }}>N{m.level || '-'}</span>
+                                 <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginRight: '8px', fontFamily: 'var(--font-mono)' }}>N{m.level || '-'}</span>
                                  {m.name}
                               </div>
                            ))
@@ -399,7 +399,7 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
                       )}
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                        <span style={{ fontSize: '0.75rem', fontFamily: 'Space Mono', color: 'var(--muted)' }}>
+                        <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--muted)' }}>
                           {m.level ? `Nivel ${m.level}` : 'Electiva'}
                         </span>
                         <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: estReal === 'cursada' ? 'var(--cursada)' : 'var(--cursando)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -452,7 +452,7 @@ export default function SimuladorModal({ isOpen, onClose, materias, ALL }: Simul
                       onClick={(e) => handleUnlockedClick(e, m.id)}
                       style={{ cursor: 'pointer' }}
                     >
-                      <div style={{ fontSize: '0.75rem', fontFamily: 'Space Mono', color: 'var(--muted)' }}>{m.level ? `Nivel ${m.level}` : 'Electiva'}</div>
+                      <div style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--muted)' }}>{m.level ? `Nivel ${m.level}` : 'Electiva'}</div>
                       <div style={{ color: 'var(--text-strong)', fontWeight: 'bold', fontSize: '1rem' }}>{m.name}</div>
                       
                       {isHighlightedFromLeft && m.correlAprobada?.includes(activeLeftId!) && !isRightActive && (

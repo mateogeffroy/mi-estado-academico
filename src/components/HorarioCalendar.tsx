@@ -464,7 +464,7 @@ export default function HorarioCalendar({ horarios, isEmpty, title, action, deta
               .agenda-day-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
               .agenda-tab { flex: 1 0 auto; min-width: 44px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 6px; border-radius: 12px; border: 1px solid var(--border); background: var(--glass-bg); color: var(--muted); cursor: pointer; transition: all 0.2s; }
               .agenda-tab-day { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-              .agenda-tab-date { font-size: 0.9rem; font-weight: 700; font-family: 'Space Mono', monospace; }
+              .agenda-tab-date { font-size: 0.9rem; font-weight: 700; font-family: var(--font-mono); }
               .agenda-tab-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cursando); }
               .agenda-tab.active { background: var(--cursando); border-color: var(--cursando); color: #fff; }
               .agenda-tab.today:not(.active) { border-color: var(--cursando); color: var(--cursando); }

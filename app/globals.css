@@ -1,4 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+/* ============================================================
+   TIPOGRAFÍA — un solo lugar
+   Para cambiar la fuente de toda la app: cambiá la familia en este @import
+   y en las variables --font-* de :root. Ningún otro archivo nombra fuentes.
+
+   Alternativas para probar:
+     sans (texto):    Manrope · Inter · Outfit · Plus+Jakarta+Sans · Sora
+     mono (números):  JetBrains+Mono · IBM+Plex+Mono · Space+Mono · Roboto+Mono
+     display (logo):  Syne (la marca) · Bricolage+Grotesque · Unbounded
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
 
 :root {
   /* ==========================================================
@@ -78,6 +88,11 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-full: 999px;
+
+  /* Fuentes (ver el @import del principio del archivo) */
+  --font-display: 'Syne', sans-serif;        /* logo / marca */
+  --font-sans: 'Manrope', sans-serif;        /* texto general */
+  --font-mono: 'JetBrains Mono', monospace;  /* horarios, fechas, etiquetas */
 }
 
 .dark {
@@ -141,7 +156,7 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-sans);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -176,6 +191,7 @@ header {
 }
 
 .logo {
+  font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -188,7 +204,7 @@ header {
 }
 
 .subtitle {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.65rem;
   color: var(--muted);
   letter-spacing: 0.05em;
@@ -209,7 +225,7 @@ header {
   display: flex;
   gap: 18px;
   font-size: 0.72rem;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   flex-wrap: wrap;
 }
 
@@ -263,7 +279,7 @@ main {
 }
 
 .level-badge {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.15em;
@@ -341,7 +357,7 @@ main {
   opacity: 1;
 }
 
-.subject-num  { font-family: 'Space Mono', monospace; font-size: 0.6rem; opacity: 0.5; margin-bottom: 4px; }
+.subject-num  { font-family: var(--font-mono); font-size: 0.6rem; opacity: 0.5; margin-bottom: 4px; }
 .subject-name { font-weight: 700; }
 .subject-hours { font-size: 0.65rem; opacity: 0.6; margin-top: 6px; }
 
@@ -370,8 +386,8 @@ main {
 }
 
 .stat { display: flex; align-items: center; gap: 8px; }
-.stat-val { font-size: 1.1rem; font-weight: 700; font-family: 'Syne', sans-serif; }
-.stat-label { color: var(--muted); font-size: 0.7rem; font-family: 'Space Mono', monospace; }
+.stat-val { font-size: 1.1rem; font-weight: 700; font-family: var(--font-sans); }
+.stat-label { color: var(--muted); font-size: 0.7rem; font-family: var(--font-mono); }
 
 .progress-bar {
   flex: 1;
@@ -399,7 +415,7 @@ main {
 button {
   padding: 10px 16px;
   border-radius: 6px;
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
@@ -443,7 +459,7 @@ button {
   width: 100%; box-sizing: border-box; border-radius: 10px;
   padding: 12px 14px; font-size: 0.95rem;
   border: 1px solid var(--border); background: var(--glass-bg);
-  color: var(--text-strong); font-family: 'Syne', sans-serif; outline: none;
+  color: var(--text-strong); font-family: var(--font-sans); outline: none;
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 .input-field::placeholder { color: var(--muted); }
@@ -467,7 +483,7 @@ button {
 
 .mark-all-btn {
   background: transparent; color: var(--muted); border: none;
-  font-family: 'Space Mono', monospace; font-size: 0.55rem; font-weight: 700;
+  font-family: var(--font-mono); font-size: 0.55rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.1em; padding: 3px 10px;
   border-radius: 12px; cursor: pointer; opacity: 0.8; transition: all 0.2s ease; white-space: nowrap;
 }
@@ -519,7 +535,7 @@ button {
   display: inline-flex; align-items: center; justify-content: center;
   border-radius: var(--radius-full);
   background: var(--glass-bg); border: 1px solid var(--border);
-  color: var(--text-strong); font-weight: 700; font-family: 'Syne', sans-serif;
+  color: var(--text-strong); font-weight: 700; font-family: var(--font-sans);
   overflow: hidden; flex-shrink: 0;
 }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -530,7 +546,7 @@ button {
 .badge {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 2px 10px; border-radius: var(--radius-full);
-  font-size: 0.7rem; font-weight: 700; font-family: 'Space Mono', monospace;
+  font-size: 0.7rem; font-weight: 700; font-family: var(--font-mono);
   text-transform: uppercase; letter-spacing: 0.04em;
   border: 1px solid; white-space: nowrap;
 }
@@ -548,7 +564,7 @@ button {
 .tab-item {
   background: transparent; border: 1px solid transparent; cursor: pointer;
   padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm);
-  font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.85rem;
+  font-family: var(--font-sans); font-weight: 600; font-size: 0.85rem;
   color: var(--muted); transition: all 0.2s ease;
 }
 .tab-item:hover { color: var(--text-strong); background: var(--glass-hover); }
@@ -587,8 +603,8 @@ button {
 .agenda-item.ghost { border-left-color: var(--warning); border-style: dashed; }
 .agenda-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .agenda-item-title { font-weight: 700; color: var(--text-strong); font-size: 0.9rem; line-height: 1.25; overflow-wrap: anywhere; }
-.agenda-item-time { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--muted); flex-shrink: 0; }
-.agenda-item-meta { font-size: 0.7rem; color: var(--muted); font-family: 'Space Mono', monospace; overflow-wrap: anywhere; }
+.agenda-item-time { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); flex-shrink: 0; }
+.agenda-item-meta { font-size: 0.7rem; color: var(--muted); font-family: var(--font-mono); overflow-wrap: anywhere; }
 .agenda-chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .agenda-event-chip {
   font-size: 0.65rem; padding: 2px 8px; border-radius: var(--radius-full);
@@ -599,13 +615,14 @@ button {
 /* Semana en columnas: una por día, cards apiladas por horario. Sin eje de
    horas, así que ninguna card queda más baja que su propio texto. */
 .week-columns { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-3); padding: var(--space-4); }
-.week-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; border-radius: var(--radius-md); transition: outline-color 0.2s ease; }
+/* El padding lo tienen todas las columnas, no sólo la marcada, para que la
+   marca al moverse no corra el ancho de nada. */
+.week-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 8px; border-radius: var(--radius-md); transition: background 0.2s ease, box-shadow 0.2s ease; }
 
-/* Marca del día elegido con las flechas: un anillo alrededor de la columna.
-   Es outline y no border para no correr el ancho de la columna al moverse.
-   Arranca sobre el día de hoy y se mueve con las flechas; el resaltado azul
-   del header (.today) queda siempre sobre la fecha real. */
-.week-col.selected { outline: 2px solid var(--cursando); outline-offset: 6px; }
+/* Marca del día elegido con las flechas: sombra azul alrededor de la columna.
+   Arranca sobre el día de hoy y se mueve con las flechas; el resaltado del
+   header (.today) queda siempre sobre la fecha real. */
+.week-col.selected { background: rgba(59, 130, 246, 0.06); box-shadow: 0 0 24px rgba(59, 130, 246, 0.35); }
 .week-col-header {
   display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
   padding: 6px 10px; border-radius: var(--radius-sm);
@@ -613,7 +630,7 @@ button {
 }
 .week-col-header.today { border-color: var(--cursando); color: var(--cursando); background: rgba(59, 130, 246, 0.1); }
 .week-col-day { font-weight: 700; font-size: 0.8rem; }
-.week-col-date { font-family: 'Space Mono', monospace; font-size: 0.75rem; opacity: 0.7; }
+.week-col-date { font-family: var(--font-mono); font-size: 0.75rem; opacity: 0.7; }
 
 @media (max-width: 1100px) {
   .week-columns { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
@@ -625,7 +642,7 @@ button {
 .tooltip {
   position: fixed; z-index: 200; background: var(--panel); border: 1px solid var(--border);
   border-radius: 8px; padding: 10px 14px; font-size: 0.72rem;
-  font-family: 'Space Mono', monospace; color: var(--text); pointer-events: none;
+  font-family: var(--font-mono); color: var(--text); pointer-events: none;
   opacity: 0; transition: opacity 0.15s; max-width: 220px; line-height: 1.6;
 }
 .tooltip.show { opacity: 1; }
@@ -667,7 +684,7 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
   background: var(--glass-bg);
   border: 1px solid var(--border); color: var(--text);
   padding: 14px 16px; border-radius: 10px;
-  font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.95rem;
+  font-family: var(--font-sans); font-weight: 600; font-size: 0.95rem;
   text-decoration: none; display: flex; align-items: center; gap: 12px;
   transition: all 0.2s ease; cursor: pointer; text-align: left;
 }
@@ -698,7 +715,7 @@ div > div:nth-child(7n) .calendar-tooltip-card::after { left: auto; right: 15px;
 }
 .sidebar-legend-title {
   font-size: 0.65rem;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;

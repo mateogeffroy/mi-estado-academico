@@ -22,6 +22,14 @@ export const getEventColorSoft = (tipo: string) => {
   return 'rgba(59, 130, 246, 0.15)';
 };
 
+// Color del borde de la card según cuándo se cursa: verde 1º cuatrimestre,
+// rojo 2º, azul anual.
+export const getDuracionColor = (duracion?: string) => {
+  if (duracion === '1') return 'var(--aprobada)';
+  if (duracion === '2') return 'var(--danger)';
+  return 'var(--cursando)';
+};
+
 export const getColoresInhabil = (tipo: string) => {
   switch (tipo) {
     case 'feriado': return { bg: 'rgba(59, 130, 246, 0.1)', border: 'rgba(59, 130, 246, 0.4)', text: 'var(--cursando)' };
@@ -141,7 +149,12 @@ export default function DayAgenda({
       {ordenadas.map(clase => {
         const eventosHoy = eventosDeClase?.(clase.materiaId) || [];
         return (
-          <div key={clase.id} className="agenda-item" onClick={() => router.push(`/materia/${clase.materiaId}`)}>
+          <div
+            key={clase.id}
+            className="agenda-item"
+            style={{ borderLeftColor: getDuracionColor(clase.duracion) }}
+            onClick={() => router.push(`/materia/${clase.materiaId}`)}
+          >
             <div className="agenda-item-top">
               <span className="agenda-item-title">{clase.materiaLimpia}</span>
               <span className="agenda-item-time">{clase.inicio}-{clase.fin}</span>
@@ -150,8 +163,8 @@ export default function DayAgenda({
             {eventosHoy.length > 0 && (
               <div className="agenda-chips">
                 {eventosHoy.map((ev: any, i: number) => (
-                  <span key={i} className="agenda-event-chip" style={{ background: getEventColorSoft(ev.tipo), color: getEventColor(ev.tipo) }}>
-                    {ev.tipo}: {ev.nombre}
+                  <span key={i} className="agenda-event-chip" style={{ background: getEventColorSoft(ev.tipo), color: getEventColor(ev.tipo) }} title={ev.nombre}>
+                    {ev.tipo}
                   </span>
                 ))}
               </div>

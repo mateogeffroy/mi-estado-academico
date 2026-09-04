@@ -182,7 +182,7 @@ export default function MateriaPage() {
                 <span style={{ color: 'var(--muted)', fontSize: '0.9rem', background: 'var(--glass-bg)', padding: '4px 10px', borderRadius: '6px', border: '1px dashed var(--border)' }}>Sin valoraciones de dificultad aún.</span>
               ) : (
                 <>
-                  <span style={{ color: '#ffffff', fontSize: '1.2rem', fontWeight: 800, fontFamily: 'Space Mono' }}>{statsDificultad.promedio.toFixed(1)}</span>
+                  <span style={{ color: '#ffffff', fontSize: '1.2rem', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{statsDificultad.promedio.toFixed(1)}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                     {[1, 2, 3, 4, 5].map((star) => {
                       const fillPorcentaje = Math.max(0, Math.min(100, (statsDificultad.promedio - star + 1) * 100));
@@ -264,7 +264,7 @@ export default function MateriaPage() {
                             </span>
                           </div>
                           {comision.dias.map((dia, index) => (
-                            <div key={index} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px' }}>
+                            <div key={index} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px' }}>
                               <span style={{ color: 'var(--text-strong)' }}>{dia.nombre}</span>
                               <span>{dia.inicio} - {dia.fin}</span>
                             </div>
@@ -289,7 +289,7 @@ export default function MateriaPage() {
                       </div>
 
                       {horariosCustomGuardados.map((h: HorarioCustom) => (
-                        <div key={h.id} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'Space Mono', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '10px' }}>
+                        <div key={h.id} style={{ fontSize: '0.9rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '10px' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                               <span style={{ color: 'var(--text-strong)', fontWeight: 'bold', minWidth: '80px' }}>{h.dia}</span>
@@ -346,11 +346,11 @@ export default function MateriaPage() {
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Hora Inicio</label>
-                            <input type="time" value={nuevoHorario.inicio} onChange={e => setNuevoHorario({...nuevoHorario, inicio: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'Space Mono' }} required />
+                            <input type="time" value={nuevoHorario.inicio} onChange={e => setNuevoHorario({...nuevoHorario, inicio: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'var(--font-mono)' }} required />
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <label style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Hora Fin</label>
-                            <input type="time" value={nuevoHorario.fin} onChange={e => setNuevoHorario({...nuevoHorario, fin: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'Space Mono' }} required />
+                            <input type="time" value={nuevoHorario.fin} onChange={e => setNuevoHorario({...nuevoHorario, fin: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text-strong)', outline: 'none', fontFamily: 'var(--font-mono)' }} required />
                           </div>
                         </div>
 
@@ -412,7 +412,7 @@ export default function MateriaPage() {
                           <div style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: '4px' }}>{ev.tipo}</div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <span style={{ fontFamily: 'Space Mono', color: 'var(--cursando)', background: 'rgba(59, 130, 246, 0.1)', padding: '5px 10px', borderRadius: '6px', fontSize: '0.82rem' }}>{formatearFecha(ev.fecha)}</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--cursando)', background: 'rgba(59, 130, 246, 0.1)', padding: '5px 10px', borderRadius: '6px', fontSize: '0.82rem' }}>{formatearFecha(ev.fecha)}</span>
                           <button onClick={() => setConfirmacionBorrado({ tipo: 'evento', id: ev.id })} style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger-border)', color: 'var(--danger)', cursor: 'pointer', fontSize: '1.1rem', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', transition: 'all 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.background = 'var(--danger)'; e.currentTarget.style.color = 'white'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'var(--danger-soft)'; e.currentTarget.style.color = 'var(--danger)'; }} title="Borrar evento" aria-label={`Borrar evento ${ev.nombre}`}>×</button>
                         </div>
                       </div>

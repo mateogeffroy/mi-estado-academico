@@ -21,7 +21,7 @@ export default function ComoSeHizoPost() {
           background: var(--glass-bg); 
           padding: 20px; 
           border-radius: 12px; 
-          font-family: 'Space Mono', monospace; 
+          font-family: var(--font-mono); 
           font-size: 0.9rem; 
           border: 1px solid var(--glass-border);
           margin: 25px 0;
