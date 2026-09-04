@@ -24,7 +24,7 @@ export default function CreandoFrontendPost() {
           background: var(--glass-bg); 
           padding: 15px; 
           border-radius: 8px; 
-          font-family: 'Space Mono', monospace; 
+          font-family: var(--font-mono); 
           font-size: 0.9rem; 
           border: 1px solid var(--glass-border);
           margin: 20px 0;
@@ -35,10 +35,10 @@ export default function CreandoFrontendPost() {
         .code-inline {
           background: var(--glass-bg);
           border: 1px solid var(--glass-border);
-          color: #ef4444;
+          color: var(--danger);
           padding: 2px 6px;
           border-radius: 4px;
-          font-family: 'Space Mono', monospace;
+          font-family: var(--font-mono);
           font-size: 0.9em;
         }
 

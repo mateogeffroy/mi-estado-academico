@@ -65,9 +65,9 @@ describe('evaluarCorrelatividades', () => {
     expect(resultado.C).toBe('disabled');
   });
 
-  it('el placeholder de electiva pasa a cursada cuando se acumulan las horas anuales requeridas vía cursadas', () => {
+  it('el placeholder de electiva pasa a cursando cuando se acumulan las horas requeridas vía cursadas (sin final aprobado)', () => {
     const resultado = evaluarCorrelatividades({ E1: 'cursada', E2: 'cursada' }, careerDeMuestra());
-    expect(resultado.REQ).toBe('cursada');
+    expect(resultado.REQ).toBe('cursando');
   });
 
   it('el placeholder de electiva pasa a aprobada cuando se acumulan las horas anuales requeridas vía aprobadas', () => {
@@ -75,9 +75,33 @@ describe('evaluarCorrelatividades', () => {
     expect(resultado.REQ).toBe('aprobada');
   });
 
-  it('el placeholder de electiva sigue "available" si no se juntaron las horas requeridas', () => {
+  it('el placeholder de electiva pasa a cursando con progreso parcial (todavía no junta las horas)', () => {
     const resultado = evaluarCorrelatividades({ E1: 'cursada' }, careerDeMuestra());
+    expect(resultado.REQ).toBe('cursando');
+  });
+
+  it('el placeholder de electiva sigue "available" sin ningún progreso', () => {
+    const resultado = evaluarCorrelatividades({}, careerDeMuestra());
     expect(resultado.REQ).toBe('available');
+  });
+
+  it('no cuenta horas de electivas de OTRO nivel para completar el placeholder', () => {
+    const carrera = careerDeMuestra({
+      ALL: [
+        { id: 'REQ3', name: 'Electiva requerida 3°', level: 3, isElectivePlaceholder: true, targetHours: 4, correlCursada: [], correlAprobada: [] },
+        { id: 'REQ4', name: 'Electiva requerida 4°', level: 4, isElectivePlaceholder: true, targetHours: 6, correlCursada: [], correlAprobada: [] },
+        { id: 'E4A', name: 'Electiva 4to A', level: 4, annualHours: 2, correlCursada: [], correlAprobada: [] },
+      ],
+      ELECTIVAS: { 4: [{ id: 'E4A', name: 'Electiva 4to A', annualHours: 2, correlCursada: [], correlAprobada: [] }] },
+    });
+
+    // Aprobar la única electiva de 4to (2hs) no debe completar ni el bloque
+    // de 3° (target 4, sin electivas propias con progreso) ni el de 4°
+    // (target 6, todavía falta): antes, sumar todo junto disparaba "aprobada"
+    // de rebote.
+    const resultado = evaluarCorrelatividades({ E4A: 'aprobada' }, carrera);
+    expect(resultado.REQ3).toBe('available');
+    expect(resultado.REQ4).toBe('cursando');
   });
 
   it('es determinística: correr dos veces el mismo estado da el mismo resultado', () => {

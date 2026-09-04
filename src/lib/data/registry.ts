@@ -72,3 +72,23 @@ export const CAREER_MATERIA_PREFIX: Record<string, string | null> = {
 
 export const getCareerPrefix = (careerId: string): string | null =>
   CAREER_MATERIA_PREFIX[careerId] ?? null;
+
+// Nombre corto de cada carrera, para selectores y tarjetas. El nombre largo
+// (con el plan) vive en la pantalla de perfil.
+export const NOMBRES_CARRERAS: Record<string, string> = {
+  'utn-sistemas-2023': 'Ingeniería en Sistemas',
+  'utn-civil-2023': 'Ingeniería Civil',
+  'utn-industrial-2008': 'Ingeniería Industrial',
+  'utn-mecanica-2023': 'Ingeniería Mecánica',
+  'utn-quimica-2008': 'Ingeniería Química',
+  'utn-electrica-2023': 'Ingeniería Eléctrica',
+  'unlp-apu-2021': 'APU (UNLP)',
+  'unlp-sistemas-2021': 'Lic. en Sistemas (UNLP)',
+  'unlp-informatica-2021': 'Lic. en Informática (UNLP)',
+  'unlp-psicologia-2012': 'Psicología (UNLP)',
+  'unlp-computacion-2024': 'Ing. en Computación (UNLP)',
+  'unlp-sonido-2023': 'Tec. en Sonido (UNLP)',
+};
+
+export const getNombreCarreraCorto = (careerId: string | null | undefined): string =>
+  (careerId && NOMBRES_CARRERAS[careerId]) || 'Carrera sin definir';

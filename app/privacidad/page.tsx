@@ -39,13 +39,20 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 style={{ color: 'var(--text-strong)', fontSize: '1.5rem', marginBottom: '10px' }}>4. Cookies y Google AdSense</h2>
+          <h2 style={{ color: 'var(--text-strong)', fontSize: '1.5rem', marginBottom: '10px' }}>4. Perfil visible y amistades</h2>
+          <p>La plataforma tiene una sección social para encontrar compañeros de cursada. Mientras tu perfil esté visible, el resto de los usuarios registrados puede ver <strong style={{ color: 'var(--text-strong)' }}>tu nombre, tu carrera y las materias y comisiones que estás cursando</strong>, y puede enviarte solicitudes de amistad.</p>
+          <p><strong style={{ color: 'var(--text-strong)' }}>Nunca se comparten tus notas, tu promedio, tu progreso ni tus horarios personales</strong>, ni con tus amigos ni con nadie más.</p>
+          <p>La visibilidad viene activada y se apaga cuando quieras desde <strong style={{ color: 'var(--text-strong)' }}>Mi Perfil</strong>, en la tarjeta "Aparecer en las búsquedas". Con la visibilidad apagada dejás de figurar en las búsquedas y en los listados de comisión, y sólo te siguen viendo las personas que ya aceptaste como amigas. También podés bloquear a cualquier usuario: dejan de verse mutuamente y se elimina la amistad si la había.</p>
+        </section>
+
+        <section>
+          <h2 style={{ color: 'var(--text-strong)', fontSize: '1.5rem', marginBottom: '10px' }}>5. Cookies y Google AdSense</h2>
           <p>Este sitio web utiliza cookies propias para mantener tu sesión activa y cookies de terceros para mostrar anuncios publicitarios. Los proveedores de terceros, incluido <strong style={{ color: 'var(--text-strong)' }}>Google</strong>, utilizan cookies para mostrar anuncios relevantes basándose en las visitas anteriores de un usuario a este sitio web o a otros sitios de Internet.</p>
           <p>El uso de cookies de publicidad permite a Google y a sus socios mostrar anuncios basados en tu navegación por nuestros sitios y otros sitios de Internet. Podés inhabilitar la publicidad personalizada visitando la <a href="https://myadcenter.google.com/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--cursando)' }}>Configuración de anuncios de Google</a> o visitando <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--cursando)' }}>www.aboutads.info</a>.</p>
         </section>
 
         <section>
-          <h2 style={{ color: 'var(--text-strong)', fontSize: '1.5rem', marginBottom: '10px' }}>5. Seguridad</h2>
+          <h2 style={{ color: 'var(--text-strong)', fontSize: '1.5rem', marginBottom: '10px' }}>6. Seguridad</h2>
           <p>Te recomendamos utilizar contraseñas fuertes o iniciar sesión a través del proveedor seguro de Google, ya que estas credenciales son la llave de acceso a tu perfil personal en nuestra plataforma.</p>
         </section>
       </div>

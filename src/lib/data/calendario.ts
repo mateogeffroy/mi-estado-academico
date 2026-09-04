@@ -1,5 +1,16 @@
 export type TipoInhabil = 'feriado' | 'finales' | 'paro';
 
+// Aproximación genérica (UTN/UNLP no difieren mucho): marzo-julio es 1º
+// cuatrimestre, agosto-diciembre 2º. Enero/febrero (verano, sin cursada)
+// cae al 1º ya que es el que se viene. Sirve para arrancar la grilla
+// horaria del home mostrando el cuatrimestre que corresponde a la fecha
+// real en vez de siempre el 1º — a futuro esto podría salir de un
+// calendario académico configurable por carrera.
+export const getCuatrimestreActual = (fecha: Date = new Date()): '1' | '2' => {
+  const mes = fecha.getMonth() + 1;
+  return mes >= 8 ? '2' : '1';
+};
+
 export interface DiaInhabil {
   fecha: string; 
   motivo: string;

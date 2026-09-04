@@ -7,13 +7,17 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import UpdateModal, { UPDATE_VERSION_KEY } from './UpdateModal';
 import Modal from './Modal';
+import Avatar from './Avatar';
 import { supabase } from '../lib/supabase';
-import { feedbackPort } from '../infrastructure/repositorios';
+import { amistadesRepository, feedbackPort } from '../infrastructure/repositorios';
+import { EVENTO_SOLICITUDES_VISTAS, solicitudesVistasAt } from '../lib/solicitudesVistas';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [hasSession, setHasSession] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [solicitudesPendientes, setSolicitudesPendientes] = useState(0);
 
   // Estado para el modal de Feedback
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
@@ -29,7 +33,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const router = useRouter(); 
 
-  const isBlogActive = pathname?.startsWith('/blog');
+  //const isBlogActive = pathname?.startsWith('/blog');
 
   useEffect(() => {
     setIsProfileMenuOpen(false);
@@ -80,7 +84,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       return (
         path === '/login' || 
         path === '/onboarding' ||
-        path.startsWith('/blog') || 
+        //path.startsWith('/blog') || 
         path.startsWith('/terminos') || 
         path.startsWith('/privacidad')
       );
@@ -92,6 +96,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         if (!isMounted) return;
 
         setHasSession(!!session);
+        setUserId(session?.user?.id ?? null);
         const isPublicRoute = checkIfPublicRoute(pathname);
 
         if (!session) {
@@ -119,6 +124,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== 'INITIAL_SESSION' && isMounted) {
         setHasSession(!!session);
+        setUserId(session?.user?.id ?? null);
         const isPublicRoute = checkIfPublicRoute(pathname);
 
         if (!session && !isPublicRoute) {
@@ -138,6 +144,44 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
       subscription.unsubscribe();
     };
   }, [pathname, router]);
+
+  // Badge de solicitudes sin responder. Cuenta sólo lo que llegó después de
+  // la última vez que el usuario miró la pestaña, así mirarla lo apaga.
+  // Se refresca por realtime (una solicitud nueva llega sola), al volver a la
+  // pestaña del navegador, y cuando el usuario marca que las vio.
+  useEffect(() => {
+    if (!userId) {
+      setSolicitudesPendientes(0);
+      return;
+    }
+
+    const recontar = () => {
+      amistadesRepository
+        .contarSolicitudesPendientes(userId, solicitudesVistasAt())
+        .then(setSolicitudesPendientes)
+        .catch(() => setSolicitudesPendientes(0));
+    };
+
+    recontar();
+
+    const canal = supabase
+      .channel(`amistades-badge-${userId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'amistades', filter: `destinatario_id=eq.${userId}` },
+        recontar
+      )
+      .subscribe();
+
+    window.addEventListener(EVENTO_SOLICITUDES_VISTAS, recontar);
+    window.addEventListener('focus', recontar);
+
+    return () => {
+      supabase.removeChannel(canal);
+      window.removeEventListener(EVENTO_SOLICITUDES_VISTAS, recontar);
+      window.removeEventListener('focus', recontar);
+    };
+  }, [userId]);
 
   if (isChecking) {
     return (
@@ -206,6 +250,13 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
         .sidebar-action-btn-custom { padding: 12px 14px !important; transition: all 0.4s ease !important; }
         .theme-toggle-btn { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: transparent; border: none; color: var(--muted); cursor: pointer; transition: all 0.4s ease; padding: 0; }
         .theme-toggle-btn:hover { color: var(--text-strong); background: var(--glass-hover); }
+        .nav-link-btn {
+          padding: 8px 18px; font-size: 0.95rem; font-weight: bold; border-radius: 10px;
+          cursor: pointer; transition: all 0.4s ease; display: flex; align-items: center; gap: 8px;
+          white-space: nowrap; text-decoration: none;
+          background: var(--glass-bg); color: var(--text-strong); border: 1px solid var(--border);
+        }
+        .nav-link-btn.active { background: var(--cursando); color: black; border-color: transparent; }
         .sidebar-btn-hover:hover { color: var(--text-strong) !important; background: var(--glass-hover) !important; }
         .avatar-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--glass-bg); color: var(--text-strong); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; cursor: pointer; border: 2px solid transparent; transition: all 0.4s ease; overflow: hidden; flex-shrink: 0; padding: 0; }
         .avatar-btn:hover { transform: scale(1.05); background: var(--glass-hover); }
@@ -226,19 +277,34 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             display: flex;
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: 60px;
+            height: var(--tabbar-height);
             z-index: 1500;
             background: var(--panel);
             border-top: 1px solid var(--border);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
+            /* Ver --tabbar-floor en globals.css: piso fijo además del
+               safe-area para que los botones nativos del celular no queden
+               pegados a los tabs. */
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--tabbar-floor));
+            box-sizing: content-box;
           }
         }
+        /* Badge de solicitudes sin responder. En el nav de escritorio va al
+           lado del texto; en la tab bar, pegado al ícono. */
+        .nav-badge {
+          display: inline-flex; align-items: center; justify-content: center;
+          min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+          background: var(--danger); color: #fff;
+          font-size: 0.7rem; font-weight: 700; line-height: 1;
+        }
+        .bottom-tab-icon { position: relative; display: flex; }
+        .nav-badge-dot { position: absolute; top: -6px; right: -10px; }
+
         .bottom-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); text-decoration: none; font-size: 0.65rem; font-weight: 700; transition: color 0.2s; }
         .bottom-tab:active { background: var(--glass-hover); }
         .bottom-tab.active { color: var(--cursando); }
         .bottom-tab svg { flex-shrink: 0; }
         @media (max-width: 1150px) {
-          .app-footer { padding-bottom: calc(30px + 60px + env(safe-area-inset-bottom, 0px)) !important; }
+          .app-footer { padding-bottom: calc(30px + var(--tabbar-total)) !important; }
         }
 
         /* Modal de Feedback */
@@ -267,14 +333,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               {hasSession && pathname === '/' && (
                 <>
                   <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
-                  <button
-                    className="help-btn"
-                    onClick={() => setIsUpdateModalOpen(true)}
-                    title="Ver novedades"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  </button>
-                  
+
                   <Link href="https://cafecito.app/mateogeffroy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                     <button style={{ ...navBtnBase, padding: '6px 12px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4-4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
@@ -303,26 +362,34 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
                 <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
 
-                <Link href="/" style={{ textDecoration: 'none' }}>
-                  <button style={{ ...navBtnBase, background: pathname === '/' ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname === '/' ? 'black' : 'var(--text-strong)', border: pathname === '/' ? 'none' : '1px solid var(--border)' }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    Inicio
-                  </button>
+                <Link href="/" className={`nav-link-btn${pathname === '/' ? ' active' : ''}`}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  Inicio
                 </Link>
 
-                <Link href="/plan" style={{ textDecoration: 'none' }}>
-                  <button style={{ ...navBtnBase, background: pathname === '/plan' ? 'var(--cursando)' : 'var(--glass-bg)', color: pathname === '/plan' ? 'black' : 'var(--text-strong)', border: pathname === '/plan' ? 'none' : '1px solid var(--border)' }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-                    Plan de estudios
-                  </button>
+                <Link href="/plan" className={`nav-link-btn${pathname === '/plan' ? ' active' : ''}`}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+                  Plan de estudios
                 </Link>
 
+                <Link href="/buscar" className={`nav-link-btn${pathname === '/buscar' ? ' active' : ''}`}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  Buscar
+                  {solicitudesPendientes > 0 && (
+                    <span className="nav-badge" title={`${solicitudesPendientes} solicitud(es) de amistad sin responder`}>
+                      {solicitudesPendientes}
+                    </span>
+                  )}
+                </Link>
+
+                {/*
                 <Link href="/blog" style={{ textDecoration: 'none' }}>
                   <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
                     Blog
                   </button>
                 </Link>
+                */}
 
                 <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 5px' }}></div>
               </div>
@@ -338,20 +405,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                   className={`avatar-btn ${pathname === '/perfil' ? 'active-profile' : ''}`}
                   title="Mi Perfil"
                 >
-                  {userProfile.avatarUrl ? (
-                    <img src={userProfile.avatarUrl} alt="Avatar" />
-                  ) : (
-                    <span style={{
-                      fontSize: `calc(32px / ${Math.max(userProfile.initials.length, 2)})`,
-                      lineHeight: 1,
-                      letterSpacing: '-0.5px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      {userProfile.initials}
-                    </span>
-                  )}
+                  <Avatar name={userProfile.name || 'Usuario'} src={userProfile.avatarUrl} />
                 </button>
 
                 {isProfileMenuOpen && (
@@ -370,6 +424,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
               </div>
             ) : (
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                {/*
                 <Link href="/blog" style={{ textDecoration: 'none' }}>
                   <button style={{ ...navBtnBase, background: isBlogActive ? 'var(--cursando)' : 'var(--glass-bg)', color: isBlogActive ? 'black' : 'var(--text-strong)', border: isBlogActive ? 'none' : '1px solid var(--border)' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
@@ -381,6 +436,7 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
                     Iniciar Sesión / Registrarse
                   </button>
                 </Link>
+                */}
               </div>
             )}
           </div>
@@ -397,9 +453,18 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
             Plan
           </Link>
+          {/*
           <Link href="/blog" className={`bottom-tab ${isBlogActive ? 'active' : ''}`}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
             Blog
+          </Link>
+          */}
+          <Link href="/buscar" className={`bottom-tab ${pathname === '/buscar' ? 'active' : ''}`}>
+            <span className="bottom-tab-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              {solicitudesPendientes > 0 && <span className="nav-badge nav-badge-dot">{solicitudesPendientes}</span>}
+            </span>
+            Buscar
           </Link>
           <Link href="/perfil" className={`bottom-tab ${pathname === '/perfil' ? 'active' : ''}`}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>

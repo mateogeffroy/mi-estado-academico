@@ -41,6 +41,14 @@ export default function TerminosPage() {
           <h2 style={{ color: 'var(--text-strong)', fontSize: '1.5rem', marginBottom: '10px' }}>4. Cuentas de Usuario y Abuso</h2>
           <p>Nos reservamos el derecho absoluto de suspender, bloquear o eliminar el acceso a aquellas cuentas que realicen un uso abusivo del sistema (como envío de spam, intentos de vulneración de la seguridad, uso de bots, scripts automatizados o sobrecarga intencional de nuestras bases de datos).</p>
         </section>
+
+        <section>
+          <h2 style={{ color: 'var(--text-strong)', fontSize: '1.5rem', marginBottom: '10px' }}>5. Contenido subido por los usuarios (Apuntes)</h2>
+          <p>La plataforma permite subir material de estudio (resúmenes, ejercicios resueltos, código) y compartirlo con el resto de los usuarios o sólo con los propios amigos. <strong style={{ color: 'var(--text-strong)' }}>Quien sube un archivo es el único responsable de su contenido</strong> y declara que es de su autoría o de libre circulación.</p>
+          <p>Está prohibido subir libros, manuales, materiales protegidos por derechos de autor, exámenes obtenidos de forma indebida, datos personales de terceros o cualquier contenido ilícito u ofensivo.</p>
+          <p>Nos reservamos el derecho de <strong style={{ color: 'var(--text-strong)' }}>eliminar sin aviso previo cualquier archivo</strong> que incumpla lo anterior, así como de suspender la cuenta de quien lo haya subido. Si sos titular de un derecho sobre material publicado acá, escribinos a <strong style={{ color: 'var(--text-strong)' }}>mateogeffroy.dev@gmail.com</strong> y lo damos de baja.</p>
+          <p>El material subido queda alojado en la infraestructura del proyecto y puede ser eliminado por razones técnicas o de capacidad. No es un servicio de respaldo: guardá siempre una copia propia de tus archivos.</p>
+        </section>
       </div>
     </main>
   );

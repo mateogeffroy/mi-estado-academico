@@ -2,6 +2,52 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [2.2.0] - 2026-09-04
+
+### Added
+- **Red social**: búsqueda de compañeros por nombre (dentro de la propia
+  carrera, ignorando acentos), solicitudes de amistad, listado de amigos y
+  bloqueo de usuarios. El perfil público muestra sólo nombre, carrera y las
+  comisiones que se cursan; nunca notas, promedio ni horarios.
+- **Gente por materia**: en cada materia, los amigos y los compañeros que
+  cursan en la comisión elegida, con los mismos botones de agregar y aceptar.
+- **Apuntes por materia**: subida de resúmenes, ejercicios resueltos y código
+  (pdf, md, txt, docx, hasta 10 MB), con visibilidad para todos o sólo para
+  los amigos del autor. Los archivos viven en un bucket privado de Supabase y
+  las policies del bucket replican las de la tabla, así que ver el archivo
+  requiere lo mismo que ver el apunte.
+- **Sección "Hoy" en el inicio**: fecha, clases del día y sus eventos, arriba
+  de la grilla semanal.
+- Badge de solicitudes de amistad sin responder en el nav y en la tab bar,
+  actualizado por realtime y apagado al abrir la pestaña de solicitudes.
+- Controles de privacidad en Mi Perfil: aparecer o no en las búsquedas, y
+  baja de los avisos por mail.
+- `scripts/enviar-anuncio.ts` para avisar por mail de las funciones nuevas,
+  respetando la baja.
+
+### Changed
+- **Grilla horaria**: se reemplaza el eje de horas por siete columnas, una por
+  día, con tarjetas de alto automático. El nombre de la materia ya no queda
+  cortado ni se desborda sobre los bloques vecinos. Las flechas dobles mueven
+  la semana y las simples el día marcado, sin reordenar las columnas.
+- Los colores por cuatrimestre vuelven al borde de cada tarjeta (verde 1º,
+  rojo 2º, azul anuales) y las etiquetas de evento muestran sólo el tipo.
+- Tipografía centralizada en variables (`--font-sans`, `--font-mono`,
+  `--font-display`): Inter para texto, Roboto Mono para números, Syne queda
+  reservada al logo.
+- La bottom tab bar se despega más del borde inferior, para que los botones
+  nativos del teléfono no la tapen.
+- Login: las columnas dejan de recortarse en pantallas de 768px de alto y el
+  botón de Google queda blanco en los dos temas.
+- Términos y política de privacidad: qué ven los demás, cómo ocultarse y
+  responsabilidad sobre el material subido.
+
+### Removed
+- Tour de bienvenida del inicio y el botón "?" del nav que abría las
+  novedades.
+- Componentes sin uso: `AnimatedList`, `CountUp`, `MiniCalendar` y el CSS
+  muerto asociado.
+
 ## [2.1.0] - 2026-08-09
 
 ### Added
