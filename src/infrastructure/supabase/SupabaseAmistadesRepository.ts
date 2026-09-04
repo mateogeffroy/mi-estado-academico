@@ -41,9 +41,11 @@ export class SupabaseAmistadesRepository implements AmistadesRepository {
 
   async buscarPersonas(miId: string, texto: string, limite = 20): Promise<PerfilPublico[]> {
     const { data, error } = await this.client
-      .from('perfiles_publicos')
+      // La vista ya filtra por buscable y saca a los bloqueados en las dos
+      // direcciones, cosa que desde el cliente no se puede hacer sin revelar
+      // quién bloqueó a quién.
+      .from('perfiles_buscables')
       .select('user_id, nombre, carrera_id')
-      .eq('buscable', true)
       .neq('user_id', miId)
       .ilike('nombre', `%${escaparLike(texto)}%`)
       .order('nombre')
@@ -71,15 +73,45 @@ export class SupabaseAmistadesRepository implements AmistadesRepository {
     return (data as FilaPerfil[] | null ?? []).map(aPerfil);
   }
 
-  async contarSolicitudesPendientes(userId: string): Promise<number> {
+  async contarSolicitudesPendientes(userId: string, desde?: string | null): Promise<number> {
     // head: true trae sólo el conteo, sin las filas.
-    const { count, error } = await this.client
+    let query = this.client
       .from('amistades')
       .select('*', { count: 'exact', head: true })
       .eq('destinatario_id', userId)
       .eq('estado', 'pendiente');
+    if (desde) query = query.gt('created_at', desde);
+
+    const { count, error } = await query;
     if (error) throw new Error(`No se pudieron contar las solicitudes: ${error.message}`);
     return count ?? 0;
+  }
+
+  async bloquear(miId: string, otroId: string): Promise<void> {
+    // El trigger de la base borra la amistad o solicitud que hubiera.
+    const { error } = await this.client
+      .from('bloqueos')
+      .insert({ bloqueador_id: miId, bloqueado_id: otroId });
+    if (error) throw new Error(`No se pudo bloquear: ${error.message}`);
+  }
+
+  async desbloquear(miId: string, otroId: string): Promise<void> {
+    const { error } = await this.client
+      .from('bloqueos')
+      .delete()
+      .match({ bloqueador_id: miId, bloqueado_id: otroId });
+    if (error) throw new Error(`No se pudo desbloquear: ${error.message}`);
+  }
+
+  async obtenerBloqueados(miId: string): Promise<PerfilPublico[]> {
+    const { data, error } = await this.client
+      .from('bloqueos')
+      .select('bloqueado_id')
+      .eq('bloqueador_id', miId);
+    if (error) throw new Error(`No se pudieron cargar los bloqueados: ${error.message}`);
+
+    const ids = (data as { bloqueado_id: string }[] | null ?? []).map(f => f.bloqueado_id);
+    return this.obtenerPerfiles(ids);
   }
 
   async obtenerCursantesDeMateria(miId: string, materiaId: string): Promise<CursanteDeMateria[]> {

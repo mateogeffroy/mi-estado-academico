@@ -13,9 +13,13 @@ interface PersonCardProps {
   subtitulo?: string;
   /** Deshabilita los botones mientras una acción está en vuelo. */
   ocupado?: boolean;
+  /** Con true, la tarjeta muestra el estado de bloqueo en vez de la relación. */
+  bloqueado?: boolean;
   onAgregar: (persona: PerfilPublico) => void;
   onAceptar: (persona: PerfilPublico) => void;
   onEliminar: (persona: PerfilPublico) => void;
+  onBloquear?: (persona: PerfilPublico) => void;
+  onDesbloquear?: (persona: PerfilPublico) => void;
 }
 
 const BADGE = {
@@ -25,7 +29,18 @@ const BADGE = {
   ninguna: null,
 } as const;
 
-export default function PersonCard({ persona, relacion, subtitulo, ocupado, onAgregar, onAceptar, onEliminar }: PersonCardProps) {
+export default function PersonCard({
+  persona,
+  relacion,
+  subtitulo,
+  ocupado,
+  bloqueado,
+  onAgregar,
+  onAceptar,
+  onEliminar,
+  onBloquear,
+  onDesbloquear,
+}: PersonCardProps) {
   const badge = BADGE[relacion];
 
   return (
@@ -39,24 +54,48 @@ export default function PersonCard({ persona, relacion, subtitulo, ocupado, onAg
       </div>
 
       <div className="person-card-acciones">
-        {badge && <Badge tone={badge.tone}>{badge.label}</Badge>}
+        {bloqueado ? (
+          <>
+            <Badge tone="danger">Bloqueado</Badge>
+            <Button type="button" variant="secondary" disabled={ocupado} onClick={() => onDesbloquear?.(persona)}>
+              Desbloquear
+            </Button>
+          </>
+        ) : (
+          <>
+            {badge && <Badge tone={badge.tone}>{badge.label}</Badge>}
 
-        {relacion === 'ninguna' && (
-          <Button type="button" variant="secondary" disabled={ocupado} onClick={() => onAgregar(persona)}>
-            Agregar
-          </Button>
-        )}
+            {relacion === 'ninguna' && (
+              <Button type="button" variant="secondary" disabled={ocupado} onClick={() => onAgregar(persona)}>
+                Agregar
+              </Button>
+            )}
 
-        {relacion === 'recibida' && (
-          <Button type="button" variant="primary" disabled={ocupado} onClick={() => onAceptar(persona)}>
-            Aceptar
-          </Button>
-        )}
+            {relacion === 'recibida' && (
+              <Button type="button" variant="primary" disabled={ocupado} onClick={() => onAceptar(persona)}>
+                Aceptar
+              </Button>
+            )}
 
-        {relacion !== 'ninguna' && (
-          <Button type="button" variant="ghost" disabled={ocupado} onClick={() => onEliminar(persona)}>
-            {relacion === 'amigos' ? 'Quitar' : relacion === 'enviada' ? 'Cancelar' : 'Rechazar'}
-          </Button>
+            {relacion !== 'ninguna' && (
+              <Button type="button" variant="ghost" disabled={ocupado} onClick={() => onEliminar(persona)}>
+                {relacion === 'amigos' ? 'Quitar' : relacion === 'enviada' ? 'Cancelar' : 'Rechazar'}
+              </Button>
+            )}
+
+            {onBloquear && (
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={ocupado}
+                onClick={() => onBloquear(persona)}
+                title="No lo vas a ver más, ni él a vos"
+                style={{ color: 'var(--danger)' }}
+              >
+                Bloquear
+              </Button>
+            )}
+          </>
         )}
       </div>
     </div>

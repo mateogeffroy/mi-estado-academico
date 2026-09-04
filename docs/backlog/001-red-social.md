@@ -37,20 +37,26 @@ default** y se apaga desde el perfil; apagada, sólo te ven tus amigos.
   expone sólo quién cursa qué materia en qué comisión. Es una vista y no una
   policy sobre `usuario_materias` porque RLS es por fila: no hay forma de
   dejar leer la comisión y esconder la nota de la misma fila.
-- Página de materia: listados de "Amigos que la cursan" y "Compañeros de
-  comisión", con los mismos botones de agregar/aceptar/quitar.
+- Página de materia: listados de amigos y compañeros de la comisión elegida,
+  con los mismos botones de agregar/aceptar/quitar.
+- `20260904180000_bloqueos_y_realtime.sql`: tabla `bloqueos` (con trigger que
+  corta la amistad al bloquear), vista `perfiles_buscables` que saca a los
+  bloqueados en las dos direcciones sin revelar quién bloqueó a quién, y
+  `amistades` publicada en realtime para el badge.
+- Bloquear y desbloquear desde la tarjeta de persona, con pestaña
+  "Bloqueados" en `/buscar`.
+- El badge del nav se actualiza por realtime y se apaga al abrir la pestaña
+  de solicitudes (guarda la fecha de la última vista en localStorage).
+- Política de privacidad: sección nueva sobre perfil visible y amistades.
+- `UpdateModal` (v3): carrusel con las funciones nuevas y qué ven los demás.
 - Borrado el mockup: `mockPeople.ts`, `PersonList.tsx`, la sección "Gente en
   tu comisión" de la página de materia y la pestaña "Amigos" del perfil.
 
 ## Falta
 
 - Probar el flujo completo con dos cuentas reales (ver más abajo).
-- Avisar del cambio de visibilidad: ahora los usuarios existentes pasaron a
-  visibles sin haberlo pedido. Corresponde un aviso en la app (y revisar la
-  política de privacidad) antes de que se sumen usuarios nuevos.
-- El badge se recalcula al cambiar de ruta: si llega una solicitud mientras
-  estás parado en una página, no aparece hasta navegar.
-- Bloquear y reportar usuarios.
+- Reportar usuarios: por ahora no hay más interacción que los apuntes, así
+  que se decidió que alcanza con bloquear.
 - La búsqueda usa `ilike` sin índice de trigramas. Alcanza para el padrón
   actual; si se pone lenta, `pg_trgm` (anotado en la migración).
 

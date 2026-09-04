@@ -6,7 +6,9 @@ import Input from '../../src/components/Input';
 import Card from '../../src/components/Card';
 import Tabs from '../../src/components/Tabs';
 import PersonCard from '../../src/components/PersonCard';
+import ConfirmModal from '../../src/components/ConfirmModal';
 import { supabase } from '../../src/lib/supabase';
+import { marcarSolicitudesVistas } from '../../src/lib/solicitudesVistas';
 import { amistadesRepository } from '../../src/infrastructure/repositorios';
 import { Amistad, PerfilPublico, relacionCon } from '../../src/application/ports/AmistadesRepository';
 
@@ -14,6 +16,7 @@ const TABS = [
   { id: 'buscar', label: 'Buscar' },
   { id: 'solicitudes', label: 'Solicitudes' },
   { id: 'amigos', label: 'Amigos' },
+  { id: 'bloqueados', label: 'Bloqueados' },
 ];
 
 export default function BuscarPage() {
@@ -30,6 +33,8 @@ export default function BuscarPage() {
   const [ocupadoCon, setOcupadoCon] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [soyBuscable, setSoyBuscable] = useState(true);
+  const [bloqueados, setBloqueados] = useState<PerfilPublico[]>([]);
+  const [aBloquear, setABloquear] = useState<PerfilPublico | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -41,8 +46,12 @@ export default function BuscarPage() {
   // Relaciones propias + los perfiles de la otra punta, para poder mostrar
   // nombre y carrera en las pestañas de solicitudes y amigos.
   const recargarAmistades = useCallback(async (id: string) => {
-    const relaciones = await amistadesRepository.obtenerAmistades(id);
+    const [relaciones, listaBloqueados] = await Promise.all([
+      amistadesRepository.obtenerAmistades(id),
+      amistadesRepository.obtenerBloqueados(id),
+    ]);
     setAmistades(relaciones);
+    setBloqueados(listaBloqueados);
     const otros = relaciones.map(a => (a.solicitanteId === id ? a.destinatarioId : a.solicitanteId));
     const cargados = await amistadesRepository.obtenerPerfiles(otros);
     setPerfiles(Object.fromEntries(cargados.map(p => [p.userId, p])));
@@ -53,6 +62,12 @@ export default function BuscarPage() {
     recargarAmistades(userId).catch(e => setError(e.message));
     amistadesRepository.obtenerMiPerfil(userId).then(p => setSoyBuscable(p?.buscable ?? false)).catch(() => {});
   }, [userId, recargarAmistades]);
+
+  // Abrir la pestaña de solicitudes cuenta como haberlas visto: apaga el
+  // badge del nav aunque queden sin responder.
+  useEffect(() => {
+    if (tab === 'solicitudes') marcarSolicitudesVistas();
+  }, [tab]);
 
   // Espera a que se deje de tipear antes de pegarle a la base.
   useEffect(() => {
@@ -96,6 +111,7 @@ export default function BuscarPage() {
       onAgregar={p => accion(() => amistadesRepository.enviarSolicitud(userId!, p.userId), p.userId)}
       onAceptar={p => accion(() => amistadesRepository.aceptarSolicitud(userId!, p.userId), p.userId)}
       onEliminar={p => accion(() => amistadesRepository.eliminarRelacion(userId!, p.userId), p.userId)}
+      onBloquear={setABloquear}
     />
   );
 
@@ -180,6 +196,44 @@ export default function BuscarPage() {
           ? <div className="buscar-vacio">Todavía no agregaste a nadie.</div>
           : <div className="person-list">{amigos.map(tarjeta)}</div>
       )}
+
+      {tab === 'bloqueados' && (
+        bloqueados.length === 0
+          ? <div className="buscar-vacio">No bloqueaste a nadie.</div>
+          : (
+            <div className="person-list">
+              {bloqueados.map(persona => (
+                <PersonCard
+                  key={persona.userId}
+                  persona={persona}
+                  relacion="ninguna"
+                  bloqueado
+                  ocupado={ocupadoCon === persona.userId}
+                  onAgregar={() => {}}
+                  onAceptar={() => {}}
+                  onEliminar={() => {}}
+                  onDesbloquear={p => accion(() => amistadesRepository.desbloquear(userId!, p.userId), p.userId)}
+                />
+              ))}
+            </div>
+          )
+      )}
+
+      <ConfirmModal
+        isOpen={aBloquear !== null}
+        title="Bloquear usuario"
+        message={aBloquear
+          ? `¿Seguro que querés bloquear a ${aBloquear.nombre}? Dejan de verse: no va a poder encontrarte ni mandarte solicitudes, y si eran amigos la amistad se borra. Podés desbloquearlo cuando quieras desde la pestaña "Bloqueados".`
+          : ''}
+        confirmText="Sí, bloquear"
+        isDanger
+        onConfirm={() => {
+          const persona = aBloquear;
+          setABloquear(null);
+          if (persona) accion(() => amistadesRepository.bloquear(userId!, persona.userId), persona.userId);
+        }}
+        onCancel={() => setABloquear(null)}
+      />
     </main>
   );
 }

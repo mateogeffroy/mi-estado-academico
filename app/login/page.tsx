@@ -148,13 +148,16 @@ export default function AuthPage() {
 
         .auth-submit-btn { border-radius: 10px; font-weight: bold; width: 100%; box-sizing: border-box; cursor: pointer; border: none; }
         
+        /* Botón de Google: blanco con texto oscuro en los dos temas, como
+           pide la guía de marca. Antes tomaba --panel, así que en oscuro
+           quedaba negro y el logo casi no se veía. */
         .auth-google-btn {
           display: flex; align-items: center; justify-content: center; gap: 12px;
-          border-radius: 10px; background: var(--panel); color: var(--text-strong); font-weight: bold;
-          border: 1px solid var(--border); cursor: pointer; transition: transform 0.2s, background 0.2s; 
+          border-radius: 10px; background: #ffffff; color: #1f1f1f; font-weight: bold;
+          border: 1px solid #dadce0; cursor: pointer; transition: transform 0.2s, background 0.2s;
           width: 100%; box-sizing: border-box;
         }
-        .auth-google-btn:hover { transform: scale(1.02); background: var(--glass-hover); }
+        .auth-google-btn:hover { transform: scale(1.02); background: #f4f4f4; }
 
         .arrow-container { cursor: pointer; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 30px; transition: color 0.2s ease; }
         .arrow-container:hover { color: var(--text-strong); }
@@ -740,7 +743,7 @@ export default function AuthPage() {
                       <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
                     </div>
 
-                    <button style={{ color: 'BLACK', backgroundColor: 'white'}} onClick={handleGoogleLogin} type="button" className="auth-google-btn">
+                    <button onClick={handleGoogleLogin} type="button" className="auth-google-btn">
                       <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>

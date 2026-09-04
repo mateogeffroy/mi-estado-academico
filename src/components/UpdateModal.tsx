@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Modal from './Modal';
 
 // 🔑 CLAVE DE VERSIÓN
-export const UPDATE_VERSION_KEY = 'seen_update_v2';
+export const UPDATE_VERSION_KEY = 'seen_update_v3';
 
 interface UpdateModalProps {
   isOpen: boolean;
@@ -15,48 +15,46 @@ const slides = [
   {
     icon: (
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-        <polyline points="17 6 23 6 23 12"/>
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
     ),
     tag: 'Novedades',
-    title: 'Actualización disponible',
-    description: (
-      <span>Se agregaron <strong style={{ color: 'var(--cursando)' }}>2 nuevas funcionalidades</strong> que mejoran la experiencia de la plataforma.</span>
-    ),
-  },
-  {
-    icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-        <line x1="9" y1="3" x2="9" y2="18"/>
-        <line x1="15" y1="6" x2="15" y2="21"/>
-      </svg>
-    ),
-    tag: 'Funcionalidad 1',
-    title: 'Portabilidad de carreras',
+    title: 'Ahora podés encontrar compañeros',
     description: (
       <span>
-        El sistema ahora permite registrar el progreso de <strong style={{ color: 'var(--cursando)' }}>2 o más carreras</strong> en simultáneo.
-        Para agregar una nueva carrera, ingresá a <strong style={{ color: 'var(--cursando)' }}>"mi perfil"</strong>.
+        Desde <strong style={{ color: 'var(--cursando)' }}>Buscar</strong> podés encontrar a otras personas por su nombre
+        y agregarlas como amigos. En cada materia vas a ver quiénes cursan en tu misma comisión.
       </span>
     ),
   },
   {
     icon: (
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
+        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
       </svg>
     ),
-    tag: 'Funcionalidad 2',
-    title: 'Horario semanal + Calendario',
+    tag: 'Importante',
+    title: 'Qué ven los demás',
     description: (
       <span>
-        El horario semanal ahora se adapta a la <strong style={{ color: 'var(--cursando)' }}>semana actual</strong>, mostrando eventos, feriados y mesas de examen.
-        El calendario anterior sigue disponible dentro de la sección de horario, en el botón del ícono de calendario.
+        Sólo <strong style={{ color: 'var(--cursando)' }}>tu nombre, tu carrera y las materias y comisiones que cursás</strong>.
+        Nunca tus notas, tu promedio ni tus horarios. Podés ocultarte o bloquear a alguien cuando quieras
+        desde <strong style={{ color: 'var(--cursando)' }}>Mi Perfil</strong>.
+      </span>
+    ),
+  },
+  {
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--cursando)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+    ),
+    tag: 'En camino',
+    title: 'Apuntes por materia',
+    description: (
+      <span>
+        Se viene una sección para compartir <strong style={{ color: 'var(--cursando)' }}>resúmenes, ejercicios resueltos y código</strong>
+        {' '}en cada materia, con la opción de publicarlos para todos o sólo para tus amigos.
       </span>
     ),
   },

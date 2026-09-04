@@ -39,14 +39,22 @@ export interface AmistadesRepository {
   /** Todas las relaciones en las que participa el usuario, pendientes y aceptadas. */
   obtenerAmistades(userId: string): Promise<Amistad[]>;
   obtenerPerfiles(userIds: string[]): Promise<PerfilPublico[]>;
-  /** Cuántas solicitudes recibió el usuario y todavía no respondió. */
-  contarSolicitudesPendientes(userId: string): Promise<number>;
+  /**
+   * Cuántas solicitudes sin responder tiene el usuario. Con `desde`, sólo las
+   * que llegaron después de ese momento: es lo que permite que el badge se
+   * apague cuando ya las miró.
+   */
+  contarSolicitudesPendientes(userId: string, desde?: string | null): Promise<number>;
   /** Quiénes cursan esa materia, sin incluirse a uno mismo. */
   obtenerCursantesDeMateria(miId: string, materiaId: string): Promise<CursanteDeMateria[]>;
   enviarSolicitud(miId: string, destinatarioId: string): Promise<void>;
   aceptarSolicitud(miId: string, solicitanteId: string): Promise<void>;
   /** Sirve para cancelar una solicitud, rechazarla o dejar de ser amigos. */
   eliminarRelacion(miId: string, otroId: string): Promise<void>;
+  bloquear(miId: string, otroId: string): Promise<void>;
+  desbloquear(miId: string, otroId: string): Promise<void>;
+  /** A quiénes bloqueó el usuario, con su perfil para poder mostrarlos. */
+  obtenerBloqueados(miId: string): Promise<PerfilPublico[]>;
   obtenerMiPerfil(userId: string): Promise<MiPerfilPublico | null>;
   actualizarMiPerfil(userId: string, cambios: { buscable?: boolean; carreraId?: string | null }): Promise<void>;
 }

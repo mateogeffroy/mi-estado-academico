@@ -10,6 +10,7 @@ import Modal from './Modal';
 import Avatar from './Avatar';
 import { supabase } from '../lib/supabase';
 import { amistadesRepository, feedbackPort } from '../infrastructure/repositorios';
+import { EVENTO_SOLICITUDES_VISTAS, solicitudesVistasAt } from '../lib/solicitudesVistas';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -144,19 +145,43 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
     };
   }, [pathname, router]);
 
-  // Contador de solicitudes de amistad sin responder, para el badge del nav.
-  // Se recalcula al cambiar de ruta: alcanza para enterarse sin abrir un
-  // canal de realtime sólo para esto.
+  // Badge de solicitudes sin responder. Cuenta sólo lo que llegó después de
+  // la última vez que el usuario miró la pestaña, así mirarla lo apaga.
+  // Se refresca por realtime (una solicitud nueva llega sola), al volver a la
+  // pestaña del navegador, y cuando el usuario marca que las vio.
   useEffect(() => {
     if (!userId) {
       setSolicitudesPendientes(0);
       return;
     }
-    amistadesRepository
-      .contarSolicitudesPendientes(userId)
-      .then(setSolicitudesPendientes)
-      .catch(() => setSolicitudesPendientes(0));
-  }, [userId, pathname]);
+
+    const recontar = () => {
+      amistadesRepository
+        .contarSolicitudesPendientes(userId, solicitudesVistasAt())
+        .then(setSolicitudesPendientes)
+        .catch(() => setSolicitudesPendientes(0));
+    };
+
+    recontar();
+
+    const canal = supabase
+      .channel(`amistades-badge-${userId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'amistades', filter: `destinatario_id=eq.${userId}` },
+        recontar
+      )
+      .subscribe();
+
+    window.addEventListener(EVENTO_SOLICITUDES_VISTAS, recontar);
+    window.addEventListener('focus', recontar);
+
+    return () => {
+      supabase.removeChannel(canal);
+      window.removeEventListener(EVENTO_SOLICITUDES_VISTAS, recontar);
+      window.removeEventListener('focus', recontar);
+    };
+  }, [userId]);
 
   if (isChecking) {
     return (
